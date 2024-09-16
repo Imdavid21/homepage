@@ -1,0 +1,27 @@
+import React from 'react';
+
+const Header = () => {
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-white">
+      <div className="max-w-7xl mx-auto flex h-14 items-center px-4">
+        <div className="mr-4 flex items-center">
+          <a href="/" className="text-lg font-medium">
+            <img src="/imgs/logo/1.jpeg" alt="Central LLM" className="h-8" />
+            <h1 className="text-xl font-bold">Central LLM</h1>
+          </a>
+        </div>
+        <nav className="flex items-center space-x-6 text-sm">
+          <a href="#pricing">Pricing</a>
+          <a href="#blog">Blog</a>
+        </nav>
+        <a href="#login" className="ml-auto">
+          <button className="bg-primary text-white h-9 rounded-md px-3">
+            Sign In
+          </button>
+        </a>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
