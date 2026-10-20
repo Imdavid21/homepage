@@ -1,0 +1,2 @@
+{ "name": "hl-card-ui", "private": true, "type": "module", "scripts": { "build": "node build.mjs" },
+  "dependencies": { "react": "^19.0.0", "react-dom": "^19.0.0", "framer-motion": "^12.0.0" }, "devDependencies": { "esbuild": "^0.25.0" } }

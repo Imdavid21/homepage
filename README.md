@@ -9,3 +9,6 @@ Name (.hl or .eth) + X handle -> score out of 100 from public Hyperliquid data -
 4. Tune lib/config.js after the first real scores so 90 is a sensible cut.
 
 Local preview with fake data: `npm run dev` (MOCK=1), tests: `npm test`.
+
+## UI source
+The page is React (framer-motion) in ui/src, bundled with esbuild (cd ui && npm i && npm run build) and inlined into public/index.html together with the card engine (ui/src/engine-api.js). public/index.html is the file Vercel serves.
