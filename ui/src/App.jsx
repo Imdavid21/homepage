@@ -11,7 +11,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function Masthead({ muted, setMuted }) {
   return (
     <header className="mast">
-      <span className="mast-l">Edition of 25 | Mumbai</span>
+      <span className="mast-l" aria-hidden="true" />
       <Brands />
       <span className="mast-r"><button type="button" className="snd" aria-pressed={!muted} onClick={() => { setMuted(!muted); HL().setMuted(!muted); }}>{muted ? "Sound off" : "Sound on"}</button></span>
     </header>
