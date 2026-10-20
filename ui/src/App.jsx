@@ -174,7 +174,6 @@ const Soc = ({ href, icon, children }) => <a href={href} target="_blank" rel="no
 function Footer({ socials }) {
   return (
     <footer className="site-foot">
-      <DitherBar className="foot-bar" />
       <Brands cls="brands foot-brands" />
       <nav className="soc" aria-label="Social links">{socials.map(s => <Soc key={s.label} href={s.url} icon={s.icon}>{s.label}</Soc>)}</nav>
       <p className="legal">An independent community of Hyperliquid users. Not Hyperliquid, not Hyper Foundation, not officially affiliated.</p>
