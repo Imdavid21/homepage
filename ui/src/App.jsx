@@ -228,7 +228,6 @@ export default function App({ socials }) {
     <div className="wrap">
       {info?.mock && <div className="demo">Demo data. Preview only.</div>}
       <Masthead muted={muted} setMuted={setMuted} />
-      <DitherBar className="top" />
       <Marquee items={["Hyperliquid India x ENS", "House of HYPE", "Mumbai", "3 November", "Twenty five pieces", "Laser etched on both faces"]} />
 
       <main className="hero">
