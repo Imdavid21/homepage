@@ -11,22 +11,58 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function Masthead({ muted, setMuted }) {
   return (
     <header className="mast">
-      <span className="mast-l">Edition of 25</span>
+      <span className="mast-l">Edition of 25 | Mumbai</span>
       <Brands />
       <span className="mast-r"><button type="button" className="snd" aria-pressed={!muted} onClick={() => { setMuted(!muted); HL().setMuted(!muted); }}>{muted ? "Sound off" : "Sound on"}</button></span>
     </header>
   );
 }
 
-/* ---------- the card plate. The 3D engine owns #stage and everything inside it. ---------- */
-const Plate = memo(function Plate({ hot }) {
-  const [decode, setDecode] = useState(false), [side, setSide] = useState("front"), [focus, setFocus] = useState(null);
-  useEffect(() => { const f = e => setSide(e.detail); window.addEventListener("hl-side", f); return () => window.removeEventListener("hl-side", f); }, []);
-  const toggle = () => { const v = !decode; setDecode(v); window.HL && window.HL.track.set(v); };
-  const items = regions[side];
+/* ---------- the card plate. The 3D engine owns #stage; the decode callouts sit around it. ---------- */
+const OFF = { l: [0, 30, 8, 46, 16, 34], r: [36, 0, 24, 8, 42] };
+const byY = (a, b) => a.y - b.y || a.x - b.x;
+function Callout({ g, i, focus, setFocus }) {
+  const left = g.side === "l", title = g.id === "card";
+  const head = title
+    ? <h3>{g.label}</h3>
+    : left ? <><h4>{g.label}</h4><span className="sep">|</span><b>{g.n}</b></> : <><b>{g.n}</b><span className="sep">|</span><h4>{g.label}</h4></>;
   return (
-    <section className="plate" aria-label="Card preview">
-      <aside className="marg l"><p className="k">Front</p><p className="t">Tide</p><p className="d">Your name, laser etched. Nothing is printed, so nothing can fade.</p></aside>
+    <motion.li data-co={g.id} className={"co " + g.side + (title ? " title" : "") + (focus === g.id ? " on" : "")} style={{ "--dy": (OFF[g.side][i % OFF[g.side].length]) + "px" }}
+      initial={{ opacity: 0, x: left ? -18 : 18 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: .55, delay: .08 * i + .1, ease }}
+      onMouseEnter={() => setFocus(g.id, true)} onMouseLeave={() => setFocus(null, false)} onClick={() => setFocus(g.id, true)}>
+      <div className="co-h">{head}</div>
+      <p className="co-m">{title ? g.kicker : g.meta}</p>
+      <p className="co-d">{g.desc}</p>
+    </motion.li>
+  );
+}
+
+const Plate = memo(function Plate({ hot }) {
+  const [decode, setDecode] = useState(true), [side, setSide] = useState("front"), [focus, setFocus] = useState(null), still = useRef(false);
+  useEffect(() => { const f = e => setSide(e.detail); window.addEventListener("hl-side", f); return () => window.removeEventListener("hl-side", f); }, []);
+  const on = decode && !hot;
+  useEffect(() => {
+    const go = () => { window.HL.track.set(decode); window.HL.track.hide(hot); };
+    if (window.HL) go(); else { window.addEventListener("hl-ready", go, { once: true }); return () => window.removeEventListener("hl-ready", go); }
+  }, [decode, hot]);
+  const items = regions[side], L = items.filter(g => g.side === "l").sort((a, b) => (a.id === "card" ? -1 : b.id === "card" ? 1 : byY(a, b))), R = items.filter(g => g.side === "r").sort(byY);
+  const pick = (id, hold) => { still.current = hold; setFocus(id); window.HL && window.HL.track.focus(id); };
+  // when nobody is pointing at anything, the highlight walks through the callouts on its own
+  useEffect(() => {
+    if (!on) return; let k = 0; const ids = items.map(g => g.id);
+    const t = setInterval(() => { if (still.current) return; k = (k + 1) % ids.length; setFocus(ids[k]); window.HL && window.HL.track.focus(ids[k]); }, 2600);
+    return () => clearInterval(t);
+  }, [on, side]);
+  const col = (list, cls) => (
+    <AnimatePresence mode="wait" initial={false}>
+      {on && <motion.ol key={cls + side} className={"co-col " + cls} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: .25 } }}>
+        {list.map((g, i) => <Callout key={g.id} g={g} i={i} focus={focus} setFocus={pick} />)}
+      </motion.ol>}
+    </AnimatePresence>
+  );
+  return (
+    <section className={"plate" + (on ? " decoded" : "")} aria-label="Card preview and decode">
+      <div className="co-wrap l">{col(L, "l")}</div>
       <div className="plate-mid">
         <i className="cm tl" /><i className="cm tr" /><i className="cm bl" /><i className="cm br" />
         <DitherSpot />
@@ -39,21 +75,10 @@ const Plate = memo(function Plate({ hot }) {
         <div className="sides" role="group" aria-label="Show side">
           <button type="button" className="side" id="sideFront" aria-pressed="true"><img id="pvFront" alt="" />Front</button>
           <button type="button" className="side" id="sideBack" aria-pressed="false"><img id="pvBack" alt="" />Back</button>
-          <button type="button" className={"side decode"} aria-pressed={decode} onClick={toggle}><i className="dot" aria-hidden="true" />{decode ? "Hide the map" : "Decode the card"}</button>
+          <button type="button" className="side decode" aria-pressed={decode} onClick={() => setDecode(v => !v)}><i className="dot" aria-hidden="true" />{decode ? "Hide the map" : "Decode the card"}</button>
         </div>
-        <AnimatePresence initial={false}>
-          {decode && (
-            <motion.ol key="legend" className="legend" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: .5, ease }}>
-              {items.map((r, i) => (
-                <motion.li key={side + r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .06 * i + .15 }}
-                  onMouseEnter={() => { setFocus(r.id); window.HL.track.focus(r.id); }} onMouseLeave={() => { setFocus(null); window.HL.track.focus(null); }}
-                  className={focus === r.id ? "on" : ""}><b>{r.n}</b><div><h4>{r.label}</h4><p>{r.desc}</p></div></motion.li>
-              ))}
-            </motion.ol>
-          )}
-        </AnimatePresence>
       </div>
-      <aside className="marg r"><p className="k">Back</p><p className="t">Ledger</p><p className="d">The genesis record and a tap to verify. Numbered one of twenty five.</p></aside>
+      <div className="co-wrap r">{col(R, "r")}</div>
     </section>
   );
 });
@@ -82,7 +107,6 @@ function Meters({ info, now }) {
 
 /* ---------- result ---------- */
 function verdictFor(j, st, phase) {
-  if (phase === "reading") return "Reading the chain";
   if (phase === "engraving") return "Eligible. Etching your card";
   if (j.claimed) return "Your card is claimed. See you at House of HYPE.";
   if (!j.eligible) return "Not eligible this time. A score of 90 or more qualifies.";
@@ -93,15 +117,15 @@ function verdictFor(j, st, phase) {
 }
 
 function Result({ j, phase, st, onClaim, claiming, onReplay, onVideo, vid }) {
-  const reduce = useReducedMotion(), busy = phase === "reading" || phase === "engraving", done = phase === "done";
+  const reduce = useReducedMotion(), busy = phase === "engraving", done = phase === "done";
   const canClaim = done && j.eligible && !j.claimed && st === "open" && j.left > 0;
   const addr = j.address ? j.address.slice(0, 6) + "…" + j.address.slice(-4) : "";
   return (
     <motion.section className="result" aria-live="polite" initial={reduce ? false : { opacity: 0, y: 36, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 140, damping: 20 }}>
-      <Ring score={Math.max(0, Math.min(100, j.score || 0))} ok={j.eligible && phase !== "reading"} />
+      <Ring score={Math.max(0, Math.min(100, j.score || 0))} ok={j.eligible} />
       <p className="rlab">Hyperliquid onchain score</p>
       <AnimatePresence mode="wait" initial={false}>
-        <motion.h2 key={verdictFor(j, st, phase)} className={"verdict" + (j.eligible && phase !== "reading" ? " ok" : "")} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: .35, ease }}>{verdictFor(j, st, phase)}</motion.h2>
+        <motion.h2 key={verdictFor(j, st, phase)} className={"verdict" + (j.eligible ? " ok" : "")} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: .35, ease }}>{verdictFor(j, st, phase)}</motion.h2>
       </AnimatePresence>
       <p className="who"><span>{j.name}</span>{addr && <span className="mono">{addr}</span>}</p>
       <AnimatePresence>
@@ -165,7 +189,7 @@ export default function App({ socials }) {
   const [name, setName] = useState(""), [phase, setPhase] = useState("idle"), [res, setRes] = useState(null);
   const [msg, setMsg] = useState({ t: "The card above updates as you type.", err: false }), [checking, setChecking] = useState(false), [claiming, setClaiming] = useState(false), [muted, setMuted] = useState(false);
   const [vid, setVid] = useState({ status: "idle", left: 0 }), deb = useRef();
-  const busy = phase === "reading" || phase === "engraving" || checking;
+  const busy = phase === "scoring" || phase === "engraving" || checking;
   const norm = v => v.trim().toLowerCase(), okName = n => HL().validHl(n) || HL().validEth(n);
 
   const onType = e => {
@@ -180,8 +204,9 @@ export default function App({ socials }) {
     try {
       const [ok, j] = await post("/api/check", { name: n });
       if (!ok) { setMsg({ t: j.error || "Something went wrong.", err: true }); setChecking(false); return; }
-      apply(j); setMsg({ t: "", err: false }); setRes(j); setPhase("reading"); setChecking(false);
-      await sleep(reduce ? 200 : 1700);
+      apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("scoring");
+      await HL().score(Math.max(0, Math.min(100, j.score || 0)), j.name);
+      setRes(j);
       if (j.eligible) { setPhase("engraving"); await HL().engrave(); }
       setPhase("done");
     } catch (err) { console.error("CHK", err); setMsg({ t: "Network error. Try again.", err: true }); setChecking(false); setPhase("idle"); }
@@ -213,12 +238,12 @@ export default function App({ socials }) {
         <motion.h1 {...rise(1, reduce)}>Your name,<br /><i>laser etched</i><br />in metal.</motion.h1>
         <motion.p className="sub" {...rise(2, reduce)}>Hyperliquid India and ENS are giving away 25 NFC metal cards for House of HYPE. Enter your .hl or .eth name to see your card and check if you are eligible.</motion.p>
         <motion.div className="full" {...rise(3, reduce)}><Meters info={info} now={now} /></motion.div>
-        <motion.div className="full" {...rise(4, reduce)}><Plate hot={phase === "engraving"} /></motion.div>
+        <motion.div className="bleed" {...rise(4, reduce)}><Plate hot={phase === "engraving" || phase === "scoring"} /></motion.div>
 
         <AnimatePresence>
-          {phase === "engraving" && (
-            <motion.div className="etch" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 34 }} exit={{ opacity: 0, height: 0 }}>
-              <span>Etching your name</span><div className="etch-bar"><motion.i initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 3.4, ease: "easeInOut" }} /></div>
+          {(phase === "engraving" || phase === "scoring") && (
+            <motion.div key={phase} className="etch" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 34 }} exit={{ opacity: 0, height: 0 }}>
+              <span>{phase === "scoring" ? "Reading the chain" : "Etching your name"}</span><div className="etch-bar"><motion.i initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: phase === "scoring" ? 3.8 : 3.4, ease: "easeInOut" }} /></div>
             </motion.div>
           )}
         </AnimatePresence>

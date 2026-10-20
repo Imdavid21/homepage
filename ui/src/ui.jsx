@@ -43,7 +43,6 @@ export function Ring({ score, ok }) {
       <svg viewBox="0 0 120 120" aria-hidden="true">
         <circle className="track" cx="60" cy="60" r="52" />
         <g transform="rotate(-90 60 60)"><motion.circle className="arc" cx="60" cy="60" r="52" style={{ pathLength: len }} /></g>
-        <line className="gate" x1="60" y1="2" x2="60" y2="12" transform="rotate(324 60 60)" />
       </svg>
       <div className="num"><motion.b>{shown}</motion.b><span>of 100</span></div>
     </div>
@@ -52,7 +51,7 @@ export function Ring({ score, ok }) {
 
 export function Marquee({ items }) {
   const reduce = useReducedMotion();
-  const row = <span className="mq-row">{items.map((t, i) => <span key={i}>{t}<i aria-hidden="true">&#10022;</i></span>)}</span>;
+  const row = <span className="mq-row">{items.map((t, i) => <span key={i}>{t}<i aria-hidden="true">|</i></span>)}</span>;
   return (
     <div className="mq" aria-hidden="true">
       <motion.div className="mq-track" animate={reduce ? undefined : { x: ["0%", "-50%"] }} transition={{ duration: 46, ease: "linear", repeat: Infinity }}>{row}{row}{row}{row}</motion.div>

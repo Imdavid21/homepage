@@ -29,7 +29,7 @@ test("claims: window, eligibility, one per wallet, sold out", async () => {
   const H = await import("../lib/handlers.js"), { CONFIG } = await import("../lib/config.js"), { mockResolve, mockRaw } = await import("../lib/mock.js");
   const eligibleNames = []; for (let i = 0; eligibleNames.length < 3 && i < 5000; i++) { const n = "t" + i + ".hl"; if (computeScore(mockRaw(mockResolve(n).address)).score >= CONFIG.eligibleAt) eligibleNames.push(n); }
   assert.equal(eligibleNames.length, 3, "need eligible mock names");
-  const now = Date.now(); CONFIG.cards = 2;
+  const now = Date.now(); CONFIG.cards = 2; CONFIG.everyone = false;
   CONFIG.opensAt = now + 1e6; CONFIG.closesAt = now + 2e6; assert.equal((await H.claim({ name: eligibleNames[0], ip: "a" }))[0], 409);
   CONFIG.opensAt = now - 1e6; CONFIG.closesAt = now + 1e6;
   assert.equal((await H.claim({ name: "nobody.hl", ip: "b" }))[0] === 403 || true, true);
