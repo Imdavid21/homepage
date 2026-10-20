@@ -91,15 +91,11 @@ function Meters({ info, now }) {
   const D = Math.floor(d / 864e5), H = Math.floor(d % 864e5 / 36e5), M = Math.floor(d % 36e5 / 6e4), S = Math.floor(d % 6e4 / 1e3);
   const label = st === "upcoming" ? "Claims open in" : st === "open" ? "Claims close in" : "Claims are closed";
   return (
-    <div className="meters">
-      <div className="meter"><span className="lab">Cards left</span>
-        <div className="big"><Pair v={pad(left)} /><span className="of">of {total}</span></div>
-        <div className="bar"><motion.i animate={{ width: (left / total * 100) + "%" }} transition={{ duration: .8, ease }} /></div>
-      </div>
-      <div className="meter"><span className="lab">{label}</span>
-        <div className="clock" role="timer">
-          {[["days", D], ["hrs", H], ["min", M], ["sec", S]].map(([u, v]) => <div key={u}><Pair v={pad(v)} /><span className="u">{u}</span></div>)}
-        </div>
+    <div className="strip">
+      <div className="st"><span className="lab">Cards left</span><Pair v={pad(left)} /><span className="of">of {total}</span></div>
+      <i className="sep" aria-hidden="true">|</i>
+      <div className="st" role="timer"><span className="lab">{label}</span>
+        {st !== "closed" && [["d", D], ["h", H], ["m", M], ["s", S]].map(([u, v]) => <span key={u} className="cu"><Pair v={pad(v)} /><em>{u}</em></span>)}
       </div>
     </div>
   );
@@ -116,7 +112,7 @@ function verdictFor(j, st, phase) {
   return "You're eligible. Claim your card before they run out.";
 }
 
-function Result({ j, phase, st, onClaim, claiming, onReplay, onVideo, vid }) {
+function Result({ j, phase, st, onClaim, claiming, onReplay, vid }) {
   const reduce = useReducedMotion(), busy = phase === "engraving", done = phase === "done";
   const canClaim = done && j.eligible && !j.claimed && st === "open" && j.left > 0;
   const addr = j.address ? j.address.slice(0, 6) + "…" + j.address.slice(-4) : "";
@@ -132,8 +128,8 @@ function Result({ j, phase, st, onClaim, claiming, onReplay, onVideo, vid }) {
         {done && j.eligible && (
           <motion.div className="acts" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             {canClaim && <Button variant="accent" onClick={onClaim} disabled={claiming}>{claiming ? "Claiming…" : "Claim your card"}</Button>}
-            <Button variant="ghost" onClick={onVideo} disabled={vid.status === "rec"}>{vid.status === "rec" ? "Recording " + Math.ceil(vid.left) + "s" : "Make your video"}</Button>
-            <Button variant="ghost" onClick={onReplay}>Replay engraving</Button>
+            {vid.status !== "ready" && <Button variant="ghost" disabled>{vid.status === "error" ? "Video not supported here" : "Preparing your video"}</Button>}
+            <Button variant="ghost" onClick={onReplay} disabled={vid.status === "rec"}>Replay engraving</Button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -146,24 +142,20 @@ function Result({ j, phase, st, onClaim, claiming, onReplay, onVideo, vid }) {
   );
 }
 
-function VideoPanel({ vid, caption }) {
-  if (vid.status === "idle") return null;
+function VideoPanel({ vid }) {
+  if (vid.status !== "ready") return null;
   return (
     <motion.section className="vidbox" initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7, ease }}>
-      {vid.status === "ready" && <video src={vid.url} controls playsInline loop autoPlay />}
+      <video src={vid.url} controls playsInline loop autoPlay muted />
       <div className="vidside">
-        <p className="rlab">Your video</p>
-        {vid.status === "rec" && <p className="cap-text">Recording your video. Keep this tab open for {Math.ceil(vid.left)} more seconds.</p>}
-        {vid.status === "error" && <p className="cap-text">Couldn't make the video here. Try Chrome on desktop.</p>}
-        {vid.status === "ready" && <>
-          <p className="cap-text">{vid.caption}</p>
-          <div className="acts left">
-            <Button href={vid.url} download={vid.file}>Download video</Button>
-            <Button variant="ghost" onClick={() => navigator.clipboard.writeText(vid.caption)}>Copy caption</Button>
-            <Button variant="ghost" href={"https://twitter.com/intent/tweet?text=" + encodeURIComponent(vid.caption)} target="_blank" rel="noopener">Post on X</Button>
-          </div>
-          <p className="small">{vid.ext === "mp4" ? "Download the video, then attach it to your post. The caption is also burned into the video." : "Your browser saved WebM. X needs MP4, so use Chrome for an MP4 file or convert this one first. The caption is also burned into the video."}</p>
-        </>}
+        <p className="rlab">Your video is ready</p>
+        <p className="cap-text">{vid.caption}</p>
+        <div className="acts left">
+          <Button href={vid.url} download={vid.file}>Export video</Button>
+          <Button variant="ghost" onClick={() => navigator.clipboard.writeText(vid.caption)}>Copy caption</Button>
+          <Button variant="ghost" href={"https://twitter.com/intent/tweet?text=" + encodeURIComponent(vid.caption)} target="_blank" rel="noopener">Post on X</Button>
+        </div>
+        <p className="small">{vid.ext === "mp4" ? "Attach the video to your post. The caption is also burned into the video." : "This browser saved WebM. X needs MP4, so use Chrome for an MP4 file or convert this one first. The caption is also burned into the video."}</p>
       </div>
     </motion.section>
   );
@@ -186,14 +178,14 @@ export default function App({ socials }) {
   const reduce = useReducedMotion();
   const { info, apply, offset } = useStatus(), now = useNow(offset), st = windowState(info, now);
   const [name, setName] = useState(""), [phase, setPhase] = useState("idle"), [res, setRes] = useState(null);
-  const [msg, setMsg] = useState({ t: "The card above updates as you type.", err: false }), [checking, setChecking] = useState(false), [claiming, setClaiming] = useState(false), [muted, setMuted] = useState(false);
+  const [msg, setMsg] = useState({ t: "The card updates as you type.", err: false }), [checking, setChecking] = useState(false), [claiming, setClaiming] = useState(false), [muted, setMuted] = useState(false);
   const [vid, setVid] = useState({ status: "idle", left: 0 }), deb = useRef();
-  const busy = phase === "scoring" || phase === "engraving" || checking;
+  const busy = phase === "reading" || phase === "engraving" || checking;
   const norm = v => v.trim().toLowerCase(), okName = n => HL().validHl(n) || HL().validEth(n);
 
   const onType = e => {
     if (busy) return; const v = e.target.value, n = norm(v); setName(v); setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 });
-    setMsg(!n ? { t: "The card above updates as you type.", err: false } : okName(n) ? { t: "This is how it will be etched.", err: false } : { t: "Names end in .hl or .eth", err: true });
+    setMsg(!n ? { t: "The card updates as you type.", err: false } : okName(n) ? { t: "This is how it will be etched.", err: false } : { t: "Names end in .hl or .eth", err: true });
     clearTimeout(deb.current); deb.current = setTimeout(() => HL().setName(n), 250);
   };
   const submit = async e => {
@@ -203,11 +195,12 @@ export default function App({ socials }) {
     try {
       const [ok, j] = await post("/api/check", { name: n });
       if (!ok) { setMsg({ t: j.error || "Something went wrong.", err: true }); setChecking(false); return; }
-      apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("scoring");
-      await HL().score(Math.max(0, Math.min(100, j.score || 0)), j.name);
+      apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("reading");
+      await sleep(reduce ? 200 : 1200);
       setRes(j);
       if (j.eligible) { setPhase("engraving"); await HL().engrave(); }
       setPhase("done");
+      if (j.eligible) makeVideo(j);
     } catch (err) { console.error("CHK", err); setMsg({ t: "Network error. Try again.", err: true }); setChecking(false); setPhase("idle"); }
   };
   const replay = async () => { if (phase !== "done") return; setPhase("engraving"); await HL().engrave(); setPhase("done"); };
@@ -217,9 +210,9 @@ export default function App({ socials }) {
     catch { setMsg({ t: "Network error. Try again.", err: true }); }
     setClaiming(false);
   };
-  const makeVideo = async () => {
-    if (!res || vid.status === "rec") return; setVid({ status: "rec", left: 9.5, p: 0 });
-    try { const o = await HL().record(res, (p, left) => setVid(v => ({ ...v, left }))); setVid({ status: "ready", ...o }); }
+  const makeVideo = async j => {
+    setVid({ status: "rec", left: 9.5 });
+    try { const o = await HL().record(j, (p, left) => setVid(v => v.status === "rec" ? { ...v, left } : v)); setVid({ status: "ready", ...o }); }
     catch (err) { console.error("VID", err); setVid({ status: "error" }); }
   };
   useEffect(() => () => clearTimeout(deb.current), []);
@@ -228,25 +221,23 @@ export default function App({ socials }) {
     <div className="wrap">
       {info?.mock && <div className="demo">Demo data. Preview only.</div>}
       <Masthead muted={muted} setMuted={setMuted} />
-      <Marquee items={["Hyperliquid India x ENS", "House of HYPE", "Mumbai", "3 November", "Twenty five pieces", "Laser etched on both faces"]} />
 
       <main className="hero">
-        <DitherBlob />
-        <motion.h1 {...rise(1, reduce)}>Your name,<br /><i>laser etched</i><br />in metal.</motion.h1>
-        <motion.p className="sub" {...rise(2, reduce)}>Hyperliquid India and ENS are giving away 25 NFC metal cards for House of HYPE. Enter your .hl or .eth name to see your card and check if you are eligible.</motion.p>
-        <motion.div className="full" {...rise(3, reduce)}><Meters info={info} now={now} /></motion.div>
-        <motion.div className="bleed" {...rise(4, reduce)}><Plate hot={phase === "engraving" || phase === "scoring"} /></motion.div>
+        <motion.div className="full" {...rise(0, reduce)}><Meters info={info} now={now} /></motion.div>
+        <motion.h1 {...rise(1, reduce)}>Your name, <i>laser etched</i> in metal.</motion.h1>
+        <motion.p className="sub" {...rise(2, reduce)}>25 NFC metal cards from Hyperliquid India and ENS for House of HYPE. Enter your .hl or .eth name to see your card.</motion.p>
+        <motion.div className="bleed" {...rise(4, reduce)}><Plate hot={phase === "engraving"} /></motion.div>
 
         <AnimatePresence>
-          {(phase === "engraving" || phase === "scoring") && (
+          {(phase === "engraving" || phase === "reading") && (
             <motion.div key={phase} className="etch" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 34 }} exit={{ opacity: 0, height: 0 }}>
-              <span>{phase === "scoring" ? "Reading the chain" : "Etching your name"}</span><div className="etch-bar"><motion.i initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: phase === "scoring" ? 3.8 : 3.4, ease: "easeInOut" }} /></div>
+              <span>{phase === "reading" ? "Reading the chain" : "Etching your name"}</span><div className="etch-bar"><motion.i initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: phase === "reading" ? 1.2 : 3.4, ease: "easeInOut" }} /></div>
             </motion.div>
           )}
         </AnimatePresence>
 
         <motion.form className="apply" onSubmit={submit} noValidate {...rise(5, reduce)}>
-          <label className="lab" htmlFor="name">Your .hl or .eth name</label>
+          <label className="vh" htmlFor="name">Your .hl or .eth name</label>
           <div className="field">
             <input id="name" type="text" value={name} onChange={onType} placeholder="yourname.hl or yourname.eth" autoComplete="off" autoCapitalize="off" spellCheck={false} maxLength={64} />
             <Button type="submit" disabled={busy}>{checking ? "Checking…" : "Check eligibility"}</Button>
@@ -255,7 +246,7 @@ export default function App({ socials }) {
           <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
         </motion.form>
 
-        <AnimatePresence>{res && <Result key={res.name + res.score} j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} onVideo={makeVideo} vid={vid} />}</AnimatePresence>
+        <AnimatePresence>{res && <Result key={res.name + res.score} j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} />}</AnimatePresence>
         <VideoPanel vid={vid} />
 
         <motion.p className="fine" {...rise(6, reduce)}>Winners collect in person at the House of HYPE event in Mumbai on 3 November. At pickup, the winner shows proof of the wallet behind their name, so the card goes to the person who owns the name.</motion.p>

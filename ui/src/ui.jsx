@@ -25,14 +25,8 @@ export function Button({ variant = "solid", children, href, ...p }) {
   return <Tag className={"btn " + variant} href={href} whileHover={reduce ? undefined : { y: -2 }} whileTap={reduce ? undefined : { scale: .97 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} {...p}>{children}</Tag>;
 }
 
-function Digit({ v }) {
-  return (
-    <span className="dg"><AnimatePresence mode="popLayout" initial={false}>
-      <motion.span key={v} initial={{ y: "70%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "-70%", opacity: 0 }} transition={{ duration: .3, ease }}>{v}</motion.span>
-    </AnimatePresence></span>
-  );
-}
-export const Pair = ({ v }) => <span className="pair">{String(v).split("").map((c, i, a) => <Digit key={a.length - i} v={c} />)}</span>;
+function Digit({ v }) { return <span key={v} className="dg">{v}</span>; }
+export const Pair = ({ v }) => <span className="pair">{String(v).split("").map((c, i, a) => <Digit key={a.length - i + c} v={c} />)}</span>;
 
 export function Ring({ score, ok }) {
   const mv = useMotionValue(0), reduce = useReducedMotion();

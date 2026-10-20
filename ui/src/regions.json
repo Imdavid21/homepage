@@ -3,8 +3,8 @@
   {
    "id": "card",
    "n": "00",
-   "label": "Tide",
-   "kicker": "Front | Side one",
+   "label": "Front",
+   "kicker": "Side one | Your name",
    "desc": "Your name, laser etched. Nothing is printed, so nothing can fade.",
    "x": 0,
    "y": 0,
@@ -90,8 +90,8 @@
   {
    "id": "card",
    "n": "00",
-   "label": "Ledger",
-   "kicker": "Back | Side two",
+   "label": "Back",
+   "kicker": "Side two | The record",
    "desc": "The genesis record and a tap to verify. Numbered one of twenty five.",
    "x": 0,
    "y": 0,
