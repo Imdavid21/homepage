@@ -80,28 +80,83 @@ dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 footer { margin-top: 56px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 </style>
 
-
 <style>
-.brands svg.hli{height:22px;width:auto;display:block}.brands svg.hli .cls-1{fill:#EDEDED}.brands svg.hli .cls-2{fill:#78cdce}.brands #ensLogo{height:22px;width:auto;color:#EDEDED}
+/* no all caps anywhere */
+.cap,.lab,.rlab,.clock span,.demo{text-transform:none!important}
+.brands svg.hli,.fbrand svg.hli{height:22px;width:auto;display:block}
+.brands svg.hli .cls-1,.fbrand svg.hli .cls-1{fill:#EDEDED}.brands svg.hli .cls-2,.fbrand svg.hli .cls-2{fill:#78cdce}
+.brands #ensLogo,.fbrand #ensLogo2{height:22px;width:auto;color:#EDEDED}
+.topr .cap{font:400 13px var(--sans);letter-spacing:0}
+.topr{display:flex;align-items:center;gap:14px}
+.snd{white-space:nowrap;font:500 12.5px var(--sans);color:var(--mute);background:transparent;border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+.snd[aria-pressed=false]{opacity:.6}
 @media(max-width:640px){.hide-s{display:none}}
-.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px;align-items:start;margin-top:36px}
-@media(max-width:900px){.hero{grid-template-columns:1fr;gap:28px}.stagecol{order:-1}}
-.stagecol{position:sticky;top:20px}@media(max-width:900px){.stagecol{position:static}}
-.hero h1{margin:0 0 14px;font-size:clamp(34px,4.8vw,56px)}
-.hero .sub{margin:0 0 22px;max-width:50ch}
-.meters{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin:0 0 22px}
-@media(max-width:520px){.meters{grid-template-columns:1fr}}
-.meter{border:1px solid var(--line);border-radius:4px;background:#080808;padding:14px 16px;display:grid;gap:8px;align-content:start}
-.big{display:flex;align-items:baseline;gap:8px}.big b{font:500 44px/1 var(--sans);letter-spacing:-.04em;color:var(--accent)}.big span{color:var(--mute);font-size:14px}
-.meter .bar{height:3px;background:#161616;border-radius:2px;overflow:hidden}.meter .bar i{display:block;height:100%;background:var(--accent);transition:width .6s}
-.clock{display:flex;gap:14px}.clock div{display:grid;gap:2px}.clock b{font:500 34px/1 var(--mono);letter-spacing:-.04em}.clock span{font:500 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
-.getname{margin:10px 0 0;color:var(--mute);font-size:13.5px}.getname a{color:var(--fg);text-underline-offset:3px}
-button.go{font:600 16px var(--sans);padding:15px 26px;border:0;border-radius:3px;background:var(--fg);color:var(--bg);cursor:pointer}button.go[disabled]{opacity:.5;cursor:default}
-button.claim{background:var(--accent);color:#04110e;margin-top:14px}
-.result{margin-top:20px;border:1px solid var(--line);border-radius:4px;padding:18px 20px;background:#080808}
-.verdict{font-size:19px;font-weight:500;letter-spacing:-.02em;margin:0 0 4px}.verdict.ok{color:var(--accent)}.who{color:var(--mute);margin:0;font-size:14px}
-.hero .fine{margin:26px 0 0;color:var(--mute);font-size:13px;max-width:56ch}.small{color:var(--mute);font-size:12.5px;margin:10px 0 0}
-.demo{background:#2a1d00;color:#f5c26b;font:500 11.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:8px 14px;text-align:center}
+.lab,.rlab{font:500 12.5px var(--sans);color:var(--mute);letter-spacing:.01em}
+.rlab{margin:0 0 6px}
+
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:34px}
+.eyebrow{margin:0 0 14px;font:500 13px var(--sans);color:var(--accent);letter-spacing:.02em}
+.hero h1{margin:0 0 14px;font-size:clamp(36px,6vw,72px);line-height:1.02;max-width:16ch}
+.hero .sub{margin:0 auto 26px;max-width:54ch;text-align:center}
+
+.meters{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:0 0 6px;width:100%}
+.meter{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:999px;background:#080808;padding:10px 20px}
+.meter .lab{white-space:nowrap}
+.big{display:flex;align-items:baseline;gap:6px}.big b{font:500 26px/1 var(--sans);letter-spacing:-.04em;color:var(--accent)}.big span{color:var(--mute);font-size:13px}
+.meter .bar{width:56px;height:3px;background:#161616;border-radius:2px;overflow:hidden}.meter .bar i{display:block;height:100%;background:var(--accent);transition:width .6s}
+.clock{display:flex;gap:12px}.clock div{display:flex;align-items:baseline;gap:4px}.clock b{font:500 22px/1 var(--mono);letter-spacing:-.04em}.clock span{font:400 11.5px var(--sans);color:var(--mute)}
+@media(max-width:560px){.meter{border-radius:14px;padding:10px 14px;gap:10px}.clock{gap:8px}.clock b{font-size:18px}.meter .bar{display:none}}
+
+.stagewrap{width:min(980px,100%);margin:-6px 0 0;position:relative}
+.stagewrap::before{content:"";position:absolute;inset:6% 4% 2%;background:radial-gradient(50% 50% at 50% 50%,rgba(151,252,228,.16),rgba(151,252,228,0) 70%);filter:blur(30px);pointer-events:none;transition:opacity .6s}
+.stage{position:relative;aspect-ratio:16/8.6;width:100%;margin:0;border:0;border-radius:0;background:none;overflow:visible;touch-action:pan-y;cursor:grab}
+@media(max-width:700px){.stage{aspect-ratio:4/3}}
+.stage .hint{position:absolute;left:0;right:0;bottom:2px;text-align:center;pointer-events:none;font:400 12px var(--sans);color:var(--mute);letter-spacing:.01em}
+.flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(40% 40% at 50% 50%,rgba(151,252,228,.35),rgba(151,252,228,0) 70%)}
+.sides{justify-content:center;margin-top:6px}
+.side{border-radius:999px;padding:5px 14px 5px 5px}.side img{width:42px}
+
+#f{width:min(620px,100%);margin:22px 0 0;text-align:left}
+#f .row{display:flex;gap:10px}
+@media(max-width:560px){#f .row{flex-direction:column}}
+#f input{flex:1;border-radius:999px;padding:15px 22px;font-size:17px}
+button.go,a.go{font:600 15px var(--sans);padding:15px 24px;border:0;border-radius:999px;background:var(--fg);color:var(--bg);cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;text-align:center}
+button.go[disabled]{opacity:.5;cursor:default}
+button.claim{background:var(--accent);color:#04110e}
+.go.ghost{background:transparent;color:var(--fg);border:1px solid #3a3a3a}
+#f .status{padding-left:8px}
+.getname{margin:8px 0 0;color:var(--mute);font-size:13.5px}.getname a{color:var(--fg);text-underline-offset:3px}
+
+.result{width:min(720px,100%);margin-top:26px;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;text-align:left;border:1px solid var(--line);border-radius:22px;padding:26px 30px;background:linear-gradient(180deg,#0b0b0b,#070707)}
+@media(max-width:560px){.result{grid-template-columns:1fr;justify-items:center;text-align:center;padding:22px}}
+.ring{position:relative;width:148px;height:148px}.ring svg{width:100%;height:100%;overflow:visible}
+.ring .track{fill:none;stroke:#1a1a1a;stroke-width:5}
+.ring .arc{fill:none;stroke:#cfcfcf;stroke-width:5;stroke-linecap:round;transition:stroke .4s}
+.ring .gate{stroke:#555;stroke-width:2}
+.ring.ok .arc{stroke:var(--accent);filter:drop-shadow(0 0 6px rgba(151,252,228,.55))}.ring.ok .gate{stroke:var(--accent)}
+.ring .num{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.ring .num b{font:500 48px/1 var(--sans);letter-spacing:-.05em}.ring .num span{font:400 12px var(--sans);color:var(--mute);margin-top:4px}
+.verdict{font-size:22px;font-weight:500;letter-spacing:-.025em;margin:0 0 4px;line-height:1.2}.verdict.ok{color:var(--accent)}
+.who{color:var(--mute);margin:0;font-size:14px;overflow-wrap:anywhere}
+.acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}@media(max-width:560px){.acts{justify-content:center}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}@media(max-width:560px){.chips{justify-content:center}}
+.chips .rlab{margin:0 4px 0 0}
+.chips a{font:500 12.5px var(--sans);color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none}.chips a:hover{border-color:#555}
+
+.vidbox{width:min(820px,100%);margin-top:20px;display:grid;grid-template-columns:240px 1fr;gap:26px;text-align:left;border:1px solid var(--line);border-radius:22px;padding:20px;background:#070707}
+@media(max-width:620px){.vidbox{grid-template-columns:1fr;justify-items:center}}
+.vidbox video{width:240px;max-width:100%;aspect-ratio:4/5;border-radius:12px;background:#000}
+.cap-text{margin:0;color:#d6d6d6;font-size:15px;line-height:1.5}
+.small{color:var(--mute);font-size:12.5px;margin:10px 0 0}
+.hero .fine{margin:30px 0 0;color:var(--mute);font-size:13px;max-width:60ch}
+
+.footer.foot,.foot{display:flex;flex-direction:column;align-items:center;width:100%;margin-top:56px;padding-top:26px;border-top:1px solid var(--line);display:grid;gap:18px;justify-items:center;text-align:center}
+.fbrand{display:flex;align-items:center;gap:12px;color:var(--fg)}.fbrand .x{color:var(--mute);font-size:13px}
+.soc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.soc a{display:inline-flex;align-items:center;gap:8px;font:500 13px var(--sans);color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px}.soc a:hover{border-color:#555}
+.soc svg{width:14px;height:14px;fill:currentColor}
+.legal{margin:0;color:var(--mute);font-size:12.5px;max-width:60ch}
+.demo{background:#2a1d00;color:#f5c26b;font:500 12px var(--sans);padding:8px 14px;text-align:center}
+@media(prefers-reduced-motion:reduce){.meter .bar i,.ring .arc{transition:none}}
 </style>
 <div class="demo" id="demo" hidden>Demo data. Preview only.</div><div class="wrap">
   <header class="top">
@@ -124,49 +179,100 @@ button.claim{background:var(--accent);color:#04110e;margin-top:14px}
   <path class="cls-1" d="M686.74,5.64c12.26-1.2,10.03,18.24-3.2,15.78-8.61-1.6-5.58-14.92,3.2-15.78Z"/>
   <path class="cls-1" d="M482.68,5.76c12-.18,8.4,18.14-3.95,15.47-8.84-1.91-5.6-15.33,3.95-15.47Z"/>
 </svg><span class="x">x</span><svg id="ensLogo" role="img" aria-label="ENS" fill="currentColor"></svg></div>
-    <span class="cap hide-s">House of HYPE &middot; Mumbai &middot; 3 Nov</span>
+    <div class="topr"><span class="cap hide-s">House of HYPE, Mumbai, 3 Nov</span><button type="button" class="snd" id="snd" aria-pressed="true" title="Sound on or off">Sound on</button></div>
   </header>
 
-  <section class="hero">
-    <div class="left">
-      <h1>25 metal cards. <i>Claim yours.</i></h1>
-      <p class="sub">Hyperliquid India and ENS are giving away 25 laser etched metal NFC cards, each carrying your .hl or .eth name. Enter your name to see your card and check if you are eligible.</p>
+  <main class="hero">
+    <p class="eyebrow">Limited edition, 25 pieces</p>
+    <h1>Your name, <i>laser etched</i> in metal.</h1>
+    <p class="sub">Hyperliquid India and ENS are giving away 25 NFC metal cards for House of HYPE. Enter your .hl or .eth name to see your card and check if you are eligible.</p>
 
-      <div class="meters" aria-live="off">
-        <div class="meter"><span class="cap">Cards left</span><div class="big"><b id="left">25</b><span>of <span id="cardsTotal">25</span></span></div><div class="bar"><i id="leftBar" style="width:100%"></i></div></div>
-        <div class="meter"><span class="cap" id="clockLabel">Claims open in</span><div class="clock" id="clock" role="timer"><div><b id="cD">00</b><span>days</span></div><div><b id="cH">00</b><span>hrs</span></div><div><b id="cM">00</b><span>min</span></div><div><b id="cS">00</b><span>sec</span></div></div></div>
-      </div>
-
-      <form id="f" novalidate>
-        <label class="cap" for="name">Your .hl or .eth name</label>
-        <input type="text" id="name" placeholder="yourname.hl or yourname.eth" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64">
-        <span class="status" id="status" aria-live="polite">The card on the right updates as you type.</span>
-        <button class="go" id="go" type="submit">Check eligibility</button>
-      </form>
-      <p class="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
-
-      <section class="result" id="result" hidden aria-live="polite">
-        <div><p class="verdict" id="verdict"></p><p class="who" id="who"></p></div>
-        <button class="go claim" id="claim" type="button" hidden>Claim your card</button>
-      </section>
-
-      <p class="fine">Winners collect in person at the House of HYPE event in Mumbai on 3 November. At pickup, the winner shows proof of the wallet behind their name, so the card goes to the person who owns the name.</p>
+    <div class="meters" aria-live="off">
+      <div class="meter"><span class="lab">Cards left</span><div class="big"><b id="left">25</b><span>of <span id="cardsTotal">25</span></span></div><div class="bar"><i id="leftBar" style="width:100%"></i></div></div>
+      <div class="meter wide"><span class="lab" id="clockLabel">Claims open in</span><div class="clock" id="clock" role="timer"><div><b id="cD">00</b><span>days</span></div><div><b id="cH">00</b><span>hrs</span></div><div><b id="cM">00</b><span>min</span></div><div><b id="cS">00</b><span>sec</span></div></div></div>
     </div>
 
-    <div class="stagecol">
+    <div class="stagewrap">
       <div class="stage" id="stage" aria-label="3D preview of the card. Drag to turn it.">
         <div class="fallback" id="fallback" hidden><img id="fbImg" alt="Front of the card"></div>
-        <span class="cap hint">Drag to turn</span>
+        <span class="hint">Drag to turn</span>
+        <div class="flash" id="flash" aria-hidden="true"></div>
       </div>
       <div class="sides" role="group" aria-label="Show side">
         <button type="button" class="side" id="sideFront" aria-pressed="true"><img id="pvFront" alt="">Front</button>
         <button type="button" class="side" id="sideBack" aria-pressed="false"><img id="pvBack" alt="">Back</button>
       </div>
-      <p class="small">Your name is laser etched on both faces. Your card number is set when your card is confirmed.</p>
     </div>
-  </section>
+
+    <form id="f" novalidate>
+      <label class="lab" for="name">Your .hl or .eth name</label>
+      <div class="row">
+        <input type="text" id="name" placeholder="yourname.hl or yourname.eth" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="64">
+        <button class="go" id="go" type="submit">Check eligibility</button>
+      </div>
+      <span class="status" id="status" aria-live="polite">The card above updates as you type.</span>
+    </form>
+    <p class="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
+
+    <section class="result" id="result" hidden aria-live="polite">
+      <div class="ring" id="ring">
+        <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="52"/><circle class="arc" id="arc" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="rotate(-90 60 60)"/><line class="gate" x1="60" y1="2" x2="60" y2="12" transform="rotate(324 60 60)"/></svg>
+        <div class="num"><b id="scoreNum">0</b><span>of 100</span></div>
+      </div>
+      <div class="rtxt">
+        <p class="rlab">Hyperliquid onchain score</p>
+        <p class="verdict" id="verdict"></p>
+        <p class="who" id="who"></p>
+        <div class="acts" id="acts" hidden>
+          <button class="go claim" id="claim" type="button" hidden>Claim your card</button>
+          <button class="go ghost" id="vid" type="button" hidden>Make your video</button>
+          <button class="go ghost" id="replay" type="button" hidden>Replay engraving</button>
+        </div>
+        <div class="chips" id="chips" hidden><span class="rlab">Verify onchain</span></div>
+      </div>
+    </section>
+
+    <section class="vidbox" id="vidbox" hidden>
+      <video id="vidprev" controls playsinline loop muted></video>
+      <div class="vidside">
+        <p class="rlab">Your video</p>
+        <p class="cap-text" id="capText"></p>
+        <div class="acts">
+          <a class="go" id="vidDl" download>Download video</a>
+          <button class="go ghost" id="capCopy" type="button">Copy caption</button>
+          <a class="go ghost" id="xPost" target="_blank" rel="noopener">Post on X</a>
+        </div>
+        <p class="small" id="vidNote"></p>
+      </div>
+    </section>
+
+    <p class="fine">Winners collect in person at the House of HYPE event in Mumbai on 3 November. At pickup, the winner shows proof of the wallet behind their name, so the card goes to the person who owns the name.</p>
+  </main>
   <span id="stageTag" hidden></span><aside id="notes" hidden></aside>
-  <footer><span class="cap">Hyperliquid India x ENS</span><span class="cap">Independent community, not affiliated with Hyper Foundation</span></footer>
+
+  <footer class="foot">
+    <div class="fbrand">
+<svg class="hli" role="img" aria-label="Hyperliquid India" id="Layer_2" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1145.15 156.45">
+  
+  <path class="cls-2" d="M856,80.42c3.93-1.09,3.51-5.32,7.25-8.24,5.2-4.06,21.96-6.31,25.82-.32,3.17,4.92-3.05,17.38.42,17.55,7.66-5.01,28.32-18.97,36.55-10.52,6.26,6.43-8.15,22.54,5.45,21.6,7.83-.54,9.18-9.47,13.99-15.07,7.73-8.99,25.58-20.2,37.75-18.81,10.04,1.15,9.16,13.84.83,16.38-7.63,2.32-13.4,1.12-21.39,6.61-4.82,3.31-12.58,14.01-3.14,15.81,12.26,2.33,26.2-7.35,33.96-15.99.84-11.17,1.73-22.19,3.81-33.19s6.65-32.65,14.68-40.32c5.08-4.86,13.84-7.02,17.9.17,5.2,9.2-.74,24.57-3.85,33.88-3.54,10.61-16.25,34.63-14.95,43.92.92,6.61,10.41,10.07,13.02,5.9,2.84-4.55,1.29-20.69,6.88-26.87,2.33-2.58,15.54-6.42,17.6-3.53,3.23,4.52-12.11,24.53-1.97,30.97s14.89-7.71,19.43-13.37c9.47-11.79,28.92-24.51,44.48-24.33,12.14.14,8.31,13.33-.31,16.5s-13.94,2.16-22.53,8.47c-15.61,11.47-11.53,20.57,7.51,12.51,9.66-4.09,15.11-10.25,22.91-16.1,16.37-12.27,6.46,11.35,9.35,15.48,5.81,3.76,11.92-4.19,17.1.93,4.01,6.52-12.79,14.49-18.03,15.01-7.08.7-10.63-.94-14.14-7.08-14.84,7.04-32.89,15.09-49.07,7.3-1.35-.65-3.04-2.87-3.78-2.94-.97-.08-12.41,6.24-18.17,6.35-7.54.14-13.76-6.3-14.83-6.38-.71-.05-5.8,3.74-8.45,4.31-5.2,1.11-10.54,1.02-14.99-2.13-2.47-1.75-5.43-7.5-7.4-7.29-12.31,7.7-39.13,17.16-52.37,9.07-2.33-1.42-4.62-5.2-4.98-5.27-4.16-.86-16.52,7.78-25.06,4.3-11.07-4.51,1.96-28.35-15.73-14.21-5.19,4.15-18.35,20.81-25.55,13.5-6.2-6.3,14.03-28.86-.97-31.52.98,5.82-4.35,10.81-9.74,11.76-3.63.64-9.25-.73-11.85,1.15-1.17.85-6.92,11.63-9.45,14.55-7.68,8.86-20.84,17.23-33,14.06-5.54-1.45-9.47-7.11-8.77-12.76,1.94-15.74,25.13-25.12,38.57-28,4.77-13.26,10.09-29.19,11.22-43.29.23-2.86.83-16.88-1.55-17.44-4.07,2.57-11.48,1.94-10.01-4.05,2.75-11.21,27.19-25.96,30.35-10.27,3.01,14.96-2.13,42.39-6.06,57.48-1.22,4.67-3.07,9.26-4.71,13.78ZM826.99,102.44c-1.25-1.36-9.52,7.22-7.98,9.99.88,1.11,9.26-8.6,7.98-9.99Z"/>
+  <path class="cls-1" d="M11,.43v52h69V2.93c0-.37,1.02-1.62,1.17-2.34l9.15-.19c.66.2,1.69,2.26,1.69,2.54v116l-1.66,1.34c-.91.29-1.87.13-2.79.21-2.48.22-6.01.49-7.55-1.55v-55l-1.5-1.5H12.5l-1.5,1.5v56.5H0V.43h11Z"/>
+  <path class="cls-1" d="M201,107.43v49h-11V38.43c2.36-.68,9.07-2.19,10.56-.06l.95,12.07c3.76-3.04,5.7-6.19,9.97-9.03,21.3-14.23,47.52-1.91,54.23,21.82,12.5,44.18-30.81,82.59-64.71,44.21ZM225.79,44.71c-34.07,3.21-31.73,63.79-4.05,68.49,46.32,7.87,45.04-72.35,4.05-68.49Z"/>
+  <path class="cls-1" d="M290,81.43c-.19,20.75,12.07,34.35,33.51,32.01,5.48-.6,12.91-4.34,15.95-9.05,1.55-2.4,2.29-8.18,4.18-8.81,11.77-1.24,11.84.54,6.91,9.9-8.75,16.6-29.59,20.53-46.34,15.26-27.81-8.76-32.42-50.33-15.62-71.22,17.59-21.87,52.98-17.96,62.61,9.22,2.15,6.08,4.6,17.17,1.3,22.7h-62.5ZM342,72.43c2.04-31.89-39.73-38.72-50.04-8.54-.85,2.47-2.89,6.96-.46,8.54h50.5Z"/>
+  <path class="cls-1" d="M745.5,120.43c-4.09-1.27,1.62-10.95.49-14-9.48,11.69-23.83,20.97-39.2,14.71-22.72-9.27-17.67-46.38-6.99-63.41,9.58-15.27,33.59-28.69,51.1-19.7,3.59,1.84,5.38,5.4,9.1,6.39l6.01-30.48c-.14-1.69-1.8-3.2-3.31-3.79-2.09-.82-8.83,1.71-7.68-1.21,1.08-2.74,13.8-5.41,17.22-6.6.76-.26,2-3.5,5.78-1.92l-22.65,109.69c0,1.59.5,3.72,1.66,4.81.42.39,14.76,5.5,7.49,5.5h-19ZM708.35,111.09c11.95,12.35,31.71,1.51,38.47-11.33,2.67-5.08,9.3-33.99,9.26-39.82-.1-16.12-15.82-22.73-29.79-17.7-21.4,7.71-34.03,52.23-17.95,68.86Z"/>
+  <path class="cls-1" d="M516,156.43v-3c5.67-.35,15.61-1.31,18.23-7.27l8.76-39.73c-10.57,11.65-24.41,21.74-40.7,14.21s-16.23-34.34-12-49.43c7-24.97,39.2-47.25,63.07-29.64,1.71,1.26,1.8,3.5,4.14,3.9,2.56.44,5.39-10.63,9.5-10.04l-22.92,109.66c-.28,1.87.2,3.89,1.46,5.31,2.87,3.24,9.68.78,8.47,6.02h-38ZM528.75,40.7c-34.57,4.28-44.28,80.3-6.51,75.47,8.44-1.08,18.73-10.24,22.16-17.83,2.35-5.2,6.86-27.29,7.47-33.53,1.58-16.04-6.34-26.19-23.12-24.12Z"/>
+  <path class="cls-1" d="M141.01,103.43c1.72,1.7,1.68-.63,2.08-1.42,9.42-18.85,14.88-42.03,23.49-61.5,1.02-4.11,11.93-4.06,12.42-1.55l-46.1,117.37-10.33.12c-1.22-.16-.57-3.3-.3-4.24,2.72-9.67,10.67-21.88,13.28-31.75.3-1.14.71-2.21.45-3.43l-32.57-76.55c-1.43-4.62,10.36-4.08,12.01-.98l25.57,63.94Z"/>
+  <path class="cls-1" d="M623,120.43l3-14.99c-1.18-1.23-7.25,5.92-8.53,6.96-18.31,15.06-40.29,16.67-43.39-11.34l11-52.13c-.73-9.12-10.31.21-11.08-6.48,6.23-.61,15.88-6.73,21.48-7.05,2.44-.14,1.63,1.52,1.4,3.41-2.48,20.2-10.37,41.55-12.77,62.02,3.91,26.53,33.36,11.56,42.97-2.82l10.01-49.08c-.03-1.57-.62-3.27-2.08-4.01-3.43-1.72-6.41,2.23-8.98-.98.11-1.62,18.21-8.04,20.73-8.32,1.7-.19,2.23-.14,3.22,1.38l-16,72.96c.03,5.69,5.35,6.95,10.02,7.49v2.98h-21Z"/>
+  <path class="cls-1" d="M406,120.43v-2.99c4.54-.28,9.7-1.06,12.46-5.05l21.33-94.71c.57-4.19.44-7.76-4.42-7.88-1.1-.03-7.48,1.98-6.36-.86,1-2.54,13.82-5.38,17.22-6.59.8-.29,1.96-3.49,5.77-1.93l-22.86,110.56c.22,6.36,8.54,5.02,10.37,7.44l-1.02,2.01h-32.5Z"/>
+  <path class="cls-1" d="M370,39.93c.83-2.97,7.55-3.1,10.06-2.06,1.75,1.21.75,8.54.94,11.08.11,1.49-.77,2.89,1.49,2.48,5.84-11.26,18-17.17,30.52-16v11.01c-10.13-.99-21.03,1.77-26.84,10.66-1.08,1.65-5.17,11.6-5.17,12.83v49l-1.66,1.34c-1.27.28-2.56.22-3.84.22-2.05,0-4.23.33-5.5-1.56V39.93Z"/>
+  <path class="cls-1" d="M444,120.43v-2.99c5.37-.28,11.94-2.15,13.47-8.03,2.81-18.06,10.1-37.85,12.27-55.72.31-2.53,1.07-6.56-1.14-8.34-3.38-2.73-6.89,1.97-9.58-1.41.09-1.57,18.98-8.4,21.46-8.54,2.12-.11,1.3.06,1.53,1.51.73,4.63-1.13,6.02-1.77,9.27-4.18,21.35-8.61,42.62-13.16,63.89-.16,5.57,5.42,6.88,9.93,7.39v2.98h-33Z"/>
+  <path class="cls-1" d="M648,120.43c.27-3.97,6.06-3.25,9.35-5.15,1.57-.9,3.61-2.95,4.43-4.57,3.8-16.27,7.77-32.66,10.94-49.06.71-3.66,3.22-12.36,1.8-15.22-2.51-5.05-10.33,2-10.5-3.98,6.03-1.12,15.85-6.73,21.48-7.05,2.65-.15,1.62,3.5,1.28,5.3-4.34,23.14-10.85,46.02-14.86,69.26-.33,5.56,5.24,7.57,10.09,7.48.43.93-.89,2.99-1.5,2.99h-32.5Z"/>
+  <path class="cls-2" d="M1055.77,35.64c2.22,11.36-9.22,22.42-20.34,17.86-.9-12.46,6.27-26.32,20.34-17.86Z"/>
+  <path class="cls-1" d="M686.74,5.64c12.26-1.2,10.03,18.24-3.2,15.78-8.61-1.6-5.58-14.92,3.2-15.78Z"/>
+  <path class="cls-1" d="M482.68,5.76c12-.18,8.4,18.14-3.95,15.47-8.84-1.91-5.6-15.33,3.95-15.47Z"/>
+</svg><span class="x">x</span><svg id="ensLogo2" role="img" aria-label="ENS" fill="currentColor"></svg></div>
+    <nav class="soc" aria-label="Social links"><a href="https://hyperliquidindia.substack.com" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>Substack</a><a href="https://x.com/ensdomains" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>ENS on X</a><a href="https://x.com/HyperliquidX" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Hyperliquid on X</a></nav>
+    <p class="legal">An independent community of Hyperliquid users. Not Hyperliquid, not Hyper Foundation, not officially affiliated.</p>
+  </footer>
 </div>
 
 <script src="three.min.js"></script>
@@ -596,42 +702,243 @@ button.claim{background:var(--accent);color:#04110e;margin-top:14px}
   const validHl = n => /^[a-z0-9 -￿-]+\.hl$/u.test(n) && bytes(n) >= 4 && bytes(n) <= 32;
   const validEth = n => /^([a-z0-9 -￿-]+\.)+eth$/u.test(n);
   const norm = () => $("name").value.trim().toLowerCase();
-  let deb, info = null, offset = 0;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  let deb, info = null, offset = 0, last = null, busy = false, justClaimed = false;
   const post = (p, body) => fetch(p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then(async r => [r.ok, await r.json()]);
-  function clearResult() { $("result").hidden = true; $("claim").hidden = true; }
+  function clearResult() { $("result").hidden = true; $("acts").hidden = true; ["claim", "vid", "replay"].forEach(k => $(k).hidden = true); $("chips").hidden = true; $("vidbox").hidden = true; last = null; justClaimed = false; }
   $("name").addEventListener("input", () => {
+    if (busy) return;
     clearTimeout(deb); clearResult(); const n = norm();
-    if (!n) status("The card on the right updates as you type.");
+    if (!n) status("The card above updates as you type.");
     else if (validHl(n) || validEth(n)) status("This is how it will be etched.");
     else status("Names end in .hl or .eth", "err");
     deb = setTimeout(() => { currentName = validHl(n) || validEth(n) ? n : "yourname.hl"; paintAll(); }, 250);
   });
-  $("f").addEventListener("submit", async ev => {
-    ev.preventDefault(); const n = norm();
-    if (!(validHl(n) || validEth(n))) { status("Enter a .hl or .eth name.", "err"); $("name").focus(); return; }
-    $("go").disabled = true; status("Checking " + n + "..."); clearResult();
-    try { const [ok, j] = await post("/api/check", { name: n }); if (!ok) { status(j.error || "Something went wrong.", "err"); return; } status(""); show(j); }
-    catch (err) { console.error("CHK", err && err.stack || err); status("Network error. Try again.", "err"); } finally { $("go").disabled = false; }
-  });
-  function show(j) {
-    applyStatus(j); const st = stateNow(); const v = $("verdict"); v.className = "verdict"; $("who").textContent = j.name; $("claim").hidden = true; $("result").hidden = false;
-    if (j.claimed) { v.classList.add("ok"); v.textContent = "Your card is claimed. See you at House of HYPE."; return; }
-    if (!j.eligible) { v.textContent = "This name isn't eligible for a card."; return; }
-    if (st === "closed") { v.textContent = "Claims are closed."; return; }
-    if (j.left <= 0) { v.textContent = "All 25 cards have been claimed."; return; }
-    v.classList.add("ok");
-    if (st === "upcoming") { v.textContent = "You're eligible. Claims open on 22 Oct, 12:00 pm IST."; return; }
-    v.textContent = "You're eligible. Claim your card before they run out."; $("claim").hidden = false; $("claim").disabled = false;
+
+  // ---------- sound (synthesised, no files) ----------
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let actx = null, muted = false;
+  function ac() { if (!AC) return null; if (!actx) actx = new AC(); if (actx.state === "suspended") actx.resume(); return actx; }
+  $("snd").onclick = () => { muted = !muted; $("snd").setAttribute("aria-pressed", !muted); $("snd").textContent = muted ? "Sound off" : "Sound on"; };
+  function laserSound(dur, recDest) {
+    const c = ac(); if (!c) return;
+    const bus = c.createGain(); bus.gain.value = 1;
+    const live = c.createGain(); live.gain.value = muted ? 0 : 1; bus.connect(live); live.connect(c.destination);
+    if (recDest) bus.connect(recDest);
+    const t0 = c.currentTime + 0.03, t1 = t0 + dur;
+    const env = (g, peak, a, r) => { g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(peak, t0 + a); g.gain.setValueAtTime(peak, t1 - r); g.gain.linearRampToValueAtTime(0, t1); };
+    // sizzle: band passed noise with a fast tremolo
+    const nb = c.createBuffer(1, c.sampleRate, c.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const ns = c.createBufferSource(); ns.buffer = nb; ns.loop = true;
+    const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.setValueAtTime(3200, t0); bp.frequency.linearRampToValueAtTime(5200, t1); bp.Q.value = 0.9;
+    const am = c.createGain(); am.gain.value = 0.5; const lfo = c.createOscillator(); lfo.frequency.value = 53; const lg = c.createGain(); lg.gain.value = 0.5; lfo.connect(lg); lg.connect(am.gain);
+    const ng = c.createGain(); env(ng, 0.5, 0.08, 0.25); ns.connect(bp); bp.connect(am); am.connect(ng); ng.connect(bus);
+    // hum and whine
+    const saw = c.createOscillator(); saw.type = "sawtooth"; saw.frequency.setValueAtTime(110, t0); saw.frequency.linearRampToValueAtTime(150, t1);
+    const lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 700; const sg = c.createGain(); env(sg, 0.09, 0.1, 0.25); saw.connect(lp); lp.connect(sg); sg.connect(bus);
+    const wh = c.createOscillator(); wh.type = "sine"; wh.frequency.setValueAtTime(1300, t0); wh.frequency.exponentialRampToValueAtTime(2900, t1);
+    const wg = c.createGain(); env(wg, 0.05, 0.1, 0.2); wh.connect(wg); wg.connect(bus);
+    // finish: two soft bell tones
+    [1319, 1976].forEach((f, i) => { const o = c.createOscillator(); o.type = "sine"; o.frequency.value = f; const g = c.createGain(); g.gain.setValueAtTime(0, t1); g.gain.linearRampToValueAtTime(i ? .1 : .16, t1 + .01); g.gain.exponentialRampToValueAtTime(.0008, t1 + 1.4); o.connect(g); g.connect(bus); o.start(t1); o.stop(t1 + 1.5); });
+    [ns, lfo, saw, wh].forEach(o => { o.start(t0); o.stop(t1 + .05); });
   }
+
+  // ---------- laser engraving on the card texture ----------
+  let eng = null;
+  const PXW = () => TEX_W * SCALE, PXH = () => TEX_H * SCALE;
+  function prepEngrave() {
+    const Cn = CONCEPTS[S.concept], d = data(), db = Object.assign({}, d, { base: "", tld: "" });
+    const mk = dd => { const o = { col: cv(), rough: cv() }; const g = c => { const x = c.getContext("2d"); x.setTransform(SCALE, 0, 0, SCALE, 0, 0); return x; }; Cn.front(g(o.col), "color", dd); Cn.front(g(o.rough), "rough", dd); return o; };
+    const full = mk(d), blank = mk(db), w = PXW(), h = PXH();
+    const a = full.col.getContext("2d").getImageData(0, 0, w, h).data, b = blank.col.getContext("2d").getImageData(0, 0, w, h).data;
+    let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1;
+    for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) { const i = (y * w + x) * 4; if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 30) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
+    if (x1 < 0) { x0 = w * .1; x1 = w * .9; y0 = h * .4; y1 = h * .6; }
+    eng = { full, blank, box: { x0: x0 - 14, x1: x1 + 14, y0, y1 } };
+  }
+  function beam(t, x, frame) {
+    const { y0, y1 } = eng.box, cy = (y0 + y1) / 2, hh = (y1 - y0) / 2 + 70 * SCALE, s = SCALE;
+    t.save(); t.globalCompositeOperation = "lighter";
+    const g = t.createLinearGradient(x - 70 * s, 0, x + 70 * s, 0); g.addColorStop(0, "rgba(151,252,228,0)"); g.addColorStop(.5, "rgba(151,252,228,.55)"); g.addColorStop(1, "rgba(151,252,228,0)");
+    t.fillStyle = g; t.fillRect(x - 70 * s, cy - hh, 140 * s, hh * 2);
+    t.fillStyle = "rgba(255,255,255,.95)"; t.fillRect(x - 1.6 * s, cy - hh, 3.2 * s, hh * 2);
+    const hy = cy + Math.sin(frame * .7) * (y1 - y0) * .42, r = 90 * s, rg = t.createRadialGradient(x, hy, 0, x, hy, r);
+    rg.addColorStop(0, "rgba(255,255,255,1)"); rg.addColorStop(.18, "rgba(200,255,245,.85)"); rg.addColorStop(1, "rgba(151,252,228,0)"); t.fillStyle = rg; t.fillRect(x - r, hy - r, r * 2, r * 2);
+    let sd = frame * 9301 + 49297; const rnd = () => (sd = (sd * 233280 + 1) % 2147483647) / 2147483647;
+    t.lineCap = "round";
+    for (let i = 0; i < 26; i++) { const ang = -Math.PI * .5 + (rnd() - .35) * 2.2, len = (14 + rnd() * 70) * s, sx = x + rnd() * 6 * s, sy = hy + (rnd() - .5) * 10 * s; t.strokeStyle = `rgba(${rnd() > .5 ? "255,236,190" : "190,255,245"},${.4 + rnd() * .6})`; t.lineWidth = (1 + rnd() * 1.8) * s; t.beginPath(); t.moveTo(sx, sy); t.lineTo(sx + Math.cos(ang) * len, sy + Math.sin(ang) * len * 1.0 - rnd() * 8 * s); t.stroke(); }
+    t.restore();
+  }
+  function comp(p, o, withBeam, frame) {
+    const { full, blank, box } = eng, w = PXW(), h = PXH(), x = box.x0 + (box.x1 - box.x0) * p;
+    for (const k of ["col", "rough"]) {
+      const t = o[k].getContext("2d"); t.setTransform(1, 0, 0, 1, 0, 0); t.globalCompositeOperation = "source-over";
+      t.clearRect(0, 0, w, h); t.drawImage(blank[k], 0, 0); t.save(); t.beginPath(); t.rect(0, 0, x, h); t.clip(); t.drawImage(full[k], 0, 0); t.restore();
+    }
+    if (withBeam && p > 0 && p < 1) beam(o.col.getContext("2d"), x, frame || 0);
+  }
+  async function engraveLive(dur = 3400, withSound = true) {
+    if (!three || reduce) { if (withSound && !reduce) laserSound(1.6); await sleep(reduce ? 0 : 1600); return; }
+    prepEngrave();
+    if (shown !== "front") { showSide("front"); await sleep(900); }
+    comp(0, faces.front, false); three.tex.forEach(t => t.needsUpdate = true);
+    if (withSound) laserSound(dur / 1000);
+    await new Promise(res => {
+      const t0 = performance.now(); let f = 0;
+      const step = now => {
+        const p = Math.min(1, (now - t0) / dur), e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        comp(p * .6 + e * .4, faces.front, true, f++); three.tex.forEach(t => t.needsUpdate = true);
+        if (p < 1) requestAnimationFrame(step); else res();
+      };
+      requestAnimationFrame(step);
+    });
+    paintAll();
+    const fl = $("flash"); fl.animate([{ opacity: .9 }, { opacity: 0 }], { duration: 1100, easing: "ease-out" });
+  }
+
+  // ---------- result ----------
+  let countRaf = 0;
+  function countTo(n) {
+    return new Promise(res => {
+      cancelAnimationFrame(countRaf);
+      if (reduce) { $("scoreNum").textContent = n; $("arc").style.strokeDashoffset = 100 - n; return res(); }
+      const t0 = performance.now(), D = 1300;
+      const st = now => { const p = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - p, 3), v = n * e; $("scoreNum").textContent = Math.round(v); $("arc").style.strokeDashoffset = 100 - v; if (p < 1) countRaf = requestAnimationFrame(st); else res(); };
+      countRaf = requestAnimationFrame(st);
+    });
+  }
+  function chips(list) {
+    const c = $("chips"); c.querySelectorAll("a").forEach(a => a.remove());
+    (list || []).forEach(e => { const a = document.createElement("a"); a.href = e.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = e.label; c.appendChild(a); });
+    c.hidden = !(list && list.length);
+  }
+  function setActions() {
+    if (!last) return; const st = stateNow(), j = last;
+    const can = j.eligible && !j.claimed && st === "open" && j.left > 0;
+    $("claim").hidden = !can; $("claim").disabled = false;
+    $("vid").hidden = !j.eligible; $("replay").hidden = !j.eligible; $("acts").hidden = !j.eligible;
+  }
+  function verdictText(j) {
+    const st = stateNow();
+    if (j.claimed) return "Your card is claimed. See you at House of HYPE.";
+    if (!j.eligible) return "Not eligible this time. A score of 90 or more qualifies.";
+    if (st === "closed") return "You're eligible, but claims are closed.";
+    if (j.left <= 0) return "You're eligible, but all 25 cards are claimed.";
+    if (st === "upcoming") return "You're eligible. Claims open on 22 Oct, 12:00 pm IST.";
+    return "You're eligible. Claim your card before they run out.";
+  }
+  async function show(j) {
+    applyStatus(j); last = j; busy = true;
+    const ring = $("ring"); ring.className = "ring"; $("scoreNum").textContent = "0"; $("arc").style.strokeDashoffset = 100;
+    $("verdict").className = "verdict"; $("verdict").textContent = "Reading the chain..."; $("who").textContent = j.name + (j.address ? "  " + j.address.slice(0, 6) + "…" + j.address.slice(-4) : "");
+    $("acts").hidden = true; chips(j.explorers); $("result").hidden = false;
+    $("result").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
+    await countTo(Math.max(0, Math.min(100, j.score || 0)));
+    if (j.eligible) { ring.classList.add("ok"); $("verdict").classList.add("ok"); }
+    $("verdict").textContent = j.eligible ? "Eligible. Etching your card..." : verdictText(j);
+    if (j.eligible) { await engraveLive(); $("verdict").textContent = verdictText(j); }
+    busy = false; setActions();
+  }
+  $("replay").onclick = async () => { if (busy || !last) return; busy = true; $("acts").hidden = true; await engraveLive(); busy = false; setActions(); };
+  $("f").addEventListener("submit", async ev => {
+    ev.preventDefault(); if (busy) return; const n = norm();
+    if (!(validHl(n) || validEth(n))) { status("Enter a .hl or .eth name.", "err"); $("name").focus(); return; }
+    ac(); // unlock audio inside the click
+    $("go").disabled = true; status("Checking " + n + "..."); clearResult(); currentName = n; paintAll();
+    try { const [ok, j] = await post("/api/check", { name: n }); if (!ok) { status(j.error || "Something went wrong.", "err"); return; } status(""); await show(j); }
+    catch (err) { console.error("CHK", err && err.stack || err); status("Network error. Try again.", "err"); busy = false; } finally { $("go").disabled = false; }
+  });
   $("claim").addEventListener("click", async () => {
     const n = norm(); $("claim").disabled = true;
     try {
       const [ok, j] = await post("/api/claim", { name: n }); if (j && j.now) applyStatus(j);
-      if (ok) { $("verdict").className = "verdict ok"; $("verdict").textContent = "Card claimed. See you at House of HYPE, Mumbai."; $("claim").hidden = true; }
-      else { $("verdict").className = "verdict"; $("verdict").textContent = j.error || "Couldn't claim. Try again."; $("claim").disabled = false; }
+      if (ok) { last.claimed = true; justClaimed = true; $("verdict").textContent = "Card claimed. See you at House of HYPE, Mumbai."; $("claim").hidden = true; }
+      else { $("verdict").textContent = j.error || "Couldn't claim. Try again."; $("claim").disabled = false; }
     } catch { $("verdict").textContent = "Network error. Try again."; $("claim").disabled = false; }
   });
-  // timers
+
+  // ---------- video export (4:5, made in the browser) ----------
+  const VW = 1080, VH = 1350, VD = 9.5, ENG0 = 1.3, ENG1 = 4.6;
+  const logoImgs = {};
+  const svgImage = str => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(str); });
+  async function loadLogos() {
+    if (logoImgs.hl !== undefined) return;
+    const hl = document.querySelector(".brands svg.hli").outerHTML.replace('class="hli"', "").replace(/class="cls-1"/g, 'fill="#EDEDED"').replace(/class="cls-2"/g, 'fill="#78cdce"').replace("<svg ", '<svg width="1145" height="156" ');
+    const e = SVG.ens, vb = e.vb.split(/[ ,]+/).map(Number);
+    logoImgs.hl = await svgImage(hl); logoImgs.ens = await svgImage(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${e.vb}" width="${vb[2]}" height="${vb[3]}"><path fill="#EDEDED" d="${e.d}"/></svg>`);
+  }
+  function wrap(x, text, w) { const out = []; let line = ""; text.split(" ").forEach(wd => { const t = line ? line + " " + wd : wd; if (x.measureText(t).width > w && line) { out.push(line); line = wd; } else line = t; }); if (line) out.push(line); return out; }
+  const capFor = j => (j.claimed ? j.name + " scored " + j.score + "/100 on Hyperliquid onchain and claimed a laser etched ENS x Hyperliquid India metal card. " : j.name + " scored " + j.score + "/100 on Hyperliquid onchain and is eligible for a laser etched ENS x Hyperliquid India metal card. ") + "Collecting it at House of HYPE, Mumbai, 3 Nov.";
+  function drawVideo(x, t, vo, j) {
+    const bgp = Math.min(1, t / .8), ease = p => 1 - Math.pow(1 - p, 3);
+    x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
+    x.fillStyle = "#050505"; x.fillRect(0, 0, VW, VH);
+    const g = x.createRadialGradient(VW / 2, 560, 0, VW / 2, 560, 760); g.addColorStop(0, `rgba(151,252,228,${.17 * bgp})`); g.addColorStop(1, "rgba(5,5,5,0)"); x.fillStyle = g; x.fillRect(0, 0, VW, VH);
+    x.strokeStyle = "rgba(255,255,255,.035)"; x.lineWidth = 1; for (let i = 0; i < VW; i += 90) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, VH); x.stroke(); } for (let i = 0; i < VH; i += 90) { x.beginPath(); x.moveTo(0, i); x.lineTo(VW, i); x.stroke(); }
+    // brands
+    x.globalAlpha = ease(bgp);
+    if (logoImgs.hl && logoImgs.ens) { const h = 34, wl = h * 1145 / 156, ve = logoImgs.ens, we = h * (ve.width / ve.height || 1), gap = 26, tot = wl + gap * 2 + 14 + we, sx = (VW - tot) / 2; x.drawImage(logoImgs.hl, sx, 70, wl, h); x.fillStyle = "#8C8C8C"; x.font = '500 24px "Instrument Sans", sans-serif'; x.textBaseline = "middle"; x.fillText("x", sx + wl + gap, 70 + h / 2 + 1); x.drawImage(ve, sx + wl + gap * 2 + 14, 70, we, h); }
+    x.globalAlpha = 1;
+    // card
+    const ca = ease(Math.min(1, Math.max(0, (t - .5) / .7))), cw = 940, chh = cw * TEX_H / TEX_W, sc = .94 + .06 * ca, cx = VW / 2, cy = 560 + Math.sin(t * 1.1) * 7, ang = Math.sin(t * .8) * .012;
+    x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(ang); x.scale(sc, sc);
+    x.save(); x.filter = "blur(26px)"; x.fillStyle = "rgba(0,0,0,.75)"; x.beginPath(); x.ellipse(0, chh / 2 + 36, cw * .42, 28, 0, 0, 7); x.fill(); x.restore();
+    x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.clip();
+    const p = Math.min(1, Math.max(0, (t - ENG0) / (ENG1 - ENG0))), pe = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    comp(p * .6 + pe * .4, vo, p > 0 && p < 1, Math.floor(t * 30));
+    x.filter = "brightness(1.9) contrast(1.12) saturate(1.1)"; x.drawImage(vo.col, -cw / 2, -chh / 2, cw, chh); x.filter = "none";
+    const sh = ((t * .22) % 1.6 - .3) * cw, sg = x.createLinearGradient(-cw / 2 + sh - 160, -chh / 2, -cw / 2 + sh + 160, chh / 2); sg.addColorStop(0, "rgba(255,255,255,0)"); sg.addColorStop(.5, "rgba(255,255,255,.10)"); sg.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = sg; x.fillRect(-cw / 2, -chh / 2, cw, chh);
+    x.restore(); x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(ang); x.scale(sc, sc); x.strokeStyle = "rgba(255,255,255,.22)"; x.lineWidth = 2; x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.stroke();
+    x.restore();
+    // result
+    const ra = ease(Math.min(1, Math.max(0, (t - ENG1 - .2) / .6)));
+    if (ra > 0) {
+      x.save(); x.globalAlpha = ra; const rx = 190, ry = 1040, rr = 92, sv = j.score * ease(Math.min(1, Math.max(0, (t - ENG1 - .2) / 1.2)));
+      x.lineWidth = 12; x.lineCap = "round"; x.strokeStyle = "#1a1a1a"; x.beginPath(); x.arc(rx, ry, rr, 0, 7); x.stroke();
+      x.strokeStyle = "#97FCE4"; x.shadowColor = "rgba(151,252,228,.6)"; x.shadowBlur = 18; x.beginPath(); x.arc(rx, ry, rr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * sv / 100); x.stroke(); x.shadowBlur = 0;
+      x.fillStyle = "#EDEDED"; x.textAlign = "center"; x.textBaseline = "alphabetic"; x.font = '500 76px "Instrument Sans", sans-serif'; x.fillText(String(Math.round(sv)), rx, ry + 20); x.fillStyle = "#8C8C8C"; x.font = '400 22px "Instrument Sans", sans-serif'; x.fillText("of 100", rx, ry + 52);
+      x.textAlign = "left"; x.fillStyle = "#97FCE4"; x.font = '500 62px "Instrument Sans", sans-serif'; x.fillText(j.claimed ? "Claimed" : "Eligible", 340, 1030);
+      x.fillStyle = "#EDEDED"; x.font = '500 38px "JetBrains Mono", monospace'; x.fillText(j.name, 340, 1084);
+      x.restore();
+    }
+    const ta = ease(Math.min(1, Math.max(0, (t - ENG1 - 1.1) / .7)));
+    if (ta > 0) {
+      x.save(); x.globalAlpha = ta; x.textAlign = "left"; x.textBaseline = "alphabetic"; x.fillStyle = "#C9C9C9"; x.font = '400 31px "Instrument Sans", sans-serif';
+      wrap(x, capFor(j), 900).forEach((l, i) => x.fillText(l, 90, 1180 + i * 42)); x.restore();
+    }
+    x.globalAlpha = 1; x.textAlign = "center"; x.fillStyle = "#6f6f6f"; x.font = '400 22px "Instrument Sans", sans-serif'; x.fillText("House of HYPE  ·  Mumbai  ·  3 Nov 2026", VW / 2, 1312);
+  }
+  $("vid").addEventListener("click", async () => {
+    if (!last || !last.eligible || busy || !window.MediaRecorder) { if (!window.MediaRecorder) $("vidNote").textContent = "Video export isn't supported in this browser. Try Chrome."; return; }
+    busy = true; const btn = $("vid"); btn.disabled = true; $("vidbox").hidden = true;
+    try {
+      await loadLogos(); prepEngrave();
+      const cvs = document.createElement("canvas"); cvs.width = VW; cvs.height = VH; const x = cvs.getContext("2d");
+      const vo = { col: cv(), rough: cv() };
+      const c = ac(); const rd = c ? c.createMediaStreamDestination() : null;
+      const stream = cvs.captureStream(30); if (rd) rd.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+      const mimes = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4;codecs=avc1,mp4a.40.2", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+      const mime = mimes.find(m => MediaRecorder.isTypeSupported(m)) || "";
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 7e6 } : {}); const chunks = []; rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+      const done = new Promise(r => rec.onstop = r);
+      drawVideo(x, 0, vo, last); rec.start(250); if (c) setTimeout(() => laserSound(ENG1 - ENG0, rd), ENG0 * 1000);
+      const t0 = performance.now();
+      await new Promise(res => { const step = now => { const t = (now - t0) / 1000; btn.textContent = "Recording " + Math.max(0, Math.ceil(VD - t)) + "s"; drawVideo(x, Math.min(t, VD), vo, last); if (t < VD) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); });
+      rec.stop(); await done;
+      const type = (rec.mimeType || mime || "video/webm").split(";")[0], ext = type.includes("mp4") ? "mp4" : "webm";
+      const blob = new Blob(chunks, { type }), url = URL.createObjectURL(blob), cap = capFor(last);
+      const v = $("vidprev"); v.src = url; v.muted = false; v.play().catch(() => {});
+      const dl = $("vidDl"); dl.href = url; dl.download = "hyperliquid-india-ens-card-" + last.name.replace(/[^a-z0-9.-]/g, "") + "." + ext;
+      $("capText").textContent = cap; $("xPost").href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(cap);
+      $("vidNote").textContent = ext === "mp4" ? "Download the video, then attach it to your post. The caption is also burned into the video." : "Your browser saved WebM. X needs MP4, so use Chrome for an MP4 file or convert this one first. The caption is also burned into the video.";
+      $("capCopy").onclick = () => navigator.clipboard.writeText(cap).then(() => { $("capCopy").textContent = "Copied"; setTimeout(() => $("capCopy").textContent = "Copy caption", 1600); });
+      $("vidbox").hidden = false; $("vidbox").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
+    } catch (err) { console.error("VID", err && err.stack || err); $("vidNote").textContent = "Couldn't make the video. Try again."; $("vidbox").hidden = false; }
+    finally { btn.disabled = false; btn.textContent = "Make your video"; busy = false; setActions(); }
+  });
+
+  // ---------- timers ----------
   const pad = n => String(n).padStart(2, "0");
   const nowMs = () => Date.now() + offset;
   function stateNow() { if (!info) return "upcoming"; const t = nowMs(); return t < info.opensAt ? "upcoming" : t < info.closesAt ? "open" : "closed"; }
@@ -642,13 +949,13 @@ button.claim{background:var(--accent);color:#04110e;margin-top:14px}
   function tick() {
     if (!info) return; const st = stateNow(), t = nowMs(), target = st === "upcoming" ? info.opensAt : info.closesAt;
     $("clockLabel").textContent = st === "upcoming" ? "Claims open in" : st === "open" ? "Claims close in" : "Claims are closed";
-    let d = st === "closed" ? 0 : Math.max(0, target - t); const D = Math.floor(d / 864e5), H = Math.floor(d % 864e5 / 36e5), M = Math.floor(d % 36e5 / 6e4), S = Math.floor(d % 6e4 / 1e3);
-    $("cD").textContent = pad(D); $("cH").textContent = pad(H); $("cM").textContent = pad(M); $("cS").textContent = pad(S);
+    let d = st === "closed" ? 0 : Math.max(0, target - t); const D = Math.floor(d / 864e5), H = Math.floor(d % 864e5 / 36e5), M = Math.floor(d % 36e5 / 6e4), S2 = Math.floor(d % 6e4 / 1e3);
+    $("cD").textContent = pad(D); $("cH").textContent = pad(H); $("cM").textContent = pad(M); $("cS").textContent = pad(S2);
   }
-  const load = () => fetch("/api/status").then(r => r.json()).then(applyStatus).catch(() => {});
+  const load = () => fetch("/api/status").then(r => r.json()).then(j => { applyStatus(j); if (last && !busy) setActions(); }).catch(() => {});
   load(); setInterval(tick, 1000); setInterval(load, 15000);
   // logos
-  const ens = SVG.ens; $("ensLogo").setAttribute("viewBox", ens.vb); $("ensLogo").innerHTML = '<path d="' + ens.d + '"/>';
+  const ens = SVG.ens; ["ensLogo", "ensLogo2"].forEach(id => { $(id).setAttribute("viewBox", ens.vb); $(id).innerHTML = '<path d="' + ens.d + '"/>'; });
 
   // ---------- boot ----------
   (async () => {
