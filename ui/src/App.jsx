@@ -232,7 +232,6 @@ export default function App({ socials }) {
 
       <main className="hero">
         <DitherBlob />
-        <motion.p className="eyebrow" {...rise(0, reduce)}><span>Limited edition</span></motion.p>
         <motion.h1 {...rise(1, reduce)}>Your name,<br /><i>laser etched</i><br />in metal.</motion.h1>
         <motion.p className="sub" {...rise(2, reduce)}>Hyperliquid India and ENS are giving away 25 NFC metal cards for House of HYPE. Enter your .hl or .eth name to see your card and check if you are eligible.</motion.p>
         <motion.div className="full" {...rise(3, reduce)}><Meters info={info} now={now} /></motion.div>
