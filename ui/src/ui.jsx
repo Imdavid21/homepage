@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate, useReducedMotion } from "framer-motion";
 import brand from "./brand.json";
 
@@ -58,4 +58,44 @@ export function Marquee({ items }) {
       <motion.div className="mq-track" animate={reduce ? undefined : { x: ["0%", "-50%"] }} transition={{ duration: 46, ease: "linear", repeat: Infinity }}>{row}{row}{row}{row}</motion.div>
     </div>
   );
+}
+
+/* ---------- 1-bit dither pieces ---------- */
+import { paint, pathMask, paintBlob } from "./dither.js";
+
+// A fading band of dots, used as a divider.
+export function DitherBar({ className = "" }) {
+  const ref = useRef(null);
+  useEffect(() => { paint(ref.current, 220, 7, (x, y) => Math.pow(1 - Math.abs(x / 110 - 1), 0.9) * (1 - y / 7) * 1.3); }, []);
+  return <canvas ref={ref} className={"dbar " + className} aria-hidden="true" />;
+}
+
+// The light on the card, drawn in dots that slowly shimmer.
+export function DitherSpot() {
+  const ref = useRef(null), reduce = useReducedMotion();
+  useEffect(() => {
+    const W = 300, H = 150; let raf, last = 0;
+    const draw = t => paint(ref.current, W, H, (x, y) => {
+      const dx = (x - W / 2) / (W * .42), dy = (y - H * .46) / (H * .5), r = Math.sqrt(dx * dx + dy * dy);
+      const cone = Math.max(0, 1 - Math.abs(x - W / 2) / (4 + y * .55)) * Math.max(0, 1 - y / (H * .6)) * .55;
+      return Math.max(0, (1 - r) * .75 + cone) * (.9 + .1 * Math.sin(t * .9)) * .8;
+    });
+    const loop = ms => { if (ms - last > 110) { last = ms; draw(ms / 1000); } raf = requestAnimationFrame(loop); };
+    if (reduce) draw(0); else raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [reduce]);
+  return <canvas ref={ref} className="dspot" aria-hidden="true" />;
+}
+
+// The Hyperliquid mark as a 1-bit dithered plate behind the headline.
+export function DitherBlob() {
+  const ref = useRef(null), reduce = useReducedMotion();
+  useEffect(() => {
+    const S = 220, mask = pathMask(brand.blob, S, S); let raf, last = 0;
+    const draw = t => paintBlob(ref.current, S, S, mask, t, [236, 231, 223]);
+    const loop = ms => { if (ms - last > 120) { last = ms; draw(ms / 1000); } raf = requestAnimationFrame(loop); };
+    if (reduce) draw(0); else raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [reduce]);
+  return <canvas ref={ref} className="dblob" aria-hidden="true" />;
 }

@@ -96,12 +96,15 @@
   }
   function wrap(x, text, w) { const out = []; let line = ""; text.split(" ").forEach(wd => { const t = line ? line + " " + wd : wd; if (x.measureText(t).width > w && line) { out.push(line); line = wd; } else line = t; }); if (line) out.push(line); return out; }
   const capFor = j => (j.claimed ? j.name + " scored " + j.score + "/100 on Hyperliquid onchain and claimed a laser etched ENS x Hyperliquid India metal card. " : j.name + " scored " + j.score + "/100 on Hyperliquid onchain and is eligible for a laser etched ENS x Hyperliquid India metal card. ") + "Collecting it at House of HYPE, Mumbai, 3 Nov.";
+  let vidTmp = null, blobMask = null, blobCv = null;
   function drawVideo(x, t, vo, j) {
     const bgp = Math.min(1, t / .8), ease = p => 1 - Math.pow(1 - p, 3);
     x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
     x.fillStyle = "#050505"; x.fillRect(0, 0, VW, VH);
     const g = x.createRadialGradient(VW / 2, 560, 0, VW / 2, 560, 760); g.addColorStop(0, `rgba(151,252,228,${.17 * bgp})`); g.addColorStop(1, "rgba(5,5,5,0)"); x.fillStyle = g; x.fillRect(0, 0, VW, VH);
     x.strokeStyle = "rgba(255,255,255,.035)"; x.lineWidth = 1; for (let i = 0; i < VW; i += 90) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, VH); x.stroke(); } for (let i = 0; i < VH; i += 90) { x.beginPath(); x.moveTo(0, i); x.lineTo(VW, i); x.stroke(); }
+    // dithered Hyperliquid mark behind everything
+    if (window.__dither) { blobCv = blobCv || document.createElement("canvas"); blobMask = blobMask || __dither.pathMask(SVG.blob.d, 200, 200); __dither.paintBlob(blobCv, 200, 200, blobMask, t, [236, 231, 223]); x.save(); x.globalAlpha = .2 * bgp; x.imageSmoothingEnabled = false; const bz = 860; x.drawImage(blobCv, (VW - bz) / 2, 140, bz, bz); x.restore(); }
     // brands
     x.globalAlpha = ease(bgp);
     if (logoImgs.hl && logoImgs.ens) { const h = 34, wl = h * 1145 / 156, ve = logoImgs.ens, we = h * (ve.width / ve.height || 1), gap = 26, tot = wl + gap * 2 + 14 + we, sx = (VW - tot) / 2; x.drawImage(logoImgs.hl, sx, 70, wl, h); x.fillStyle = "#8C8C8C"; x.font = '500 24px "Instrument Sans", sans-serif'; x.textBaseline = "middle"; x.fillText("x", sx + wl + gap, 70 + h / 2 + 1); x.drawImage(ve, sx + wl + gap * 2 + 14, 70, we, h); }
@@ -111,9 +114,18 @@
     x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(ang); x.scale(sc, sc);
     x.save(); x.filter = "blur(26px)"; x.fillStyle = "rgba(0,0,0,.75)"; x.beginPath(); x.ellipse(0, chh / 2 + 36, cw * .42, 28, 0, 0, 7); x.fill(); x.restore();
     x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.clip();
+    const rev = Math.min(1, Math.max(0, (t - .5) / .9));
     const p = Math.min(1, Math.max(0, (t - ENG0) / (ENG1 - ENG0))), pe = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
     comp(p * .6 + pe * .4, vo, p > 0 && p < 1, Math.floor(t * 30));
-    x.filter = "brightness(1.9) contrast(1.12) saturate(1.1)"; x.drawImage(vo.col, -cw / 2, -chh / 2, cw, chh); x.filter = "none";
+    x.filter = "brightness(1.9) contrast(1.12) saturate(1.1)";
+    if (rev < 1 && window.__dither) {
+      // 1-bit reveal: the card arrives through an ordered dither
+      const tc = vidTmp || (vidTmp = document.createElement("canvas")); tc.width = Math.round(cw); tc.height = Math.round(chh); const tx = tc.getContext("2d"); tx.clearRect(0, 0, tc.width, tc.height); tx.drawImage(vo.col, 0, 0, tc.width, tc.height);
+      const im = tx.getImageData(0, 0, tc.width, tc.height), dd = im.data, bs = 4;
+      for (let j = 0; j < tc.height; j++) for (let i = 0; i < tc.width; i++) if (__dither.bayer(i / bs | 0, j / bs | 0) >= rev) dd[(j * tc.width + i) * 4 + 3] = 0;
+      tx.putImageData(im, 0, 0); x.drawImage(tc, -cw / 2, -chh / 2, cw, chh);
+    } else x.drawImage(vo.col, -cw / 2, -chh / 2, cw, chh);
+    x.filter = "none";
     const sh = ((t * .22) % 1.6 - .3) * cw, sg = x.createLinearGradient(-cw / 2 + sh - 160, -chh / 2, -cw / 2 + sh + 160, chh / 2); sg.addColorStop(0, "rgba(255,255,255,0)"); sg.addColorStop(.5, "rgba(255,255,255,.10)"); sg.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = sg; x.fillRect(-cw / 2, -chh / 2, cw, chh);
     x.restore(); x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(ang); x.scale(sc, sc); x.strokeStyle = "rgba(255,255,255,.22)"; x.lineWidth = 2; x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.stroke();
     x.restore();
@@ -155,9 +167,56 @@
     const blob = new Blob(chunks, { type });
     return { url: URL.createObjectURL(blob), ext, caption: capFor(j), file: "hyperliquid-india-ens-card-" + j.name.replace(/[^a-z0-9.-]/g, "") + "." + ext };
   }
+
+  // ---------- blob tracking: boxes pinned to the card's elements, projected through the live camera ----------
+  const REGIONS = __REGIONS__;
+  const trk = { on: false, focus: null, side: "front", t0: 0, raf: 0, cv: null, alpha: 0 };
+  function trackDraw(now) {
+    trk.raf = requestAnimationFrame(trackDraw);
+    const st = $("stage"), cvs = trk.cv; if (!three || !three.card) return;
+    const r = st.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2), cw = r.width, ch = r.height;
+    if (cvs.width !== Math.round(cw * dpr)) { cvs.width = Math.round(cw * dpr); cvs.height = Math.round(ch * dpr); }
+    const x = cvs.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, cw, ch);
+    const c = Math.cos(three.card.rotation.y), side = c >= 0 ? "front" : "back";
+    if (side !== trk.side) { trk.side = side; trk.t0 = now; }
+    const vis = Math.pow(Math.abs(c), 3); if (vis < .02) return;
+    const sgn = side === "front" ? 1 : -1, zf = .06 / 2 + .012 + .002;
+    const proj = (px, py) => { const v = new THREE.Vector3(sgn * (px / TEX_W - .5) * W, (.5 - py / TEX_H) * H, sgn * zf).applyMatrix4(three.card.matrixWorld).project(three.camera); return [(v.x * .5 + .5) * cw, (-v.y * .5 + .5) * ch]; };
+    const list = REGIONS[side], pts = [], used = [];
+    x.font = '500 10.5px "JetBrains Mono", ui-monospace, monospace'; x.textBaseline = "middle"; x.lineWidth = 1;
+    list.forEach((g, i) => {
+      const k = Math.min(1, Math.max(0, (now - trk.t0 - i * 90) / 380)), e = 1 - Math.pow(1 - k, 3); if (e <= 0) return;
+      const cs = [proj(g.x, g.y), proj(g.x + g.w, g.y), proj(g.x + g.w, g.y + g.h), proj(g.x, g.y + g.h)];
+      let x0 = Math.min(...cs.map(q => q[0])), x1 = Math.max(...cs.map(q => q[0])), y0 = Math.min(...cs.map(q => q[1])), y1 = Math.max(...cs.map(q => q[1]));
+      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, gr = 1 + (1 - e) * .35; x0 = mx + (x0 - mx) * gr; x1 = mx + (x1 - mx) * gr; y0 = my + (y0 - my) * gr; y1 = my + (y1 - my) * gr;
+      const foc = trk.focus === g.id; x.globalAlpha = vis * e * (trk.focus && !foc ? .35 : 1);
+      x.strokeStyle = "#ECE7DF"; x.fillStyle = "#ECE7DF";
+      if (foc) { x.globalAlpha *= .16; x.fillRect(x0, y0, x1 - x0, y1 - y0); x.globalAlpha = vis * e; }
+      x.lineWidth = foc ? 2 : 1; x.strokeRect(Math.round(x0) + .5, Math.round(y0) + .5, Math.round(x1 - x0), Math.round(y1 - y0)); x.lineWidth = 1;
+      [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].forEach(q => x.fillRect(Math.round(q[0]) - 2, Math.round(q[1]) - 2, 5, 5));
+      const tag = g.n + " " + g.label.toLowerCase(), tw = x.measureText(tag).width + 12, tx = Math.round(Math.min(Math.max(x0, 2), cw - tw - 2));
+      let ty = Math.round(y0) - 19 < 0 ? Math.round(y1) + 2 : Math.round(y0) - 19;
+      for (let n = 0; n < 8 && used.some(u => tx < u[0] + u[2] && tx + tw > u[0] && ty < u[1] + 17 && ty + 17 > u[1]); n++) ty += 18;
+      used.push([tx, ty, tw]);
+      x.fillStyle = "#ECE7DF"; x.fillRect(tx, ty, tw, 17); x.fillStyle = "#060606"; x.fillText(tag, tx + 6, ty + 9);
+      pts.push([mx, my, e]);
+    });
+    // the graph that ties them together
+    x.globalAlpha = vis * .45; x.strokeStyle = "#ECE7DF"; x.setLineDash([2, 3]); x.beginPath(); pts.forEach((q, i) => { if (q[2] < 1) return; i ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1]); }); x.stroke(); x.setLineDash([]);
+    x.globalAlpha = vis; x.fillStyle = "#97FCE4"; pts.forEach(q => { if (q[2] >= 1) x.fillRect(Math.round(q[0]) - 2, Math.round(q[1]) - 2, 4, 4); });
+    x.globalAlpha = 1;
+  }
+  function trackSet(on) {
+    trk.on = on; if (on) {
+      if (!trk.cv) { trk.cv = document.createElement("canvas"); trk.cv.className = "track"; $("stage").appendChild(trk.cv); }
+      trk.cv.hidden = false; trk.t0 = performance.now(); cancelAnimationFrame(trk.raf); trk.raf = requestAnimationFrame(trackDraw);
+    } else { cancelAnimationFrame(trk.raf); if (trk.cv) trk.cv.hidden = true; }
+  }
   window.HL = {
     validHl, validEth, reduce, caption: capFor,
     setName(n) { currentName = validHl(n) || validEth(n) ? n : "yourname.hl"; paintAll(); },
     showSide, unlock: ac, setMuted(m) { muted = m; },
     engrave: engraveLive, record: recordVideo,
+    track: { set: trackSet, focus(id) { trk.focus = id; } },
+    dump: () => ({ front: faces.front.col.toDataURL(), back: faces.back.col.toDataURL() }),
   };

@@ -1,0 +1,21 @@
+{
+  "front": [
+    { "id": "nfc", "n": "01", "label": "NFC chip", "desc": "Tap a phone to the card to read it. It needs no battery.", "x": 1350, "y": 80, "w": 86, "h": 72 },
+    { "id": "name", "n": "02", "label": "Your name", "desc": "The name you enter, laser etched into the metal. It resolves to your wallet onchain.", "x": 98, "y": 482, "w": 380, "h": 124 },
+    { "id": "mark", "n": "03", "label": "Namehash mark", "desc": "The Hyperliquid mark is data. Each glyph is the next character of your name's hash, read left to right and top to bottom.", "x": 765, "y": 122, "w": 820, "h": 654 },
+    { "id": "signed", "n": "04", "label": "Signed line", "desc": "Your name, card number and the HYPE token id, repeated across the waist of the mark.", "x": 765, "y": 482, "w": 820, "h": 44 },
+    { "id": "mk", "n": "05", "label": "Partner mark", "desc": "Hyperliquid India and ENS, the two parties behind the card.", "x": 98, "y": 848, "w": 368, "h": 52 },
+    { "id": "no", "n": "06", "label": "Card number", "desc": "Your number out of 25. It is set when your card is confirmed.", "x": 1392, "y": 864, "w": 100, "h": 34 }
+  ],
+  "back": [
+    { "id": "gen", "n": "01", "label": "Genesis time", "desc": "When HYPE genesis happened: 29 Nov 2024, 06:45:52 UTC, shown as a date and as a unix time.", "x": 98, "y": 122, "w": 735, "h": 96 },
+    { "id": "tok", "n": "02", "label": "Token and supply", "desc": "The HYPE token id and its maximum supply of 1,000,000,000.", "x": 98, "y": 258, "w": 890, "h": 100 },
+    { "id": "dist", "n": "03", "label": "Distribution", "desc": "310,000,000 HYPE, 31.0 percent of supply, went to 94,023 genesis wallets.", "x": 98, "y": 392, "w": 695, "h": 100 },
+    { "id": "fund", "n": "04", "label": "Assistance fund", "desc": "The address of the Hyperliquid assistance fund, shown shortened.", "x": 98, "y": 524, "w": 545, "h": 36 },
+    { "id": "qr", "n": "05", "label": "QR code", "desc": "Scan or tap to open this name's record in the ENS or Hyperliquid Names app.", "x": 1246, "y": 145, "w": 244, "h": 244 },
+    { "id": "holder", "n": "06", "label": "Holder", "desc": "The name this card belongs to.", "x": 98, "y": 636, "w": 500, "h": 38 },
+    { "id": "node", "n": "07", "label": "Node", "desc": "The namehash of that name, the value its records are keyed by.", "x": 98, "y": 702, "w": 845, "h": 38 },
+    { "id": "mk", "n": "08", "label": "Partner mark", "desc": "Hyperliquid India and ENS, the two parties behind the card.", "x": 98, "y": 848, "w": 368, "h": 52 },
+    { "id": "no", "n": "09", "label": "Card number", "desc": "Your number out of 25. It is set when your card is confirmed.", "x": 1392, "y": 864, "w": 100, "h": 34 }
+  ]
+}

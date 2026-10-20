@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, memo, useCallback } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useStatus, useNow, windowState, pad, post } from "./hooks.js";
-import { Brands, Button, Pair, Ring, Marquee, rise, ease } from "./ui.jsx";
+import { Brands, Button, Pair, Ring, Marquee, DitherBar, DitherSpot, DitherBlob, rise, ease } from "./ui.jsx";
+import regions from "./regions.json";
 
 const HL = () => window.HL;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -19,12 +20,16 @@ function Masthead({ muted, setMuted }) {
 
 /* ---------- the card plate. The 3D engine owns #stage and everything inside it. ---------- */
 const Plate = memo(function Plate({ hot }) {
+  const [decode, setDecode] = useState(false), [side, setSide] = useState("front"), [focus, setFocus] = useState(null);
+  useEffect(() => { const f = e => setSide(e.detail); window.addEventListener("hl-side", f); return () => window.removeEventListener("hl-side", f); }, []);
+  const toggle = () => { const v = !decode; setDecode(v); window.HL && window.HL.track.set(v); };
+  const items = regions[side];
   return (
     <section className="plate" aria-label="Card preview">
       <aside className="marg l"><p className="k">Front</p><p className="t">Tide</p><p className="d">Your name, laser etched. Nothing is printed, so nothing can fade.</p></aside>
       <div className="plate-mid">
         <i className="cm tl" /><i className="cm tr" /><i className="cm bl" /><i className="cm br" />
-        <div className="spot" aria-hidden="true" />
+        <DitherSpot />
         <motion.div className="heat" aria-hidden="true" animate={{ opacity: hot ? 1 : 0 }} transition={{ duration: .8 }} />
         <div className="stage" id="stage" aria-label="3D preview of the card. Drag to turn it.">
           <div className="fallback" id="fallback" hidden><img id="fbImg" alt="Front of the card" /></div>
@@ -34,7 +39,19 @@ const Plate = memo(function Plate({ hot }) {
         <div className="sides" role="group" aria-label="Show side">
           <button type="button" className="side" id="sideFront" aria-pressed="true"><img id="pvFront" alt="" />Front</button>
           <button type="button" className="side" id="sideBack" aria-pressed="false"><img id="pvBack" alt="" />Back</button>
+          <button type="button" className={"side decode"} aria-pressed={decode} onClick={toggle}><i className="dot" aria-hidden="true" />{decode ? "Hide the map" : "Decode the card"}</button>
         </div>
+        <AnimatePresence initial={false}>
+          {decode && (
+            <motion.ol key="legend" className="legend" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: .5, ease }}>
+              {items.map((r, i) => (
+                <motion.li key={side + r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .06 * i + .15 }}
+                  onMouseEnter={() => { setFocus(r.id); window.HL.track.focus(r.id); }} onMouseLeave={() => { setFocus(null); window.HL.track.focus(null); }}
+                  className={focus === r.id ? "on" : ""}><b>{r.n}</b><div><h4>{r.label}</h4><p>{r.desc}</p></div></motion.li>
+              ))}
+            </motion.ol>
+          )}
+        </AnimatePresence>
       </div>
       <aside className="marg r"><p className="k">Back</p><p className="t">Ledger</p><p className="d">The genesis record and a tap to verify. Numbered one of twenty five.</p></aside>
     </section>
@@ -133,6 +150,7 @@ const Soc = ({ href, icon, children }) => <a href={href} target="_blank" rel="no
 function Footer({ socials }) {
   return (
     <footer className="site-foot">
+      <DitherBar className="foot-bar" />
       <Brands cls="brands foot-brands" />
       <nav className="soc" aria-label="Social links">{socials.map(s => <Soc key={s.label} href={s.url} icon={s.icon}>{s.label}</Soc>)}</nav>
       <p className="legal">An independent community of Hyperliquid users. Not Hyperliquid, not Hyper Foundation, not officially affiliated.</p>
@@ -186,9 +204,11 @@ export default function App({ socials }) {
     <div className="wrap">
       {info?.mock && <div className="demo">Demo data. Preview only.</div>}
       <Masthead muted={muted} setMuted={setMuted} />
+      <DitherBar className="top" />
       <Marquee items={["Hyperliquid India x ENS", "House of HYPE", "Mumbai", "3 November", "Twenty five pieces", "Laser etched on both faces"]} />
 
       <main className="hero">
+        <DitherBlob />
         <motion.p className="eyebrow" {...rise(0, reduce)}><span>Limited edition</span></motion.p>
         <motion.h1 {...rise(1, reduce)}>Your name,<br /><i>laser etched</i><br />in metal.</motion.h1>
         <motion.p className="sub" {...rise(2, reduce)}>Hyperliquid India and ENS are giving away 25 NFC metal cards for House of HYPE. Enter your .hl or .eth name to see your card and check if you are eligible.</motion.p>
