@@ -65,7 +65,7 @@ h1 i{font-style:italic;letter-spacing:-.01em;background:linear-gradient(100deg,v
 .co.on h4,.co.on h3{color:#fff}.co.on .co-h b{background:var(--accent)}.co.on .co-d{color:#c9c4bb}
 .co::before{content:"";position:absolute;top:9px;width:6px;height:6px;background:var(--dim);transition:background .3s}
 .co.l::before{right:0}.co.r::before{left:0}.co.on::before{background:var(--accent);box-shadow:0 0 8px var(--accent)}
-@media(max-width:1000px){
+@media(max-width:1240px){
   .bleed{width:100%}
   .plate{grid-template-columns:1fr;gap:14px;margin-top:26px}
   .plate-mid{order:0}.co-wrap.l{order:1}.co-wrap.r{order:2}
@@ -84,7 +84,7 @@ h1 i{font-style:italic;letter-spacing:-.01em;background:linear-gradient(100deg,v
 .stage{min-height:0}
 .heat{position:absolute;inset:8% 8% 10%;background:radial-gradient(50% 50% at 50% 50%,rgba(151,252,228,.22),rgba(151,252,228,0) 70%);filter:blur(30px);pointer-events:none}
 .stage{position:relative;aspect-ratio:16/9;width:100%;touch-action:pan-y;cursor:grab}.stage:active{cursor:grabbing}
-@media(max-width:1000px){.stage{aspect-ratio:16/9}}
+@media(max-width:1240px){.stage{aspect-ratio:16/9}}
 @media(max-width:560px){.stage{aspect-ratio:4/3}}
 .stage canvas{display:block;width:100%;height:100%}
 .stage .fallback{position:absolute;inset:0;display:grid;place-items:center;padding:8%}.stage .fallback img{width:100%;max-width:640px;height:auto;border-radius:3%}
@@ -159,7 +159,7 @@ canvas.track{position:absolute;left:0;top:0;width:100%;height:100%;pointer-event
 }}
 
 @media(max-width:640px){h1{margin-top:16px}.sub{font-size:13.5px}.fine{font-size:12.5px}}
-@media(max-width:1000px){.plate{margin-top:10px}.site-foot{margin-top:18px}}
+@media(max-width:1240px){.plate{margin-top:10px}.site-foot{margin-top:18px}}
 
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .status{min-height:0}.apply{gap:6px}
@@ -167,7 +167,7 @@ canvas.track{position:absolute;left:0;top:0;width:100%;height:100%;pointer-event
 .fine{font-size:12px;max-width:72ch}
 .getname{font-size:13px}
 
-@media(max-width:1000px){.co-wrap.l .co-col{padding-bottom:0}.co-wrap.r .co-col{padding-top:0}.co.title h3{font-size:38px}}
+@media(max-width:1240px){.co-wrap.l .co-col{padding-bottom:0}.co-wrap.r .co-col{padding-top:0}.co.title h3{font-size:38px}}
 
 /* console layout: the card and the checker share one screen, the result and video stay beside the card */
 .hero{align-items:center}
@@ -193,7 +193,7 @@ canvas.track{position:absolute;left:0;top:0;width:100%;height:100%;pointer-event
 .console .vidbox video{width:118px}.console .vidbox .small{display:none}.console .vidbox .cap-text{font-size:13px}
 .console .fine{margin:0;font-size:11.5px;max-width:none;text-align:left}
 .console .etch{margin:0}
-@media(max-width:1000px){
+@media(max-width:1240px){
   .deck{grid-template-columns:1fr;gap:12px;width:100%}
   .deck .plate{display:contents}
   .deck .plate-mid{order:1;position:sticky;top:0;z-index:20;background:var(--bg);padding-top:6px}
@@ -252,7 +252,7 @@ canvas.track{position:absolute;left:0;top:0;width:100%;height:100%;pointer-event
 .again{all:unset;cursor:pointer;font-size:13.5px;color:var(--mute);text-decoration:underline;text-underline-offset:3px;align-self:flex-start}
 .again:hover{color:var(--fg)}
 @media(prefers-reduced-motion:reduce){.flip-in{transition:none}}
-@media(max-width:1000px){.console{order:2}}
+@media(max-width:1240px){.console{order:2}}
 
 /* leaderboard breakdown columns */
 .lb-head,.lb-main{grid-template-columns:44px minmax(120px,1.1fr) minmax(0,3fr) 48px 24px}
@@ -329,3 +329,5 @@ a.snd.luma{background:#fff;color:#0a0a0a;border-color:#fff;opacity:1}a.snd.luma:
 .tnc-c p{margin:0;font-size:13px;line-height:1.5;color:var(--mute)}
 @media(max-width:700px){.tnc-g{grid-template-columns:1fr}}
 .site-foot{flex-direction:column;gap:16px}.soc{display:grid;grid-template-columns:repeat(2,auto);gap:10px}
+@media(min-width:701px) and (max-width:1240px){.console{max-width:640px;margin:0 auto;width:100%}}
+@media(min-width:701px) and (max-width:1240px){.stage{max-width:600px;margin:0 auto}.deck .plate-mid{max-width:none}}
