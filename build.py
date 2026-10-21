@@ -143,27 +143,30 @@ if os.environ.get('CLASSIC'):
     _B = r"""back(x, mode, d) {
         base(x, mode, false);
         const hash = (d.node || "0x" + "0".repeat(64)).slice(2);
-        x.save(); x.font = MONO(400, 13); x.textAlign = "left"; x.textBaseline = "middle"; x.fillStyle = ink(mode, MINT); x.globalAlpha = .38;
-        const rail = y => { let s = ""; while (x.measureText(s).width < TEX_W - 2 * M) s += hash + "  "; while (x.measureText(s).width > TEX_W - 2 * M) s = s.slice(0, -1); x.fillText(s, M, y); };
-        rail(46); rail(958); x.restore();
+        const mint = ink(mode, MINT);
+        // one micro rail: the namehash, bottom edge
+        x.save(); x.font = MONO(400, 12); x.textAlign = "left"; x.textBaseline = "middle"; x.fillStyle = mint; x.globalAlpha = .34;
+        let rs = ""; while (x.measureText(rs).width < RGT - M) rs += hash + "   "; while (x.measureText(rs).width > RGT - M) rs = rs.slice(0, -1); x.fillText(rs, M, 958); x.restore();
         marks(x, mode, c => {
-          x.textAlign = "left"; x.textBaseline = "middle";
-          x.font = MONO(700, 112); dotText(x, D.genesisDate, M, 200, 112, c, 6);
-          x.fillStyle = ink(mode, MINT); x.globalAlpha = .75; x.font = MONO(500, 17); x.fillText("HYPE GENESIS  ·  " + D.genesisClock, M, 314); x.globalAlpha = 1;
-          const cells = [["MAX SUPPLY", D.maxSupply, 1], ["AIRDROP", D.airdrop, 1], ["SHARE", D.airdropPct, 1], ["WALLETS", D.wallets, 1], ["UNIX TIME", D.genesisUnix, 1], ["TOKEN", D.genesisId.slice(0, 6) + "…" + D.genesisId.slice(-4), 0]];
-          cells.forEach(([k, v, dm], i) => { const cx0 = M + (i % 3) * 470, cy0 = 470 + Math.floor(i / 3) * 130;
-            x.fillStyle = ink(mode, MINT); x.globalAlpha = .6; x.font = MONO(400, 13); x.fillText(k, cx0, cy0); x.globalAlpha = 1;
-            x.fillStyle = c; x.font = MONO(500, 42); x.fillText(v, cx0, cy0 + 52);
-            if (i % 3) { x.strokeStyle = ink(mode, MINT); x.globalAlpha = .25; x.lineWidth = 1.5; x.beginPath(); x.moveTo(cx0 - 36, cy0 - 14); x.lineTo(cx0 - 36, cy0 + 84); x.stroke(); x.globalAlpha = 1; } });
-          x.strokeStyle = ink(mode, MINT); x.globalAlpha = .4; x.lineWidth = 1.5; x.beginPath(); x.moveTo(M, 730); x.lineTo(TEX_W - M, 730); x.stroke(); x.globalAlpha = 1;
-          x.fillStyle = ink(mode, MINT); x.globalAlpha = .6; x.font = MONO(400, 13); x.fillText("HOLDER", M, 764); x.globalAlpha = 1;
-          x.fillStyle = ink(mode, MINT); x.font = SANS(600, 64); x.fillText(d.name, M, 812);
-          const qs = 250, qx = TEX_W - M - qs, qy = 120; drawQR(x, qrUrl(d), qx, qy, qs, mode);
-          x.strokeStyle = ink(mode, MINT); x.lineWidth = 2; const bk = 26, g = 16;
-          [[qx - g, qy - g, 1, 1], [qx + qs + g, qy - g, -1, 1], [qx - g, qy + qs + g, 1, -1], [qx + qs + g, qy + qs + g, -1, -1]].forEach(([px, py, sx, sy]) => { x.beginPath(); x.moveTo(px, py + sy * bk); x.lineTo(px, py); x.lineTo(px + sx * bk, py); x.stroke(); });
-          x.fillStyle = ink(mode, MINT); x.globalAlpha = .75; x.font = MONO(400, 13); x.textAlign = "center"; x.fillText("SCAN  ·  TAP  TO  VERIFY", qx + qs / 2, qy + qs + 52); x.textAlign = "left"; x.globalAlpha = 1;
+          x.textBaseline = "middle";
+          // tracking reticle, centre of the card
+          const CX = TEX_W / 2 + 60, CY = 470, R = 232;
+          x.save(); x.strokeStyle = mint; x.lineWidth = 1.5; x.globalAlpha = .28;
+          x.beginPath(); x.arc(CX, CY, R, 0, Math.PI * 2); x.stroke();
+          x.globalAlpha = .55; [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dx, dy]) => { x.beginPath(); x.moveTo(CX + dx * (R - 18), CY + dy * (R - 18)); x.lineTo(CX + dx * (R + 26), CY + dy * (R + 26)); x.stroke(); });
+          x.globalAlpha = .22; for (let a = 0; a < 360; a += 10) { if (a % 90 === 0) continue; const r0 = a % 30 ? R - 6 : R - 12, t = a * Math.PI / 180; x.beginPath(); x.moveTo(CX + Math.cos(t) * r0, CY + Math.sin(t) * r0); x.lineTo(CX + Math.cos(t) * R, CY + Math.sin(t) * R); x.stroke(); }
+          const bk = 22, g = R * .71 + 20; x.globalAlpha = .8; x.lineWidth = 2;
+          [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => { x.beginPath(); x.moveTo(CX + sx * g, CY + sy * (g - bk)); x.lineTo(CX + sx * g, CY + sy * g); x.lineTo(CX + sx * (g - bk), CY + sy * g); x.stroke(); });
+          x.restore();
+          const qs = 196; drawQR(x, qrUrl(d), CX - qs / 2, CY - qs / 2, qs, mode);
+          x.fillStyle = mint; x.globalAlpha = .7; x.font = MONO(400, 12); x.textAlign = "center"; spaced(x, "TAP TO VERIFY", CX, CY + R + 54, 4, "center"); x.globalAlpha = 1;
+          // the fix: where and when, left, small
+          x.textAlign = "left";
+          x.fillStyle = c; x.font = MONO(500, 20); spaced(x, "HOUSE OF HYPE", M, 404, 6);
+          x.fillStyle = mint; x.globalAlpha = .8; x.font = MONO(400, 14);
+          spaced(x, "MUMBAI", M, 456, 5); spaced(x, "19.0760° N   72.8777° E", M, 488, 3); spaced(x, "03 · 11 · 2026", M, 520, 3);
+          x.globalAlpha = .35; x.lineWidth = 1.5; x.strokeStyle = mint; x.beginPath(); x.moveTo(M, 430); x.lineTo(M + 180, 430); x.stroke(); x.globalAlpha = 1;
           lockup(x, c, M - 30, 880, 34);
-          x.font = MONO(700, 52); dotText(x, `${d.no}/${d.edition}`, TEX_W - 70 - Math.ceil(x.measureText(`${d.no}/${d.edition}`).width) - 8, 914, 52, c, 4);
         });
       },
 """
