@@ -13,7 +13,7 @@ function Masthead({ muted, setMuted }) {
     <header className="mast">
       <span className="mast-l" aria-hidden="true" />
       <Brands />
-      <span className="mast-r"><button type="button" className="snd" aria-pressed={!muted} onClick={() => { setMuted(!muted); HL().setMuted(!muted); }}>{muted ? "Sound off" : "Sound on"}</button></span>
+      <span className="mast-r"><a className="snd luma" href="https://luma.com/x6m1zvfh" target="_blank" rel="noopener">Event on Luma</a><button type="button" className="snd" aria-pressed={!muted} onClick={() => { setMuted(!muted); HL().setMuted(!muted); }}>{muted ? "Sound off" : "Sound on"}</button></span>
     </header>
   );
 }
@@ -209,6 +209,18 @@ function Leaderboard({ me, refresh }) {
   );
 }
 
+
+/* ---------- terms ---------- */
+function Terms() {
+  return (
+    <section className="tnc" aria-label="Terms and conditions">
+      <h2>Terms and conditions</h2>
+      <p>There are 25 numbered NFC metal cards, made by Hyperliquid India and ENS. Claims open on 22 October at 12:00 IST and close on 24 October at 12:00 IST.</p>
+      <p>Winners collect in person at the House of HYPE event in Mumbai on 3 November. At pickup, the winner shows proof of the wallet behind their name, so the card goes to the person who owns the name.</p>
+    </section>
+  );
+}
+
 /* ---------- footer ---------- */
 const Soc = ({ href, children }) => <a href={href} target="_blank" rel="noopener">{children}</a>;
 function Footer({ socials }) {
@@ -216,7 +228,7 @@ function Footer({ socials }) {
     <footer className="site-foot">
       <Brands cls="brands foot-brands" />
       <nav className="soc" aria-label="Social links">{socials.map(s => <Soc key={s.label} href={s.url}>{s.label}</Soc>)}</nav>
-      <p className="legal"><a href="/terms">Terms and conditions</a>. An independent community of Hyperliquid users. Not Hyperliquid, not Hyper Foundation, not officially affiliated.</p>
+      <p className="legal">An independent community of Hyperliquid users. Not Hyperliquid, not Hyper Foundation, not officially affiliated.</p>
     </footer>
   );
 }
@@ -314,6 +326,7 @@ export default function App({ socials }) {
           </aside>
         </div>
         <Leaderboard me={res?.name} refresh={res?.name} />
+        <Terms />
       </main>
       <Footer socials={socials} />
       <span id="stageTag" hidden /><aside id="notes" hidden />
