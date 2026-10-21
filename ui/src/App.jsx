@@ -151,11 +151,14 @@ function Leaderboard({ me, refresh }) {
   const [lb, setLb] = useState(null), [open, setOpen] = useState(null);
   useEffect(() => { let live = true; fetch("/api/leaderboard").then(r => r.json()).then(j => live && setLb(j)).catch(() => live && setLb({ rows: [], cards: 25 })); return () => { live = false; }; }, [refresh]);
   useEffect(() => { if (me) setOpen(me); }, [me]);
-  const rows = lb?.rows || [], cards = lb?.cards || 25, shown = rows;
+  const SHORT = { tenure: "Time", hype: "HYPE", volume: "Volume", hip: "HIP-3/4", trades: "Trades", name: "Name age" };
+  const rows = lb?.rows || [], cols = (rows[0]?.parts || []).map(p => ({ key: p.key, label: SHORT[p.key] || p.label })), cards = lb?.cards || 25, shown = rows;
   return (
     <section className="lb" aria-label="Leaderboard">
       <div className="lb-h"><h2>Leaderboard</h2><span>Every name checked, eligible or not. Top {cards} eligible get a card. Tap a row for the breakdown.</span></div>
       {!lb ? <p className="lb-empty">Loading…</p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
+        <>
+        <div className="lb-head" aria-hidden="true"><span /><span>Name</span><span className="lb-cells">{cols.map(c => <span key={c.key}>{c.label}</span>)}</span><span>Score</span><span /></div>
         <ol className="lb-list">
           {shown.map(r => {
             const on = open === r.name, you = me === r.name;
@@ -164,7 +167,7 @@ function Leaderboard({ me, refresh }) {
                 <button type="button" className="lb-main" aria-expanded={on} onClick={() => setOpen(on ? null : r.name)}>
                   <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
                   <span className="lb-name">{r.name}{you && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
-                  <span className="lb-bar"><i style={{ width: r.score + "%" }} /></span>
+                  <span className="lb-cells">{r.parts.map(p => <span key={p.key} className="lb-cell" title={p.label + ": " + p.pts + " / " + p.max}><b>{p.pts}</b><i style={{ width: (p.max ? (p.pts / p.max) * 100 : 0) + "%" }} /></span>)}</span>
                   <span className="lb-score">{r.score}</span>
                   <span className="lb-chev" aria-hidden="true">{on ? "−" : "+"}</span>
                 </button>
@@ -184,6 +187,7 @@ function Leaderboard({ me, refresh }) {
             );
           })}
         </ol>
+        </>
       )}
     </section>
   );
