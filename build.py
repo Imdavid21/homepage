@@ -123,6 +123,7 @@ if os.environ.get('CLASSIC'):
           ('["HYPE", D.genesisDate,', '["HYPERLIQUID INDIA ENS HYPE", D.genesisDate,'),
         ]
         _R += [('const waist = SIGNATURE ? `SIG ${SIGNATURE} ` : `MSG ${signMessage(d)} `;', 'const waist = `${(d.node || "0x" + "0".repeat(64))} `;')]
+        _R += [('x.fillStyle = hair(mode, edge && !inB ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);', 'if (cy > band[1] && cy < band[3]) { x.globalAlpha = .18 + .42 * w; x.fillStyle = ink(mode, MINT); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = hair(mode, edge ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy); }')]
         for _a, _b in _R:
             assert _a in eng, _a
             eng = eng.replace(_a, _b, 1)

@@ -554,7 +554,7 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
           const ch = hash[k++ % hash.length]; cells++;
           const edge = !inside(cx - 10, cy) || !inside(cx + 10, cy) || !inside(cx, cy - 19) || !inside(cx, cy + 19);
           const t = (cx - 560) / 1025, w = 0.5 + 0.5 * Math.sin(t * 5.6 + cy * 0.011 + Math.sin(cy * 0.004) * 1.4);
-          x.fillStyle = hair(mode, edge && !inB ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);
+          if (cy > band[1] && cy < band[3]) { x.globalAlpha = .18 + .42 * w; x.fillStyle = ink(mode, MINT); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = hair(mode, edge ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy); }
         }
         x.font = MONO(600, 9); let kn = 0;
         for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = ink(mode, MINT); x.fillRect(run, gy, gx - run, 2); } run = gx; rl = L; } } }
