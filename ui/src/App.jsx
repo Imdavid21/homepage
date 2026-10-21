@@ -155,7 +155,7 @@ function Leaderboard({ me, refresh }) {
   const rows = lb?.rows || [], cols = (rows[0]?.parts || []).map(p => ({ key: p.key, label: SHORT[p.key] || p.label })), cards = lb?.cards || 25, shown = rows;
   return (
     <section className="lb" aria-label="Leaderboard">
-      <div className="lb-h"><h2>Leaderboard</h2><span>Every name checked, eligible or not. Top {cards} eligible get a card. Tap a row for the breakdown.</span></div>
+      <div className="lb-h"><h2>Leaderboard</h2></div>
       {!lb ? <p className="lb-empty">Loading…</p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
         <>
         <div className="lb-head" aria-hidden="true"><span /><span>Name</span><span className="lb-cells">{cols.map(c => <span key={c.key}>{c.label}</span>)}</span><span>Score</span><span /></div>
