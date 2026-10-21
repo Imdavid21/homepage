@@ -25,7 +25,7 @@ test("a new whale cannot reach 90", () => {
 });
 test("window state follows the dates", async () => {
   const { windowState } = await import("../lib/handlers.js");
-  const a = Date.parse("2026-10-22T12:00:00+05:30"), b = Date.parse("2026-10-26T12:00:00+05:30");
+  const a = Date.parse("2026-10-23T18:30:00+05:30"), b = Date.parse("2026-10-25T18:30:00+05:30");
   assert.equal(windowState(a - 1), "upcoming"); assert.equal(windowState(a), "open"); assert.equal(windowState(b - 1), "open"); assert.equal(windowState(b), "closed");
 });
 test("claims: window, eligibility, one per wallet, sold out", async () => {
