@@ -527,8 +527,8 @@ Error generating stack: `+i.message+`
         const bs = 1320 / 200, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(600, -160).scale(bs, bs));
         const inside = (px, py) => hitCtx.isPointInPath(path, px, py);
         const ns = nameSize(x, d, 580, 112, 36, v => SANS(500, v), SERIF);
-        x.font = SANS(500, ns); let nw = x.measureText(d.base).width; x.font = SERIF(ns); nw += x.measureText(d.tld).width;
-        const keep = [[M - 12, 590 - ns * .9, M + nw + 24, 590 + ns * .3]];
+        const NY = Math.round(470 + ns * .24); x.font = SANS(500, ns); let nw = x.measureText(d.base).width; x.font = SERIF(ns); nw += x.measureText(d.tld).width;
+        const keep = [[M - 12, NY - ns * .9, M + nw + 24, NY + ns * .3]];
         const hash = (d.node || "0x" + "0".repeat(64)).slice(2);
         const waist = SIGNATURE ? `SIG ${SIGNATURE} ` : `MSG ${signMessage(d)} `;
         let k = 0, kw = 0, cells = 0, wcells = 0;
@@ -546,9 +546,9 @@ Error generating stack: `+i.message+`
         x.restore();
         blobStats = { cells, waist: wcells };
         marks(x, mode, c => {
-          drawName(x, d, M, 590, ns, c, ink(mode, MINT));
-          lockup(x, c, M, 854, 34);
-          x.fillStyle = ink(mode, DIM); x.font = MONO(400, 26); x.textAlign = "left"; spaced(x, `${d.no}/${d.edition}`, M, 590 + Math.round(ns * .3) + 60, 3);
+          drawName(x, d, M, NY, ns, c, ink(mode, MINT));
+          lockup(x, c, M, 866, 34);
+          x.fillStyle = ink(mode, DIM); x.font = MONO(400, 26); x.textAlign = "left"; spaced(x, `${d.no}/${d.edition}`, M, NY + Math.round(ns * .3) + 60, 3);
         });
       },
       back(x, mode, d) {

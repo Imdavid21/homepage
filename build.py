@@ -60,6 +60,11 @@ if os.environ.get('CLASSIC'):
     eng = eng.replace('const keep = [[1330, 40, 1540, 200], [M - 12', 'const keep = [[M - 12', 1)
     eng = eng.replace('          x.fillStyle = c; x.font = MONO(500, 50); x.textAlign = "left"; spaced(x, ")))", 1356, 136, -8);\n', '', 1)
     eng = eng.replace('          lockup(x, c, M, 854, 34);\n          x.fillStyle = c; x.font = MONO(400, 26); spaced(x, `${d.no}/${d.edition}`, RGT, 890, 3, "right");', '          lockup(x, c, M, 854, 34);\n          x.fillStyle = ink(mode, DIM); x.font = MONO(400, 26); x.textAlign = "left"; spaced(x, `${d.no}/${d.edition}`, M, 590 + Math.round(ns * .3) + 60, 3);', 1)
+    _i = eng.index('front(x, mode, d) {'); _j = eng.index('back(x, mode, d) {', _i)
+    _f = eng[_i:_j]
+    _f = _f.replace('x.font = SANS(500, ns); let nw', 'const NY = Math.round(470 + ns * .24); x.font = SANS(500, ns); let nw', 1)
+    _f = _f.replace('590', 'NY').replace('lockup(x, c, M, 854, 34)', 'lockup(x, c, M, 866, 34)')
+    eng = eng[:_i] + _f + eng[_j:]
     assert eng != _n and ')))' not in eng.split('back(x, mode, d)')[0].split('marks(x, mode')[-1]
 
 eng = eng.replace('__REGIONS__', open('ui/src/regions_classic.json' if os.environ.get('CLASSIC') else 'ui/src/regions.json').read())
