@@ -318,3 +318,5 @@ a.snd.luma{text-decoration:none;display:inline-flex;align-items:center}
 /* back to the bar style */
 .lb-main{grid-template-columns:44px minmax(120px,1.2fr) minmax(80px,2fr) 56px 24px}
 @media(max-width:900px){.lb-main{grid-template-columns:30px 1fr 44px 20px}.lb-bar{display:none}}
+
+a.snd.luma{background:#fff;color:#0a0a0a;border-color:#fff;opacity:1}a.snd.luma:hover{background:var(--bone);color:#0a0a0a;border-color:var(--bone)}
