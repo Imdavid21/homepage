@@ -4,7 +4,7 @@
    "id": "card",
    "n": "00",
    "label": "Front",
-   "desc": "Your name, your number out of 25 and the two brands. The Hyperliquid shape is filled with your namehash.",
+   "desc": "Your name, your number out of 25 and the two brands, set inside a Hyperliquid shape written in the HYPE genesis record.",
    "x": 0,
    "y": 0,
    "w": 1585,
@@ -40,14 +40,14 @@
   {
    "id": "mark",
    "n": "03",
-   "label": "Namehash fill",
-   "desc": "The Hyperliquid shape is filled with your namehash, so no two cards carry the same text.",
+   "label": "Genesis fill",
+   "desc": "The Hyperliquid shape is written in the HYPE genesis record: date, time, unix, token ID, max supply, airdrop and wallets.",
    "x": 345,
    "y": 170,
    "w": 894,
    "h": 660,
    "side": "r",
-   "meta": "Etched | Hex glyphs"
+   "meta": "Etched | Genesis record"
   },
   {
    "id": "waist",

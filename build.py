@@ -104,6 +104,7 @@ if os.environ.get('CLASSIC'):
               ('x.fillStyle = hair(mode, edge ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);\n        }\n        x.restore();', 'x.fillStyle = hair(mode, edge && !inB ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);\n        }\n        x.font = MONO(600, 9); let kn = 0;\n        for (let gy = Math.floor(band[1]); gy < band[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(band[0]); gx <= band[2]; gx++) { const L = gx < band[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = rl === 2 ? ink(mode, MINT) : hair(mode, .92); x.fillRect(run, gy, gx - run, 2.2); } run = gx; rl = L; } } }\n        x.restore();'),
               ('drawName(x, d, CX, NYY, ns, c, ink(mode, MINT), "center");', ''),
             ]
+        _R += [('(d.node || "0x" + "0".repeat(64)).slice(2);', '["HYPE", D.genesisDate, D.genesisClock.replace(" ", ""), D.genesisUnix, D.genesisId.slice(2), D.maxSupply.replace(/,/g, ""), D.airdrop.replace(/,/g, ""), D.airdropPct, D.wallets.replace(/,/g, ""), ""].join("\u00b7");')]
         for _a, _b in _R:
             assert _a in eng, _a
             eng = eng.replace(_a, _b, 1)
