@@ -105,6 +105,17 @@ if os.environ.get('CLASSIC'):
               ('drawName(x, d, CX, NYY, ns, c, ink(mode, MINT), "center");', ''),
             ]
         _R += [('(d.node || "0x" + "0".repeat(64)).slice(2);', '["HYPE", D.genesisDate, D.genesisClock.replace(" ", ""), D.genesisUnix, D.genesisId.slice(2), D.maxSupply.replace(/,/g, ""), D.airdrop.replace(/,/g, ""), D.airdropPct, D.wallets.replace(/,/g, ""), ""].join("\u00b7");')]
+        _R += [
+          ('const ns = nameSize(x, d, 540, 112, 36, v => SANS(500, v), SERIF);', 'let ns = nameSize(x, d, 459, 95, 30, v => SANS(600, v), SERIF); if (ns < 60) ns = nameSize(x, d, 720, 60, 30, v => SANS(600, v), SERIF);'),
+          ('for (let j = -6; j <= 6; j += 3) for (let i = -4; i <= 4; i += 2)', 'for (let j = -9; j <= 9; j += 3) for (let i = -7; i <= 7; i += 7 / 3)'),
+          ('x.fillStyle = rl === 2 ? ink(mode, MINT) : hair(mode, .92); x.fillRect(run, gy, gx - run, 2.2);', 'x.fillStyle = rl === 2 ? ink(mode, MINT) : hair(mode, .85); x.fillRect(run, gy, gx - run, 2);'),
+          ('        x.restore();\n        blobStats', '        x.textAlign = "left"; x.textBaseline = "alphabetic"; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.font = SERIF(ns); const bW = x.measureText(d.tld).width; const sx = CX - (aW + bW) / 2;\n        x.lineWidth = 1.8; x.strokeStyle = hair(mode, 1); x.font = SANS(600, ns); x.strokeText(d.base, sx, NYY); x.strokeStyle = ink(mode, MINT); x.font = SERIF(ns); x.strokeText(d.tld, sx + aW + ns * .02, NYY);\n        x.restore();\n        blobStats'),
+        ]
+        _R += [
+          ('const band = keep[0];', 'const band = [CX - 312, 432, CX + 312, 552]; const nr = [CX - nw / 2 - 8, NYY - ns, CX + nw / 2 + 8, NYY + ns * .35];'),
+          ('if (inB && near(cx, cy)) continue;', 'if (cx > nr[0] && cx < nr[2] && cy > nr[1] && cy < nr[3] && near(cx, cy)) continue;'),
+          ('for (let gy = Math.floor(band[1]); gy < band[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(band[0]); gx <= band[2]; gx++) { const L = gx < band[2] ?', 'for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ?'),
+        ]
         for _a, _b in _R:
             assert _a in eng, _a
             eng = eng.replace(_a, _b, 1)
