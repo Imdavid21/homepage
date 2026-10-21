@@ -159,10 +159,10 @@ function Leaderboard({ me, refresh }) {
           {rows.map(r => {
             const on = open === r.name, you = me === r.name;
             return (
-              <li key={r.name} className={"lb-row" + (on ? " on" : "") + (you ? " you" : "") + (r.rank === cards ? " cut" : "")}>
+              <li key={r.rank + r.name} className={"lb-row" + (on ? " on" : "") + (you ? " you" : "") + (r.rank === cards ? " cut" : "")}>
                 <button type="button" className="lb-main" aria-expanded={on} onClick={() => setOpen(on ? null : r.name)}>
                   <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
-                  <span className="lb-name">{r.name}{you && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
+                  <span className="lb-name">{r.name}{r.legend && <em className="g">Legend</em>}{you && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
                   <span className="lb-bar"><i style={{ width: r.score + "%" }} /></span>
                   <span className="lb-score">{r.score}</span>
                   <span className="lb-chev" aria-hidden="true">{on ? "−" : "+"}</span>
