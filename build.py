@@ -74,7 +74,7 @@ if os.environ.get('CLASSIC'):
     const px = o.getImageData(0, 0, w, h).data; x.save(); x.fillStyle = color;
     for (let yy = 0; yy < h; yy += pitch) for (let xx = 0; xx < w; xx += pitch) {
       let a = 0; for (let j = 0; j < pitch; j += 2) for (let i = 0; i < pitch; i += 2) a += px[((yy + j) * w + xx + i) * 4 + 3];
-      if (a / 9 > 120) { x.beginPath(); x.arc(X + xx + pitch / 2 - 2, Y - h * .86 + yy + pitch / 2, pitch * .34, 0, 6.2832); x.fill(); }
+      if (a / (Math.ceil(pitch / 2) ** 2) > 120) { x.beginPath(); x.arc(X + xx + pitch / 2 - 2, Y - h * .86 + yy + pitch / 2, pitch * .34, 0, 6.2832); x.fill(); }
     }
     x.restore();
   }
@@ -82,6 +82,22 @@ if os.environ.get('CLASSIC'):
     eng = eng[:_i] + _f + eng[_j:]
     eng = eng.replace('function lockup(x, c, X, Y, h) {', _dot + 'function lockup(x, c, X, Y, h) {', 1)
     eng = eng.replace('const bs = 1320 / 200, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(600, -160).scale(bs, bs));', 'const bs = 4.96, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(616.6, 4.2).scale(bs, bs));', 1)
+    if os.environ.get('FULLBLOB', '1') == '1':
+        _R = [
+          ('new DOMMatrix().translate(616.6, 4.2).scale(bs, bs)', 'new DOMMatrix().translate(-0.5, -293).scale(bs, bs)'),
+          ('const bs = 4.96', 'const bs = 7.93'),
+          ('nameSize(x, d, 580, 112, 36,', 'nameSize(x, d, 760, 124, 40,'),
+          ('const NY = 509;', 'const NY = 0; const CX = 792; const NYY = Math.round(500 + ns * .25);'),
+          ('const keep = [[M - 12, NY - ns * .9, M + nw + 24, NY + ns * .3]];', 'const keep = [[CX - nw / 2 - 26, NYY - ns * .95, CX + nw / 2 + 26, NYY + ns * .55 + 70]];'),
+          ('gx = 540; gx < TEX_W', 'gx = 0; gx < TEX_W'),
+          ('if (gy === 486 || gy === 504) {', 'if (gy === 396 || gy === 612) {'),
+          ('drawName(x, d, M, NY, ns, c, ink(mode, MINT));', 'drawName(x, d, CX, NYY, ns, c, ink(mode, MINT), "center");'),
+          ('lockup(x, c, M, 866, 34);', 'lockup(x, c, M - 30, 880, 34);'),
+          ('dotText(x, `${d.no}/${d.edition}`, M, NY + Math.round(ns * .3) + 92, 76, c, 6);', 'dotText(x, `${d.no}/${d.edition}`, CX - 62, NYY + 78, 44, c, 4);'),
+        ]
+        for _a, _b in _R:
+            assert _a in eng, _a
+            eng = eng.replace(_a, _b, 1)
     assert eng != _n and ')))' not in eng.split('back(x, mode, d)')[0].split('marks(x, mode')[-1]
 
 eng = eng.replace('__REGIONS__', open('ui/src/regions_classic.json' if os.environ.get('CLASSIC') else 'ui/src/regions.json').read())
