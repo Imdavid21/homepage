@@ -125,13 +125,14 @@ if os.environ.get('CLASSIC'):
         _R += [('const waist = SIGNATURE ? `SIG ${SIGNATURE} ` : `MSG ${signMessage(d)} `;', 'const waist = `${(d.node || "0x" + "0".repeat(64))} `;')]
         _R += [('x.fillStyle = hair(mode, edge && !inB ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);', 'if (cy > band[1] && cy < band[3]) { x.globalAlpha = .18 + .42 * w; x.fillStyle = ink(mode, MINT); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = hair(mode, edge ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy); }')]
         _R += [
-          ('const waist = `${(d.node || "0x" + "0".repeat(64))} `;', 'const WT = ["HOUSE OF HYPE", "MUMBAI", "03.11.2026", `CARD ${d.no}/${d.edition}`];'),
+          ('const waist = `${(d.node || "0x" + "0".repeat(64))} `;', 'const WT = ["HYPERLIQUID", "HYPERCORE", "HYPEREVM", "HYPERBFT", "HIP-3", "HIP-4", "ONCHAIN ORDER BOOK", "PERPS", "SPOT", "HYPE"];'),
           ('{ x.globalAlpha = .18 + .42 * w;', '{ x.globalAlpha = .18 + .42 * w;'),
           ('if (cy > band[1] && cy < band[3]) { x.globalAlpha', 'if (cy > band[1] && cy < band[3] + 18) { x.globalAlpha'),
           ('let k = 0, kw = 0, cells = 0, wcells = 0;', 'let k = 0, kw = 0, cells = 0, wcells = 0; const TOK = hash.split(/[\u00b7 ]+/).filter(Boolean), FILL = "1732862752"; let ti = 0, tw = 0, fi = 0; const CM = new Map(); for (let gy = 0; gy < TEX_H; gy += 18) { const isW = gy === WA || gy === WA + 18; if (gy === WA + 18) tw += 2; let run = []; const flush = () => { if (!run.length) return; let s = ""; for (;;) { const t = isW ? WT[tw % WT.length] : TOK[ti % TOK.length], add = (s ? "  " : "") + t; if (s.length + add.length > run.length) break; s += add; if (isW) tw++; else ti++; } const pad = run.length - s.length, lp = pad >> 1; s = "\u00b7".repeat(lp) + s + "\u00b7".repeat(pad - lp); run.forEach((key, i) => CM.set(key, s[i])); run = []; }; for (let gx = 0; gx < TEX_W; gx += 9.5) { const cx = gx + 4.75, cy = gy + 9; const inB0 = cx > band[0] && cx < band[2] && cy > band[1] && cy < band[3]; if ((inside(cx, cy) || inB0) && !(isW && near(cx, cy))) run.push(gy + "_" + gx); else flush(); } flush(); }'),
           ('const ch = hash[k++ % hash.length];', 'const ch = CM.get(gy + "_" + gx) || " "; k++; if (ch === " ") continue;'),
         ]
         _R += [('x.fillText(waist[kw++ % waist.length], cx, cy); wcells++; continue;', '{ const wc = CM.get(gy + "_" + gx) || " "; if (wc !== " ") x.fillText(wc, cx, cy); } wcells++; continue;')]
+        _R += [('x.fillStyle = ink(mode, MINT); { const wc = CM.get(gy + "_" + gx) || " "; if (wc !== " ") x.fillText(wc, cx, cy); }', 'x.fillStyle = ink(mode, MINT); { const wc = CM.get(gy + "_" + gx) || " "; x.globalAlpha = .18 + .42 * (.5 + .5 * Math.sin((cx - 560) / 1025 * 5.6 + cy * .011 + Math.sin(cy * .004) * 1.4)); if (wc !== " ") x.fillText(wc, cx, cy); x.globalAlpha = 1; }')]
         for _a, _b in _R:
             assert _a in eng, _a
             eng = eng.replace(_a, _b, 1)
