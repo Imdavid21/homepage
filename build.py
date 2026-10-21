@@ -116,6 +116,12 @@ if os.environ.get('CLASSIC'):
           ('if (inB && near(cx, cy)) continue;', 'if (cx > nr[0] && cx < nr[2] && cy > nr[1] && cy < nr[3] && near(cx, cy)) continue;'),
           ('for (let gy = Math.floor(band[1]); gy < band[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(band[0]); gx <= band[2]; gx++) { const L = gx < band[2] ?', 'for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ?'),
         ]
+        _R += [
+          ('x.fillStyle = rl === 2 ? ink(mode, MINT) : hair(mode, .85);', 'x.fillStyle = ink(mode, MINT);'),
+          ('x.lineWidth = 1.8; x.strokeStyle = hair(mode, 1);', 'x.lineWidth = 1.8; x.strokeStyle = ink(mode, MINT);'),
+          ('lockup(x, c, M - 30, 880, 34);', 'lockup(x, hair(mode, .42), M - 30, 880, 34);'),
+          ('["HYPE", D.genesisDate,', '["HYPERLIQUID", "INDIA", "\u00d7", "ENS", "HYPE", D.genesisDate,'),
+        ]
         for _a, _b in _R:
             assert _a in eng, _a
             eng = eng.replace(_a, _b, 1)
