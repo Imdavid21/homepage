@@ -122,6 +122,7 @@ if os.environ.get('CLASSIC'):
           ('lockup(x, c, M - 30, 880, 34);', 'lockup(x, hair(mode, .42), M - 30, 880, 34);'),
           ('["HYPE", D.genesisDate,', '["HYPERLIQUID INDIA ENS HYPE", D.genesisDate,'),
         ]
+        _R += [('const waist = SIGNATURE ? `SIG ${SIGNATURE} ` : `MSG ${signMessage(d)} `;', 'const waist = `${(d.node || "0x" + "0".repeat(64))} `;')]
         for _a, _b in _R:
             assert _a in eng, _a
             eng = eng.replace(_a, _b, 1)

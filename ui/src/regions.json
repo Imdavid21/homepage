@@ -52,8 +52,8 @@
   {
    "id": "waist",
    "n": "04",
-   "label": "Signed message",
-   "desc": "The message across the waist ties the name, the card number and the HYPE token together.",
+   "label": "Namehash",
+   "desc": "Your name's onchain ID, the ENS namehash, runs in mint through the name. No two cards share it.",
    "x": 345,
    "y": 480,
    "w": 894,
