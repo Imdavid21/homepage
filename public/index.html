@@ -730,26 +730,27 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
   let actx = null, muted = false;
   function ac() { if (!AC) return null; if (!actx) actx = new AC(); if (actx.state === "suspended") actx.resume(); return actx; }
   function laserSound(dur, recDest, quiet, delay = 0.03) {
+    // modern scanner: a rising glass sweep, a clock of digital ticks that speeds up, a sub pulse, then a soft major chord when it locks
     const c = ac(); if (!c) return null;
     const bus = c.createGain(); bus.gain.value = 1;
     const live = c.createGain(); live.gain.value = muted ? 0 : 1; if (!quiet) { bus.connect(live); live.connect(c.destination); }
     if (recDest) bus.connect(recDest);
-    const t0 = c.currentTime + delay, t1 = t0 + dur;
-    const env = (g, peak, a, r) => { g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(peak, t0 + a); g.gain.setValueAtTime(peak, t1 - r); g.gain.linearRampToValueAtTime(0, t1); };
-    // sizzle: band passed noise with a fast tremolo
+    const t0 = c.currentTime + delay, t1 = t0 + dur, ts = t0 + dur * .86;
+    const env = (g, peak, a, r, e = t1) => { g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(peak, t0 + a); g.gain.setValueAtTime(peak, e - r); g.gain.linearRampToValueAtTime(0, e); };
+    const sw = c.createOscillator(); sw.type = "sine"; sw.frequency.setValueAtTime(220, t0); sw.frequency.exponentialRampToValueAtTime(2400, ts);
+    const sw2 = c.createOscillator(); sw2.type = "triangle"; sw2.frequency.setValueAtTime(440, t0); sw2.frequency.exponentialRampToValueAtTime(4800, ts);
+    const sg = c.createGain(); env(sg, 0.1, 0.15, 0.2, ts + .05); const sg2 = c.createGain(); env(sg2, 0.03, 0.2, 0.2, ts + .05);
+    sw.connect(sg); sw2.connect(sg2); sg.connect(bus); sg2.connect(bus);
     const nb = c.createBuffer(1, c.sampleRate, c.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
     const ns = c.createBufferSource(); ns.buffer = nb; ns.loop = true;
-    const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.setValueAtTime(3200, t0); bp.frequency.linearRampToValueAtTime(5200, t1); bp.Q.value = 0.9;
-    const am = c.createGain(); am.gain.value = 0.5; const lfo = c.createOscillator(); lfo.frequency.value = 53; const lg = c.createGain(); lg.gain.value = 0.5; lfo.connect(lg); lg.connect(am.gain);
-    const ng = c.createGain(); env(ng, 0.5, 0.08, 0.25); ns.connect(bp); bp.connect(am); am.connect(ng); ng.connect(bus);
-    // hum and whine
-    const saw = c.createOscillator(); saw.type = "sawtooth"; saw.frequency.setValueAtTime(110, t0); saw.frequency.linearRampToValueAtTime(150, t1);
-    const lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 700; const sg = c.createGain(); env(sg, 0.09, 0.1, 0.25); saw.connect(lp); lp.connect(sg); sg.connect(bus);
-    const wh = c.createOscillator(); wh.type = "sine"; wh.frequency.setValueAtTime(1300, t0); wh.frequency.exponentialRampToValueAtTime(2900, t1);
-    const wg = c.createGain(); env(wg, 0.05, 0.1, 0.2); wh.connect(wg); wg.connect(bus);
-    // finish: two soft bell tones
-    [1319, 1976].forEach((f, i) => { const o = c.createOscillator(); o.type = "sine"; o.frequency.value = f; const g = c.createGain(); g.gain.setValueAtTime(0, t1); g.gain.linearRampToValueAtTime(i ? .1 : .16, t1 + .01); g.gain.exponentialRampToValueAtTime(.0008, t1 + 1.4); o.connect(g); g.connect(bus); o.start(t1); o.stop(t1 + 1.5); });
-    [ns, lfo, saw, wh].forEach(o => { o.start(t0); o.stop(t1 + .05); });
+    const hp = c.createBiquadFilter(); hp.type = "bandpass"; hp.frequency.value = 6500; hp.Q.value = 2.2;
+    const gate = c.createGain(); gate.gain.value = 0; const cl = c.createOscillator(); cl.type = "square"; cl.frequency.setValueAtTime(10, t0); cl.frequency.exponentialRampToValueAtTime(64, ts);
+    const cg = c.createGain(); cg.gain.value = .5; const co = c.createConstantSource ? c.createConstantSource() : null; cl.connect(cg); cg.connect(gate.gain); if (co) { co.offset.value = .5; co.connect(gate.gain); co.start(t0); co.stop(t1 + .05); }
+    const tg = c.createGain(); env(tg, 0.07, 0.1, 0.15, ts); ns.connect(hp); hp.connect(gate); gate.connect(tg); tg.connect(bus);
+    const sub = c.createOscillator(); sub.type = "sine"; sub.frequency.setValueAtTime(48, t0); sub.frequency.exponentialRampToValueAtTime(96, ts); const bg = c.createGain(); env(bg, 0.16, 0.2, 0.2, ts + .1); sub.connect(bg); bg.connect(bus);
+    [880, 1109, 1319, 1760].forEach((f, i) => { const o = c.createOscillator(); o.type = "sine"; o.frequency.value = f; const g = c.createGain(); g.gain.setValueAtTime(0, ts); g.gain.linearRampToValueAtTime(.07 - i * .01, ts + .02); g.gain.exponentialRampToValueAtTime(.0008, t1 + .9); o.connect(g); g.connect(bus); o.start(ts); o.stop(t1 + 1); });
+    const th = c.createOscillator(); th.type = "sine"; th.frequency.setValueAtTime(140, ts); th.frequency.exponentialRampToValueAtTime(42, ts + .25); const thg = c.createGain(); thg.gain.setValueAtTime(.3, ts); thg.gain.exponentialRampToValueAtTime(.001, ts + .3); th.connect(thg); thg.connect(bus); th.start(ts); th.stop(ts + .35);
+    [sw, sw2, ns, cl, sub].forEach(o => { o.start(t0); o.stop(t1 + .05); });
     return t0;
   }
 
@@ -767,10 +768,13 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
     if (n1 < 0) { n0 = 0; n1 = mw * .35; } if (bx1 < 0) { bx0 = mw * .4; bx1 = mw; by0 = 0; by1 = mh; }
     // reveal order: the name is rastered left to right in fast rows (0 to .42), the mark sweeps round like a clock (.46 to .9), the rest last
     const T = new Float32Array(mw * mh), cx = (bx0 + bx1) / 2, cy = (by0 + by1) / 2;
-    for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) { const k = y * mw + x; if (!diff[k]) { T[k] = 2; continue; } const tx = x * HS / SCALE, ty = y * HS / SCALE;
-      if (tx < 700 && ty > 440 && ty < 640) T[k] = .42 * ((x - n0) / (n1 - n0 + 1)) + .012 * ((ty - 440) / 200);
-      else if (tx > 600 && ty > 60 && ty < 940) { const ang = (Math.atan2(y - cy, x - cx) + Math.PI * 2.5) % (Math.PI * 2); T[k] = .46 + .44 * ang / (Math.PI * 2); }
-      else T[k] = .92 + .08 * (tx / TEX_W); }
+    const hsh = (x, y) => { const v = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return v - Math.floor(v); };
+    for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) { const k = y * mw + x; if (!diff[k]) { T[k] = 2; continue; } const tx = x * HS / SCALE, ty = y * HS / SCALE, j = hsh(x, y);
+      // a full height scan line sweeps the card left to right and the pixels dissolve in behind it, then the name locks last
+      if (tx < 1300 && ty > 430 && ty < 570 && tx > 300 && tx < 1300 && Math.abs(ty - 500) < 60 && 0) T[k] = 0;
+      T[k] = .84 * (tx / TEX_W) + .05 * j; }
+    // the name and the namehash band lock in after the sweep, wiping left to right
+    for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) { const k = y * mw + x; if (T[k] > 1.5) continue; const tx = x * HS / SCALE, ty = y * HS / SCALE; if (ty > 440 && ty < 560 && tx > 540 && tx < 1060) T[k] = .88 + .11 * ((tx - 540) / 520); }
     const mask = document.createElement("canvas"); mask.width = mw; mask.height = mh; const hot = document.createElement("canvas"); hot.width = mw; hot.height = mh;
     const tmp = cv();
     eng = { full, blank, T, mw, mh, mask, hot, tmp, head: [n0 * HS, h / 2], smoke: [] };
@@ -779,9 +783,9 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
   function buildMaps(p) {
     const { T, mw, mh, mask, hot } = eng, mx = mask.getContext("2d"), hx = hot.getContext("2d");
     const mi = eng.mi || (eng.mi = mx.createImageData(mw, mh)), hi = eng.hi || (eng.hi = hx.createImageData(mw, mh)), md = mi.data, hd = hi.data; md.fill(0); hd.fill(0); let sx = 0, sy = 0, sn = 0;
-    const HW = .035; // how long a spot stays hot after the beam passes
+    const HW = .09; // how long a spot stays hot after the beam passes
     for (let k = 0; k < T.length; k++) { const t = T[k]; if (t > p) continue; const q = k * 4; md[q + 3] = 255;
-      const age = (p - t) / HW; if (age < 1) { const e = 1 - age, w = e * e; hd[q] = 255; hd[q + 1] = 200 + 55 * w; hd[q + 2] = 150 + 105 * w; hd[q + 3] = 255 * e; if (age < .12) { sx += k % mw; sy += (k / mw) | 0; sn++; } } }
+      const age = (p - t) / HW; if (age < 1) { const e = 1 - age, w = e * e; hd[q] = 120 + 135 * w; hd[q + 1] = 252; hd[q + 2] = 228 + 27 * w; hd[q + 3] = 255 * e; if (age < .12) { sx += k % mw; sy += (k / mw) | 0; sn++; } } }
     mx.putImageData(mi, 0, 0); hx.putImageData(hi, 0, 0);
     if (sn) eng.head = [sx / sn * HS, sy / sn * HS];
     return sn > 0;
@@ -802,17 +806,15 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
     // chromatic fringe on the heat
     t.globalAlpha = .25; t.globalCompositeOperation = "lighter"; t.filter = "hue-rotate(-40deg)"; t.drawImage(hot, -2.5 * s, 0, w, h); t.filter = "hue-rotate(40deg)"; t.drawImage(hot, 2.5 * s, 0, w, h); t.filter = "none"; t.globalAlpha = 1;
     if (live) {
-      // the beam comes down from the galvo head above the card, slightly off axis
-      const g = t.createLinearGradient(hxp + 90 * s, -h * .3, hxp, hyp); g.addColorStop(0, "rgba(151,252,228,0)"); g.addColorStop(.7, "rgba(151,252,228,.25)"); g.addColorStop(1, "rgba(255,255,255,.95)");
-      t.strokeStyle = g; t.lineWidth = 1.6 * s; t.beginPath(); t.moveTo(hxp + 90 * s, -h * .3); t.lineTo(hxp, hyp); t.stroke();
-      t.lineWidth = 8 * s; t.globalAlpha = .18; t.stroke(); t.globalAlpha = 1;
-      // white-hot spot and an anamorphic streak
-      const r = 34 * s, rg = t.createRadialGradient(hxp, hyp, 0, hxp, hyp, r); rg.addColorStop(0, "rgba(255,255,255,1)"); rg.addColorStop(.3, "rgba(230,255,250,.75)"); rg.addColorStop(1, "rgba(151,252,228,0)"); t.fillStyle = rg; t.fillRect(hxp - r, hyp - r, r * 2, r * 2);
-      const sw = 260 * s, sg = t.createLinearGradient(hxp - sw, 0, hxp + sw, 0); sg.addColorStop(0, "rgba(151,252,228,0)"); sg.addColorStop(.5, "rgba(190,255,245,.55)"); sg.addColorStop(1, "rgba(151,252,228,0)"); t.fillStyle = sg; t.fillRect(hxp - sw, hyp - 1.2 * s, sw * 2, 2.4 * s);
-      // smoke: a few wisps rise from the spot and drift
-      const sm = eng.smoke; if (frame % 2 === 0) sm.push({ x: hxp, y: hyp, a: .35, r: 6 * s, vx: (Math.random() - .3) * 1.2 * s, vy: -(1.5 + Math.random()) * s });
-      t.globalCompositeOperation = "source-over";
-      for (let i = sm.length - 1; i >= 0; i--) { const q = sm[i]; q.x += q.vx; q.y += q.vy; q.r += .9 * s; q.a -= .012; if (q.a <= 0) { sm.splice(i, 1); continue; } const gg = t.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.r); gg.addColorStop(0, `rgba(200,200,200,${q.a})`); gg.addColorStop(1, "rgba(200,200,200,0)"); t.fillStyle = gg; t.fillRect(q.x - q.r, q.y - q.r, q.r * 2, q.r * 2); }
+      // scan line: a thin bright vertical edge with a soft mint curtain trailing behind it, tick marks on the top and bottom rails
+      const sx = hxp, wd = 220 * s;
+      const cg = t.createLinearGradient(sx - wd, 0, sx, 0); cg.addColorStop(0, "rgba(151,252,228,0)"); cg.addColorStop(1, "rgba(151,252,228,.22)"); t.fillStyle = cg; t.fillRect(sx - wd, 0, wd, h);
+      const lg = t.createLinearGradient(0, 0, 0, h); lg.addColorStop(0, "rgba(151,252,228,0)"); lg.addColorStop(.12, "rgba(210,255,246,.95)"); lg.addColorStop(.88, "rgba(210,255,246,.95)"); lg.addColorStop(1, "rgba(151,252,228,0)");
+      t.fillStyle = lg; t.fillRect(sx - .75 * s, 0, 1.5 * s, h); t.globalAlpha = .35; t.filter = `blur(${5 * s}px)`; t.fillRect(sx - 3 * s, 0, 6 * s, h); t.filter = "none"; t.globalAlpha = 1;
+      t.fillStyle = "rgba(210,255,246,.8)"; for (let i = -6; i <= 0; i++) { const x0 = sx + i * 14 * s, a = 1 + i / 7; t.globalAlpha = Math.max(0, a); t.fillRect(x0, 30 * s, 1 * s, 12 * s); t.fillRect(x0, h - 42 * s, 1 * s, 12 * s); } t.globalAlpha = 1;
+      // read head: a small bracket that rides the line at the row being decoded
+      const by = (hyp / h * 0 + (.5 + .42 * Math.sin(frame * .09)) * h); t.strokeStyle = "rgba(255,255,255,.9)"; t.lineWidth = 1.5 * s; t.strokeRect(sx - 9 * s, by - 9 * s, 18 * s, 18 * s);
+      const r = 22 * s, rg = t.createRadialGradient(sx, by, 0, sx, by, r); rg.addColorStop(0, "rgba(255,255,255,.9)"); rg.addColorStop(1, "rgba(151,252,228,0)"); t.fillStyle = rg; t.fillRect(sx - r, by - r, r * 2, r * 2);
     }
     t.restore();
   }
