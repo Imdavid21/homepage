@@ -3,21 +3,21 @@ import assert from "node:assert/strict";
 import { computeScore } from "../lib/score.js";
 
 const NOW = Date.parse("2026-10-20");
-const maxed = { firstTs: NOW - 800 * 864e5, staked: 5000, volume: 2e7, activeDays14: 14, breadth: { perps: 1, spot: 1, hip3: 1, vault: 1, hypeHeld: 1 }, referrals: 60 };
+const maxed = { firstTs: NOW - 800 * 864e5, volume: 2e7, pnl: 500000, activeDays14: 14, markets: 20, closes: 100, wins: 80 };
 
-test("a fully maxed wallet scores 100", () => assert.equal(computeScore(maxed, NOW).score, 100));
-test("an empty wallet scores 0", () => assert.equal(computeScore({ firstTs: 0, staked: 0, volume: 0, activeDays14: 0, breadth: {}, referrals: 0 }, NOW).score, 0));
+test("a fully maxed trader scores 100", () => assert.equal(computeScore(maxed, NOW).score, 100));
+test("an empty wallet scores 0", () => assert.equal(computeScore({ firstTs: 0, volume: 0, pnl: 0, activeDays14: 0, markets: 0, closes: 0, wins: 0 }, NOW).score, 0));
 test("volume is capped: 100x more volume adds nothing past the cap", () => {
   const a = computeScore({ ...maxed, volume: 5e6 }, NOW).score, b = computeScore({ ...maxed, volume: 5e8 }, NOW).score;
   assert.equal(a, b);
 });
-test("whale with no tenure, staking or breadth cannot reach 90", () => {
-  const r = computeScore({ firstTs: NOW - 5 * 864e5, staked: 0, volume: 1e10, activeDays14: 14, breadth: { perps: 1 }, referrals: 0 }, NOW);
-  assert.ok(r.score < 50, String(r.score));
+test("losses score zero profit points", () => assert.equal(computeScore({ ...maxed, pnl: -9e4 }, NOW).parts.find((p) => p.key === "profit").pts, 0));
+test("win rate needs enough closed trades", () => {
+  assert.equal(computeScore({ ...maxed, closes: 5, wins: 5 }, NOW).parts.find((p) => p.key === "winrate").pts, 0);
 });
-test("long term staker and builder without huge volume reaches eligibility", () => {
-  const r = computeScore({ ...maxed, volume: 3e5, referrals: 10 }, NOW);
-  assert.ok(r.score >= 85 && r.score <= 95, String(r.score));
+test("whale with no history, profit or win rate cannot reach 90", () => {
+  const r = computeScore({ firstTs: NOW - 5 * 864e5, volume: 1e10, pnl: -1e5, activeDays14: 14, markets: 1, closes: 0, wins: 0 }, NOW);
+  assert.ok(r.score < 60, String(r.score));
 });
 test("window state follows the dates", async () => {
   const { windowState } = await import("../lib/handlers.js");
