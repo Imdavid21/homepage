@@ -3,7 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "MOCK=1 node dev.js", "test": "node --test", "smoke": "node scripts/smoke.js" },
-  "dependencies": { "viem": "^2.21.0" },
-  "engines": { "node": ">=20" }
+  "scripts": {
+    "dev": "MOCK=1 node dev.js",
+    "test": "node --test",
+    "smoke": "node scripts/smoke.js"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.2",
+    "viem": "^2.21.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
