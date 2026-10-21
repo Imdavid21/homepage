@@ -197,7 +197,7 @@ function Leaderboard({ me, refresh }) {
 function Terms() {
   const T = [
     ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. Top 25 eligible names get one."],
-    ["48h", "Claim window", "Opens 22 October, 12:00 IST. Closes 24 October, 12:00 IST."],
+    ["4 days", "Claim window", "Opens 22 October, 12:00 IST. Closes 26 October, 12:00 IST."],
     ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
   ];
   return (
