@@ -64,6 +64,7 @@ if os.environ.get('CLASSIC'):
     _f = _f.replace('x.font = SANS(500, ns); let nw', 'const NY = Math.round(470 + ns * .24); x.font = SANS(500, ns); let nw', 1)
     _f = _f.replace('590', 'NY').replace('lockup(x, c, M, 854, 34)', 'lockup(x, c, M, 866, 34)')
     eng = eng[:_i] + _f + eng[_j:]
+    eng = eng.replace('const bs = 1320 / 200, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(600, -160).scale(bs, bs));', 'const bs = 4.96, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(616.6, 4.2).scale(bs, bs));', 1)
     assert eng != _n and ')))' not in eng.split('back(x, mode, d)')[0].split('marks(x, mode')[-1]
 
 eng = eng.replace('__REGIONS__', open('ui/src/regions_classic.json' if os.environ.get('CLASSIC') else 'ui/src/regions.json').read())
