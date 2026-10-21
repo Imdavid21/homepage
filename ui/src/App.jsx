@@ -161,6 +161,50 @@ function VideoPanel({ vid }) {
   );
 }
 
+/* ---------- leaderboard ---------- */
+function Leaderboard({ me, refresh }) {
+  const [lb, setLb] = useState(null), [open, setOpen] = useState(null), [all, setAll] = useState(false);
+  useEffect(() => { let live = true; fetch("/api/leaderboard").then(r => r.json()).then(j => live && setLb(j)).catch(() => live && setLb({ rows: [], cards: 25 })); return () => { live = false; }; }, [refresh]);
+  useEffect(() => { if (me) setOpen(me); }, [me]);
+  const rows = lb?.rows || [], cards = lb?.cards || 25, shown = all ? rows : rows.slice(0, 10);
+  return (
+    <section className="lb" aria-label="Leaderboard">
+      <div className="lb-h"><h2>Leaderboard</h2><span>Top {cards} get a card. Tap a row for the score breakdown.</span></div>
+      {!lb ? <p className="lb-empty">Loading…</p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
+        <ol className="lb-list">
+          {shown.map(r => {
+            const on = open === r.name, you = me === r.name;
+            return (
+              <li key={r.name} className={"lb-row" + (on ? " on" : "") + (you ? " you" : "") + (r.rank === cards ? " cut" : "")}>
+                <button type="button" className="lb-main" aria-expanded={on} onClick={() => setOpen(on ? null : r.name)}>
+                  <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
+                  <span className="lb-name">{r.name}{you && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
+                  <span className="lb-bar"><i style={{ width: r.score + "%" }} /></span>
+                  <span className="lb-score">{r.score}</span>
+                  <span className="lb-chev" aria-hidden="true">{on ? "−" : "+"}</span>
+                </button>
+                {on && (
+                  <ul className="lb-parts">
+                    {r.parts.map(p => (
+                      <li key={p.key}>
+                        <span className="pl">{p.label}</span>
+                        <span className="pp">{p.pts}<small> / {p.max}</small></span>
+                        <span className="pb"><i style={{ width: (p.max ? (p.pts / p.max) * 100 : 0) + "%" }} /></span>
+                        <span className="pd">{p.detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      {rows.length > 10 && <button type="button" className="lb-more" onClick={() => setAll(a => !a)}>{all ? "Show top 10" : `Show all ${rows.length}`}</button>}
+    </section>
+  );
+}
+
 /* ---------- footer ---------- */
 const Soc = ({ href, children }) => <a href={href} target="_blank" rel="noopener">{children}</a>;
 function Footer({ socials }) {
@@ -252,6 +296,7 @@ export default function App({ socials }) {
             <VideoPanel vid={vid} />
           </aside>
         </div>
+        <Leaderboard me={res?.name} refresh={res?.name} />
       </main>
       <Footer socials={socials} />
       <span id="stageTag" hidden /><aside id="notes" hidden />

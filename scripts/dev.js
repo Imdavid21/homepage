@@ -1,6 +1,6 @@
 import http from "node:http";
 import fs from "node:fs";
-import { check, claim, getStatus } from "./lib/handlers.js";
+import { check, claim, getStatus, getLeaderboard } from "./lib/handlers.js";
 import { CONFIG } from "./lib/config.js";
 const port = process.env.PORT || 8791;
 // Preview only: PREVIEW_STATE=open|upcoming|closed shifts the window around now
@@ -11,6 +11,7 @@ if (process.env.PREVIEW_STATE) {
 }
 http.createServer(async (req, res) => {
   const send = (c, b, t = "application/json") => { res.writeHead(c, { "content-type": t }); res.end(typeof b === "string" ? b : JSON.stringify(b)); };
+  if (req.url.startsWith("/api/leaderboard")) { const [c, b] = await getLeaderboard(); return send(c, b); }
   if (req.url.startsWith("/api/status")) { const [c, b] = await getStatus(); return send(c, b); }
   if (req.method === "POST" && /^\/api\/(check|claim)/.test(req.url)) {
     let d = ""; for await (const x of req) d += x; const j = JSON.parse(d || "{}");
