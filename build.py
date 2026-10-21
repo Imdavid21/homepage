@@ -95,6 +95,15 @@ if os.environ.get('CLASSIC'):
           ('lockup(x, c, M, 866, 34);', 'lockup(x, c, M - 30, 880, 34);'),
           ('dotText(x, `${d.no}/${d.edition}`, M, NY + Math.round(ns * .3) + 92, 76, c, 6);', 'x.font = MONO(700, 52); dotText(x, `${d.no}/${d.edition}`, TEX_W - 70 - Math.ceil(x.measureText(`${d.no}/${d.edition}`).width) - 8, 914, 52, c, 4);'),
         ]
+        if os.environ.get('NAMEGLYPH', '1') == '1':
+            _R += [
+              ('nameSize(x, d, 722, 132, 44,', 'nameSize(x, d, 722, 150, 44,'),
+              ('x.font = SANS(500, ns); let nw = x.measureText(d.base).width;', 'x.font = SANS(600, ns); let nw = x.measureText(d.base).width;'),
+              ('const hash = (d.node || "0x" + "0".repeat(64)).slice(2);', 'const hash = (d.node || "0x" + "0".repeat(64)).slice(2); const band = keep[0]; const nm = document.createElement("canvas"); nm.width = TEX_W; nm.height = TEX_H; const nmx = nm.getContext("2d"); drawName(nmx, d, CX, NYY, ns, "#f00", "#0f0", "center", v => SANS(600, v)); const nmd = nmx.getImageData(0, 0, TEX_W, TEX_H).data; const px = (a, b2) => { const o = ((b2 | 0) * TEX_W + (a | 0)) * 4; return nmd[o] > 128 ? 1 : nmd[o + 1] > 128 ? 2 : 0; }; const near = (a, b2) => { for (let j = -10; j <= 10; j += 5) for (let i = -6; i <= 6; i += 3) if (px(a + i, b2 + j)) return 1; return 0; };'),
+              ('if (keep.some(([a, b, c2, d2]) => cx > a && cx < c2 && cy > b && cy < d2)) continue;\n          if (!inside(cx, cy)) continue;\n          if (gy === WA || gy === WA + 18) {', 'const inB = cx > band[0] && cx < band[2] && cy > band[1] && cy < band[3];\n          if (!inside(cx, cy) && !inB) continue;\n          if (inB && near(cx, cy)) continue;\n          if ((gy === WA || gy === WA + 18) && !inB) {'),
+              ('x.fillStyle = hair(mode, edge ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);\n        }\n        x.restore();', 'x.fillStyle = hair(mode, inB ? .1 + .25 * w : edge ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);\n        }\n        x.font = MONO(600, 9); let kn = 0;\n        for (let gy = Math.floor(band[1]); gy < band[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(band[0]); gx <= band[2]; gx++) { const L = gx < band[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = rl === 2 ? ink(mode, MINT) : hair(mode, .92); x.fillRect(run, gy, gx - run, 2.2); } run = gx; rl = L; } } }\n        x.restore();'),
+              ('drawName(x, d, CX, NYY, ns, c, ink(mode, MINT), "center");', ''),
+            ]
         for _a, _b in _R:
             assert _a in eng, _a
             eng = eng.replace(_a, _b, 1)
