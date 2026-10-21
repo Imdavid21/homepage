@@ -121,7 +121,7 @@ function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack }) {
         <Ring score={Math.max(0, Math.min(100, j.score || 0))} ok={j.eligible} />
         <div className="score-id">
           <h2 className={"verdict" + (j.eligible ? " ok" : "")}>{verdictFor(j, st, phase)}</h2>
-          <p className="who"><span>{j.name}</span>{addr && <span className="mono">{addr}</span>}</p>
+          <p className="who"><span>{j.name}</span>{addr && <span className="mono">{addr}</span>}{j.wallets > 1 && <span className="mono">+{j.wallets - 1} paired</span>}</p>
         </div>
       </div>
       {phase === "engraving" && <p className="etch-note">Etching your name…</p>}
@@ -147,47 +147,63 @@ function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack }) {
 }
 
 /* ---------- leaderboard ---------- */
+const Meter = ({ score }) => <span className="pxm" aria-hidden="true">{Array.from({ length: 20 }, (_, i) => <i key={i} className={i < Math.round(score / 5) ? "on" : ""} />)}</span>;
+const Detail = ({ r }) => (
+  <div className="lb-detail">
+    <div className="lb-stack" aria-hidden="true">{r.parts.map((p, i) => <i key={p.key} style={{ width: p.pts + "%", opacity: 1 - i * .13 }} title={p.label} />)}</div>
+    <ul className="lb-tiles">
+      {r.parts.map(p => (
+        <li key={p.key}>
+          <span className="t-l">{p.label}</span>
+          <span className="t-n">{p.pts}<small>/{p.max}</small></span>
+          <span className="t-b"><i style={{ width: (p.max ? (p.pts / p.max) * 100 : 0) + "%" }} /></span>
+          <span className="t-d">{p.detail}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
 function Leaderboard({ me, refresh }) {
   const [lb, setLb] = useState(null), [open, setOpen] = useState(null);
   useEffect(() => { let live = true; fetch("/api/leaderboard").then(r => r.json()).then(j => live && setLb(j)).catch(() => live && setLb({ rows: [], cards: 25 })); return () => { live = false; }; }, [refresh]);
-  const rows = lb?.rows || [], cards = lb?.cards || 25;
+  const rows = lb?.rows || [], cards = lb?.cards || 25, top = rows.slice(0, 3), rest = rows.slice(3), openTop = top.find(r => r.name === open);
+  const tog = n => setOpen(o => o === n ? null : n);
   return (
     <section className="lb" aria-label="Leaderboard">
       <div className="lb-h"><h2>Leaderboard</h2></div>
       {!lb ? <p className="lb-empty">Loading…</p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
-        <ol className="lb-list">
-          {rows.map(r => {
-            const on = open === r.name, you = me === r.name;
-            return (
-              <li key={r.rank + r.name} className={"lb-row" + (on ? " on" : "") + (you ? " you" : "") + (r.rank === cards ? " cut" : "")}>
-                <button type="button" className="lb-main" aria-expanded={on} onClick={() => setOpen(on ? null : r.name)}>
-                  <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
-                  <span className="lb-name">{r.name}{r.legend && <em className="g">Legend</em>}{you && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
-                  <span className="lb-bar"><i style={{ width: r.score + "%" }} /></span>
-                  <span className="lb-score">{r.score}</span>
-                  <span className="lb-chev" aria-hidden="true">{on ? "−" : "+"}</span>
-                </button>
-                {on && (
-                  <div className="lb-detail">
-                    <div className="lb-stack" aria-hidden="true">
-                      {r.parts.map((p, i) => <i key={p.key} style={{ width: p.pts + "%", opacity: 1 - i * .13 }} title={p.label} />)}
-                    </div>
-                    <ul className="lb-tiles">
-                      {r.parts.map(p => (
-                        <li key={p.key}>
-                          <span className="t-l">{p.label}</span>
-                          <span className="t-n">{p.pts}<small>/{p.max}</small></span>
-                          <span className="t-b"><i style={{ width: (p.max ? (p.pts / p.max) * 100 : 0) + "%" }} /></span>
-                          <span className="t-d">{p.detail}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+        <>
+          <div className="podium">
+            {top.map(r => (
+              <button key={r.name} type="button" className={"pod p" + r.rank + (open === r.name ? " on" : "") + (me === r.name ? " you" : "")} aria-expanded={open === r.name} onClick={() => tog(r.name)}>
+                <span className="pod-rank">{String(r.rank).padStart(2, "0")}</span>
+                <span className="pod-score">{r.score}</span>
+                <Meter score={r.score} />
+                <span className="pod-name">{r.name}{me === r.name && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
+              </button>
+            ))}
+          </div>
+          {openTop && <Detail r={openTop} />}
+          {rest.length > 0 && (
+            <ol className="lb-list" start={4}>
+              {rest.map(r => {
+                const on = open === r.name, you = me === r.name;
+                return (
+                  <li key={r.name} className={"lb-row" + (on ? " on" : "") + (you ? " you" : "") + (r.rank === cards ? " cut" : "")}>
+                    <button type="button" className="lb-main" aria-expanded={on} onClick={() => tog(r.name)}>
+                      <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
+                      <span className="lb-name">{r.name}{you && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
+                      <Meter score={r.score} />
+                      <span className="lb-score">{r.score}</span>
+                      <span className="lb-chev" aria-hidden="true">{on ? "−" : "+"}</span>
+                    </button>
+                    {on && <Detail r={r} />}
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </>
       )}
     </section>
   );
@@ -212,6 +228,8 @@ export default function App({ socials }) {
   const [name, setName] = useState(""), [phase, setPhase] = useState("idle"), [res, setRes] = useState(null);
   const [msg, setMsg] = useState({ t: "", err: false }), [checking, setChecking] = useState(false), [claiming, setClaiming] = useState(false), [muted, setMuted] = useState(false);
   const [vid, setVid] = useState({ status: "idle", left: 0 }), deb = useRef();
+  const [wallets, setWallets] = useState([]), [pair, setPair] = useState(false);
+  const ADDR = /^0x[a-fA-F0-9]{40}$/, cleanW = () => wallets.map(w => w.trim()).filter(Boolean);
   const busy = phase === "reading" || phase === "engraving" || checking;
   const norm = v => v.trim().toLowerCase(), okName = n => HL().validHl(n) || HL().validEth(n);
 
@@ -223,9 +241,10 @@ export default function App({ socials }) {
   const submit = async e => {
     e.preventDefault(); if (busy) return; const n = norm(name);
     if (!okName(n)) { setMsg({ t: "Enter a .hl or .eth name.", err: true }); return; }
+    if (cleanW().some(w => !ADDR.test(w))) { setMsg({ t: "Paired wallets must be 0x addresses.", err: true }); return; }
     HL().unlock(); setChecking(true); setMsg({ t: "Checking " + n + "…", err: false }); setRes(null); setVid({ status: "idle", left: 0 }); HL().setName(n);
     try {
-      const [ok, j] = await post("/api/check", { name: n });
+      const [ok, j] = await post("/api/check", { name: n, wallets: cleanW() });
       if (!ok) { setMsg({ t: j.error || "Something went wrong.", err: true }); setChecking(false); return; }
       apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("reading");
       await sleep(reduce ? 200 : 1200);
@@ -239,7 +258,7 @@ export default function App({ socials }) {
   const replay = async () => { if (phase !== "done") return; setPhase("engraving"); await HL().engrave(); setPhase("done"); };
   const claim = async () => {
     setClaiming(true);
-    try { const [ok, j] = await post("/api/claim", { name: norm(name) }); if (j && j.now) apply(j); if (ok) setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left })); else setMsg({ t: j.error || "Couldn't claim. Try again.", err: true }); }
+    try { const [ok, j] = await post("/api/claim", { name: norm(name), wallets: cleanW() }); if (j && j.now) apply(j); if (ok) setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left })); else setMsg({ t: j.error || "Couldn't claim. Try again.", err: true }); }
     catch { setMsg({ t: "Network error. Try again.", err: true }); }
     setClaiming(false);
   };
@@ -269,6 +288,20 @@ export default function App({ socials }) {
                   <div className="field">
                     <input id="name" type="text" value={name} onChange={onType} placeholder="yourname.hl or yourname.eth" autoComplete="off" autoCapitalize="off" spellCheck={false} maxLength={64} />
                     <Button type="submit" disabled={busy}>{busy ? "Checking…" : "Check eligibility"}</Button>
+                  </div>
+                  <div className="wal">
+                    {!pair ? <button type="button" className="wal-t" onClick={() => { setPair(true); if (!wallets.length) setWallets([""]); }}>Pair more wallets</button> : (
+                      <div className="wal-box">
+                        <span className="rlab">Paired wallets, up to 4. Their activity adds to your score.</span>
+                        {wallets.map((w, i) => (
+                          <div className="wal-row" key={i}>
+                            <input type="text" value={w} placeholder="0x…" spellCheck={false} autoComplete="off" maxLength={42} aria-label={"Paired wallet " + (i + 1)} onChange={e => setWallets(a => a.map((x, k) => k === i ? e.target.value : x))} />
+                            <button type="button" aria-label="Remove wallet" onClick={() => setWallets(a => a.filter((_, k) => k !== i))}>×</button>
+                          </div>
+                        ))}
+                        {wallets.length < 4 && <button type="button" className="wal-add" onClick={() => setWallets(a => [...a, ""])}>Add a wallet</button>}
+                      </div>
+                    )}
                   </div>
                   <span className={"status" + (msg.err ? " err" : "")} aria-live="polite">{msg.t}</span>
                   <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>

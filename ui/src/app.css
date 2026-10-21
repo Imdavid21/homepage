@@ -281,3 +281,26 @@ canvas.track{position:absolute;left:0;top:0;width:100%;height:100%;pointer-event
 @media(max-width:420px){.lb-tiles{grid-template-columns:1fr}}
 
 .lb-name em.g{color:#e9d9a6;border-color:rgba(233,217,166,.5)}
+
+/* leaderboard v4: podium and pixel meters */
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 6px}
+.pod{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:12px;padding:20px 20px 18px;border:1px solid var(--line);border-radius:14px;background:rgba(236,231,223,.025);min-width:0}
+.pod:focus-visible{outline:1px solid var(--accent)}.pod.on,.pod:hover{border-color:rgba(151,252,228,.5)}.pod.you{background:rgba(151,252,228,.06)}
+.pod.p1{background:linear-gradient(180deg,rgba(151,252,228,.09),rgba(236,231,223,.02));border-color:rgba(151,252,228,.4)}
+.pod-rank{font:400 12px var(--mono);color:var(--mute);letter-spacing:.08em}
+.pod-score{font:400 64px/1 var(--serif)}.pod.p1 .pod-score{color:var(--accent)}
+.pod-name{font:500 17px var(--sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod-name em,.lb-name em{font:400 10.5px var(--mono);font-style:normal;color:var(--accent);border:1px solid var(--accent);border-radius:20px;padding:1px 7px;margin-left:10px;letter-spacing:.06em;text-transform:uppercase}
+.pod-name em.c{color:var(--mute);border-color:var(--line)}
+.pxm{display:grid;grid-template-columns:repeat(20,1fr);gap:3px}
+.pxm i{display:block;aspect-ratio:1/1;max-height:9px;background:var(--line);border-radius:1px}.pxm i.on{background:var(--accent)}
+.lb-main{grid-template-columns:44px minmax(120px,1.2fr) minmax(120px,1.6fr) 56px 24px}
+.lb-detail{margin-top:10px}.podium+.lb-detail{padding-left:0}
+@media(max-width:900px){.podium{grid-template-columns:1fr}.pod{flex-direction:row;align-items:center;gap:14px;padding:14px 16px}.pod-score{font-size:38px}.pod .pxm{display:none}.pod-name{flex:1;min-width:0}.lb-main{grid-template-columns:30px 1fr 44px 20px}.lb-main .pxm{display:none}}
+/* pairing wallets */
+.wal{display:flex;flex-direction:column;gap:8px}
+.wal-t,.wal-add{all:unset;cursor:pointer;font-size:13.5px;color:var(--accent);text-decoration:underline;text-underline-offset:3px;align-self:flex-start}
+.wal-box{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px}
+.wal-row{display:flex;gap:8px}.wal-row input{flex:1;min-width:0;background:transparent;border:1px solid var(--line);border-radius:10px;color:var(--fg);padding:9px 11px;font:400 13px var(--mono)}
+.wal-row input:focus{outline:1px solid var(--accent)}
+.wal-row button{all:unset;cursor:pointer;width:34px;text-align:center;font-size:18px;color:var(--mute)}

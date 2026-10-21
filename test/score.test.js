@@ -43,3 +43,9 @@ test("claims: window, eligibility, one per wallet, sold out", async () => {
   assert.equal((await H.claim({ name: eligibleNames[2], ip: "f" }))[0], 409);
   CONFIG.opensAt = now - 2e6; CONFIG.closesAt = now - 1e6; assert.equal((await H.claim({ name: eligibleNames[2], ip: "g" }))[0], 409);
 });
+
+test("paired wallets add up and cannot repeat the main wallet", async () => {
+  const { combine } = await import("../lib/hl.js");
+  const c = combine([{ firstTs: 200, volume: 10, hype: 5, hipSet: ["a:X", "#10"], trades: 3 }, { firstTs: 100, volume: 20, hype: 1, hipSet: ["a:X"], trades: 4 }]);
+  assert.equal(c.volume, 30); assert.equal(c.hype, 6); assert.equal(c.trades, 7); assert.equal(c.hipMarkets, 2); assert.equal(c.firstTs, 100);
+});

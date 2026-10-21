@@ -8,12 +8,12 @@
   const AC = window.AudioContext || window.webkitAudioContext;
   let actx = null, muted = false;
   function ac() { if (!AC) return null; if (!actx) actx = new AC(); if (actx.state === "suspended") actx.resume(); return actx; }
-  function laserSound(dur, recDest, quiet) {
-    const c = ac(); if (!c) return;
+  function laserSound(dur, recDest, quiet, delay = 0.03) {
+    const c = ac(); if (!c) return null;
     const bus = c.createGain(); bus.gain.value = 1;
     const live = c.createGain(); live.gain.value = muted ? 0 : 1; if (!quiet) { bus.connect(live); live.connect(c.destination); }
     if (recDest) bus.connect(recDest);
-    const t0 = c.currentTime + 0.03, t1 = t0 + dur;
+    const t0 = c.currentTime + delay, t1 = t0 + dur;
     const env = (g, peak, a, r) => { g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(peak, t0 + a); g.gain.setValueAtTime(peak, t1 - r); g.gain.linearRampToValueAtTime(0, t1); };
     // sizzle: band passed noise with a fast tremolo
     const nb = c.createBuffer(1, c.sampleRate, c.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
@@ -29,6 +29,7 @@
     // finish: two soft bell tones
     [1319, 1976].forEach((f, i) => { const o = c.createOscillator(); o.type = "sine"; o.frequency.value = f; const g = c.createGain(); g.gain.setValueAtTime(0, t1); g.gain.linearRampToValueAtTime(i ? .1 : .16, t1 + .01); g.gain.exponentialRampToValueAtTime(.0008, t1 + 1.4); o.connect(g); g.connect(bus); o.start(t1); o.stop(t1 + 1.5); });
     [ns, lfo, saw, wh].forEach(o => { o.start(t0); o.stop(t1 + .05); });
+    return t0;
   }
 
   // ---------- laser engraving: a galvo raster. Every etched pixel gets a time; the head is wherever time equals now. ----------
@@ -99,11 +100,12 @@
     prepEngrave();
     if (shown !== "front") { showSide("front"); await sleep(900); }
     comp(0, faces.front, false); three.tex.forEach(t => t.needsUpdate = true);
-    if (withSound) laserSound(dur / 1000);
+    const c0 = withSound ? ac() : null, lat = c0 ? (c0.outputLatency || c0.baseLatency || 0) : 0;
+    const at0 = withSound ? laserSound(dur / 1000, null, false, 0.15) : null;
     await new Promise(res => {
-      const t0 = performance.now(); let f = 0;
+      const t0 = performance.now() + 150; let f = 0;
       const step = now => {
-        const p = Math.min(1, (now - t0) / dur);
+        const p = at0 != null && c0 && c0.state === "running" ? Math.min(1, Math.max(0, (c0.currentTime - lat - at0) / (dur / 1000))) : Math.min(1, Math.max(0, (now - t0) / dur));
         comp(p, faces.front, true, f++); three.tex.forEach(t => t.needsUpdate = true);
         if (p < 1) requestAnimationFrame(step); else res();
       };
@@ -168,9 +170,9 @@
     const mime = mimes.find(m => MediaRecorder.isTypeSupported(m)) || "";
     const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 7e6 } : {}); const chunks = []; rec.ondataavailable = e => e.data.size && chunks.push(e.data);
     const done = new Promise(r => rec.onstop = r);
-    drawVideo(x, 0, vo, j); rec.start(250); if (c) setTimeout(() => laserSound(ENG1 - ENG0, rd, true), ENG0 * 1000);
+    drawVideo(x, 0, vo, j); rec.start(250); const ac0 = c ? c.currentTime : 0; if (c) laserSound(ENG1 - ENG0, rd, true, ENG0);
     const t0 = performance.now();
-    await new Promise(res => { const step = now => { const t = (now - t0) / 1000; onProgress && onProgress(Math.min(1, t / VD), Math.max(0, VD - t)); drawVideo(x, Math.min(t, VD), vo, j); if (t < VD) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); });
+    await new Promise(res => { const step = now => { const t = c && c.state === "running" ? Math.max(0, c.currentTime - ac0) : (now - t0) / 1000; onProgress && onProgress(Math.min(1, t / VD), Math.max(0, VD - t)); drawVideo(x, Math.min(t, VD), vo, j); if (t < VD) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); });
     rec.stop(); await done;
     const type = (rec.mimeType || mime || "video/webm").split(";")[0], ext = type.includes("mp4") ? "mp4" : "webm";
     const blob = new Blob(chunks, { type });
