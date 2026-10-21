@@ -86,14 +86,14 @@ if os.environ.get('CLASSIC'):
         _R = [
           ('new DOMMatrix().translate(616.6, 4.2).scale(bs, bs)', 'new DOMMatrix().translate(-0.5, -293).scale(bs, bs)'),
           ('const bs = 4.96', 'const bs = 7.93'),
-          ('nameSize(x, d, 580, 112, 36,', 'nameSize(x, d, 760, 124, 40,'),
-          ('const NY = 509;', 'const NY = 0; const CX = 792; const NYY = Math.round(500 + ns * .25);'),
-          ('const keep = [[M - 12, NY - ns * .9, M + nw + 24, NY + ns * .3]];', 'const keep = [[CX - nw / 2 - 26, NYY - ns * .95, CX + nw / 2 + 26, NYY + ns * .55 + 70]];'),
+          ('nameSize(x, d, 580, 112, 36,', 'nameSize(x, d, 722, 132, 44,'),
+          ('const NY = 509;', 'const NY = 0; const CX = 792; const NYY = Math.round(500 + ns * .25); const WA = Math.floor((NYY - ns * .3) / 18) * 18;'),
+          ('const keep = [[M - 12, NY - ns * .9, M + nw + 24, NY + ns * .3]];', 'const keep = [[CX - nw / 2 - 14, NYY - ns * .95, CX + nw / 2 + 14, NYY + ns * .3]];'),
           ('gx = 540; gx < TEX_W', 'gx = 0; gx < TEX_W'),
-          ('if (gy === 486 || gy === 504) {', 'if (gy === 396 || gy === 612) {'),
+          ('if (gy === 486 || gy === 504) {', 'if (gy === WA || gy === WA + 18) {'),
           ('drawName(x, d, M, NY, ns, c, ink(mode, MINT));', 'drawName(x, d, CX, NYY, ns, c, ink(mode, MINT), "center");'),
           ('lockup(x, c, M, 866, 34);', 'lockup(x, c, M - 30, 880, 34);'),
-          ('dotText(x, `${d.no}/${d.edition}`, M, NY + Math.round(ns * .3) + 92, 76, c, 6);', 'dotText(x, `${d.no}/${d.edition}`, CX - 62, NYY + 78, 44, c, 4);'),
+          ('dotText(x, `${d.no}/${d.edition}`, M, NY + Math.round(ns * .3) + 92, 76, c, 6);', 'x.font = MONO(700, 52); dotText(x, `${d.no}/${d.edition}`, TEX_W - 70 - Math.ceil(x.measureText(`${d.no}/${d.edition}`).width) - 8, 914, 52, c, 4);'),
         ]
         for _a, _b in _R:
             assert _a in eng, _a
