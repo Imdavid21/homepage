@@ -15,7 +15,7 @@ export function HlLogo({ id }) {
   );
 }
 export function EnsLogo() {
-  return <svg className="ens" viewBox={brand.ens.vb} role="img" aria-label="ENS" fill="currentColor"><path d={brand.ens.d} /></svg>;
+  return <svg className="ens" viewBox={brand.ens.vb} role="img" aria-label="ENS" fill="currentColor"><path fillRule="evenodd" d={brand.ens.d} /></svg>;
 }
 export const Brands = ({ cls = "brands" }) => <div className={cls}><HlLogo /><span className="x">x</span><EnsLogo /></div>;
 

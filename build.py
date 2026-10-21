@@ -15,7 +15,7 @@ svg = open('/root/.claude/uploads/841083e8-d418-5673-8989-520581d95cf2/724893ce-
 vb = re.search(r'viewBox="([^"]+)"', svg).group(1)
 paths = [{"cls": c, "d": d} for c, d in re.findall(r'<path class="(cls-\d)" d="([^"]+)"', svg)]
 SVGS, _ = json.JSONDecoder().raw_decode(base[base.index('const SVG = ') + len('const SVG = '):])
-json.dump({"hli": {"vb": vb, "paths": paths}, "ens": SVGS["ens"], "blob": SVGS["blob"]["d"], "socials": socials}, open('ui/src/brand.json', 'w'))
+json.dump({"hli": {"vb": vb, "paths": paths}, "ens": {"vb": "0 0 300 94", "d": open('assets/ens_white.svg').read().split(' d="')[1].split('"')[0]}, "blob": SVGS["blob"]["d"], "socials": socials}, open('ui/src/brand.json', 'w'))
 subprocess.run(['node', 'build.mjs'], cwd='ui', check=True)
 app = open('ui/dist/app.js').read().replace('</script', '<\\/script')
 
