@@ -142,31 +142,30 @@ if os.environ.get('CLASSIC'):
     _bi = eng.index('back(x, mode, d) {'); _ei = eng.index('      notes: d => ({', _bi)
     _B = r"""back(x, mode, d) {
         base(x, mode, false);
-        const hash = (d.node || "0x" + "0".repeat(64)).slice(2);
-        const mint = ink(mode, MINT);
-        // one micro rail: the namehash, bottom edge
-        x.save(); x.font = MONO(400, 12); x.textAlign = "left"; x.textBaseline = "middle"; x.fillStyle = mint; x.globalAlpha = .34;
-        let rs = ""; while (x.measureText(rs).width < RGT - M) rs += hash + "   "; while (x.measureText(rs).width > RGT - M) rs = rs.slice(0, -1); x.fillText(rs, M, 958); x.restore();
+        const mint = ink(mode, MINT), dim = ink(mode, DIM);
+        const lab = (t, X, Y) => { x.fillStyle = dim; x.font = MONO(400, 12); x.textAlign = "left"; x.textBaseline = "middle"; spaced(x, t, X, Y, 3); };
+        const val = (t, X, Y, c, s) => { x.fillStyle = c; x.font = MONO(500, s || 21); x.textAlign = "left"; x.textBaseline = "middle"; x.fillText(t, X, Y); };
+        const hl = (Y, a, X0, X1) => { x.save(); x.strokeStyle = hair(mode, a || .5); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X0 == null ? M : X0, Y); x.lineTo(X1 == null ? RGT : X1, Y); x.stroke(); x.restore(); };
+        const tag = (t, X, Y) => { x.fillStyle = mint; x.fillRect(X, Y - 5, 8, 8); x.font = MONO(500, 13); x.textAlign = "left"; x.textBaseline = "middle"; spaced(x, t, X + 20, Y, 5); };
         marks(x, mode, c => {
-          x.textBaseline = "middle";
-          // tracking reticle, centre of the card
-          const CX = TEX_W / 2 + 60, CY = 470, R = 232;
-          x.save(); x.strokeStyle = mint; x.lineWidth = 1.5; x.globalAlpha = .28;
-          x.beginPath(); x.arc(CX, CY, R, 0, Math.PI * 2); x.stroke();
-          x.globalAlpha = .55; [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([dx, dy]) => { x.beginPath(); x.moveTo(CX + dx * (R - 18), CY + dy * (R - 18)); x.lineTo(CX + dx * (R + 26), CY + dy * (R + 26)); x.stroke(); });
-          x.globalAlpha = .22; for (let a = 0; a < 360; a += 10) { if (a % 90 === 0) continue; const r0 = a % 30 ? R - 6 : R - 12, t = a * Math.PI / 180; x.beginPath(); x.moveTo(CX + Math.cos(t) * r0, CY + Math.sin(t) * r0); x.lineTo(CX + Math.cos(t) * R, CY + Math.sin(t) * R); x.stroke(); }
-          const bk = 22, g = R * .71 + 20; x.globalAlpha = .8; x.lineWidth = 2;
-          [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => { x.beginPath(); x.moveTo(CX + sx * g, CY + sy * (g - bk)); x.lineTo(CX + sx * g, CY + sy * g); x.lineTo(CX + sx * (g - bk), CY + sy * g); x.stroke(); });
-          x.restore();
-          const qs = 196; drawQR(x, qrUrl(d), CX - qs / 2, CY - qs / 2, qs, mode);
-          x.fillStyle = mint; x.globalAlpha = .7; x.font = MONO(400, 12); x.textAlign = "center"; spaced(x, "TAP TO VERIFY", CX, CY + R + 54, 4, "center"); x.globalAlpha = 1;
-          // the fix: where and when, left, small
-          x.textAlign = "left";
-          x.fillStyle = c; x.font = MONO(500, 20); spaced(x, "HOUSE OF HYPE", M, 404, 6);
-          x.fillStyle = mint; x.globalAlpha = .8; x.font = MONO(400, 14);
-          spaced(x, "MUMBAI", M, 456, 5); spaced(x, "19.0760° N   72.8777° E", M, 488, 3); spaced(x, "03 · 11 · 2026", M, 520, 3);
-          x.globalAlpha = .35; x.lineWidth = 1.5; x.strokeStyle = mint; x.beginPath(); x.moveTo(M, 430); x.lineTo(M + 180, 430); x.stroke(); x.globalAlpha = 1;
-          lockup(x, c, M - 30, 880, 34);
+          // I. genesis ledger
+          tag("HYPE GENESIS RECORD", M, 118); hl(142, .35, M, 905);
+          const G = [["DATE", D.genesisDate + "   " + D.genesisClock], ["UNIX TIME", D.genesisUnix], ["TOKEN ID", D.genesisId], ["MAX SUPPLY", D.maxSupply], ["DISTRIBUTION", D.airdrop + "   ·   " + D.airdropPct], ["GENESIS WALLETS", D.wallets], ["ASSISTANCE FUND", short(D.fund, 8, 6)]];
+          G.forEach(([k, v], i) => { const y = 178 + i * 46; lab(k, M, y); val(v, M + 250, y, c); if (i < G.length - 1) hl(y + 23, .16, M, 905); });
+          // QR with reticle corners
+          const qs = 190, qx = RGT - qs - 10, qy = 150; drawQR(x, qrUrl(d), qx, qy, qs, mode);
+          x.save(); x.strokeStyle = mint; x.lineWidth = 2; const bk = 22, g = 16;
+          [[qx - g, qy - g, 1, 1], [qx + qs + g, qy - g, -1, 1], [qx - g, qy + qs + g, 1, -1], [qx + qs + g, qy + qs + g, -1, -1]].forEach(([px, py, sx, sy]) => { x.beginPath(); x.moveTo(px, py + sy * bk); x.lineTo(px, py); x.lineTo(px + sx * bk, py); x.stroke(); }); x.restore();
+          x.fillStyle = mint; x.globalAlpha = .75; x.font = MONO(400, 12); x.textAlign = "center"; spaced(x, "SCAN   ·   TAP   TO   VERIFY", qx + qs / 2, qy + qs + 52, 3, "center"); x.globalAlpha = 1;
+          // II. onchain identity
+          tag("ONCHAIN IDENTITY", M, 520); hl(544, .35);
+          const I = [["REGISTRY", short(D.registry, 8, 6), "HYPERLIQUID INDIA NAMES"], ["ROOT  .HL", short(D.rootHl, 8, 6), "NAMEHASH OF .HL"], ["THIS CARD", short(d.node, 8, 6), "NAMEHASH OF HOLDER"], ["NETWORK", "HYPEREVM", "HYPERCORE  ·  HYPERBFT"]];
+          I.forEach(([k, v, s2], i) => { const X = M + i * 350; lab(k, X, 584); val(v, X, 620, c, 22); lab(s2, X, 654); if (i) { x.save(); x.strokeStyle = hair(mode, .3); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X - 30, 570); x.lineTo(X - 30, 668); x.stroke(); x.restore(); } });
+          // III. the event
+          tag("THE EVENT", M, 716); hl(740, .35);
+          const E = [["CLAIM WINDOW", "23 OCT  →  25 OCT", "6:30 PM IST BOTH DAYS"], ["UNVEILING", "HOUSE OF HYPE", "MUMBAI  ·  03 NOV 2026"], ["BUILD", "NFC · METAL", "LASER ETCHED · PVD BLACK"], ["RUN", "25 CARDS", "ONE NAME EACH"]];
+          E.forEach(([k, v, s2], i) => { const X = M + i * 350; lab(k, X, 778); val(v, X, 812, c, 22); lab(s2, X, 844); if (i) { x.save(); x.strokeStyle = hair(mode, .3); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X - 30, 764); x.lineTo(X - 30, 858); x.stroke(); x.restore(); } });
+          lockup(x, c, M - 30, 912, 34);
         });
       },
 """
