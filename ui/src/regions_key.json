@@ -1,0 +1,164 @@
+{
+ "front": [
+  {
+   "id": "card",
+   "n": "00",
+   "label": "Front",
+   "kicker": "Side one | The face",
+   "desc": "Your name, your number out of 25, the two brands, and the Hyperliquid mark grown large from your namehash.",
+   "x": 0,
+   "y": 0,
+   "w": 1585,
+   "h": 1000,
+   "side": "l",
+   "meta": ""
+  },
+  {
+   "id": "serial",
+   "n": "01",
+   "label": "Number",
+   "desc": "Your number out of 25 in a tall serif numerator, a thin mint slash and a small denominator. It is set when your card is confirmed.",
+   "x": 80,
+   "y": 60,
+   "w": 270,
+   "h": 220,
+   "side": "l",
+   "meta": "Etched | x of 25"
+  },
+  {
+   "id": "name",
+   "n": "02",
+   "label": "Name",
+   "desc": "Your .hl or .eth name, the only mark on the face that is not a brand or a number. The ending is filled in mint.",
+   "x": 90,
+   "y": 400,
+   "w": 780,
+   "h": 230,
+   "side": "l",
+   "meta": "Etched | Mint infill"
+  },
+  {
+   "id": "mark",
+   "n": "03",
+   "label": "The mark",
+   "desc": "The Hyperliquid mark at full size, filled with our India illustration in black and white and banknote lace grown from your namehash. No two cards share the lace.",
+   "x": 765,
+   "y": 130,
+   "w": 820,
+   "h": 740,
+   "side": "r",
+   "meta": "Etched | Illustration and lace"
+  },
+  {
+   "id": "latent",
+   "n": "04",
+   "label": "Encoded HYPE",
+   "desc": "The word HYPE is cut deeper into the lace, so it reads from across the room and changes as the light moves across the metal.",
+   "x": 770,
+   "y": 360,
+   "w": 780,
+   "h": 250,
+   "side": "r",
+   "meta": "Etched | Cut deeper"
+  },
+  {
+   "id": "mk",
+   "n": "05",
+   "label": "Brands",
+   "desc": "Hyperliquid India and ENS, the two parties behind the card, in black and white.",
+   "x": 96,
+   "y": 826,
+   "w": 490,
+   "h": 76,
+   "side": "l",
+   "meta": "Etched | Two marks"
+  }
+ ],
+ "back": [
+  {
+   "id": "card",
+   "n": "00",
+   "label": "Back",
+   "kicker": "Side two | The key",
+   "desc": "The key to the front: how the lace on the other side was grown from this name, and how to verify it.",
+   "x": 0,
+   "y": 0,
+   "w": 1585,
+   "h": 1000,
+   "side": "l",
+   "meta": ""
+  },
+  {
+   "id": "key",
+   "n": "01",
+   "label": "Key to the front",
+   "desc": "The seed curve of the lace and the five numbers that shape it: ring, gear, pen, petals and turn, each read from a byte of your namehash.",
+   "x": 90,
+   "y": 170,
+   "w": 720,
+   "h": 340,
+   "side": "l",
+   "meta": "Etched | Five bytes"
+  },
+  {
+   "id": "bits",
+   "n": "02",
+   "label": "Namehash, 256 bits",
+   "desc": "Every bit of your namehash, filled for 1 and open for 0. The first fifteen bytes, outlined in mint, are the ones that grow the lace.",
+   "x": 830,
+   "y": 130,
+   "w": 350,
+   "h": 420,
+   "side": "r",
+   "meta": "Etched | 256 bits"
+  },
+  {
+   "id": "qr",
+   "n": "03",
+   "label": "Register",
+   "desc": "Scan to open this name's record in the ENS or Hyperliquid Names app, or tap the card.",
+   "x": 1170,
+   "y": 170,
+   "w": 330,
+   "h": 330,
+   "side": "r",
+   "meta": "Etched | Scan or tap"
+  },
+  {
+   "id": "bearer",
+   "n": "04",
+   "label": "Bearer, redacted",
+   "desc": "Your name in full. The wallet is shown only by its ends and the rest is redacted into the metal; full values resolve onchain.",
+   "x": 90,
+   "y": 570,
+   "w": 600,
+   "h": 220,
+   "side": "l",
+   "meta": "Etched | Redacted"
+  },
+  {
+   "id": "read",
+   "n": "05",
+   "label": "How to read it",
+   "desc": "Same name, same lace, and no two cards match. The genesis record and HYPE token id tie the card to the day it was issued against.",
+   "x": 740,
+   "y": 570,
+   "w": 700,
+   "h": 230,
+   "side": "r",
+   "meta": "Etched | Genesis"
+  },
+  {
+   "id": "no",
+   "n": "06",
+   "label": "Serial",
+   "desc": "Your number out of 25, large, at the foot, matching the front.",
+   "x": 1340,
+   "y": 850,
+   "w": 150,
+   "h": 70,
+   "side": "r",
+   "meta": "Etched | One of 25"
+  }
+ ]
+}
