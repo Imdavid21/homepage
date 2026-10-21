@@ -162,13 +162,13 @@ function VideoPanel({ vid }) {
 }
 
 /* ---------- footer ---------- */
-const Soc = ({ href, icon, children }) => <a href={href} target="_blank" rel="noopener"><span dangerouslySetInnerHTML={{ __html: icon }} />{children}</a>;
+const Soc = ({ href, children }) => <a href={href} target="_blank" rel="noopener">{children}</a>;
 function Footer({ socials }) {
   return (
     <footer className="site-foot">
       <Brands cls="brands foot-brands" />
-      <nav className="soc" aria-label="Social links">{socials.map(s => <Soc key={s.label} href={s.url} icon={s.icon}>{s.label}</Soc>)}</nav>
-      <p className="legal">An independent community of Hyperliquid users. Not Hyperliquid, not Hyper Foundation, not officially affiliated.</p>
+      <nav className="soc" aria-label="Social links">{socials.map(s => <Soc key={s.label} href={s.url}>{s.label}</Soc>)}</nav>
+      <p className="legal"><a href="/terms">Terms and conditions</a>. An independent community of Hyperliquid users. Not Hyperliquid, not Hyper Foundation, not officially affiliated.</p>
     </footer>
   );
 }
@@ -178,14 +178,14 @@ export default function App({ socials }) {
   const reduce = useReducedMotion();
   const { info, apply, offset } = useStatus(), now = useNow(offset), st = windowState(info, now);
   const [name, setName] = useState(""), [phase, setPhase] = useState("idle"), [res, setRes] = useState(null);
-  const [msg, setMsg] = useState({ t: "The card updates as you type.", err: false }), [checking, setChecking] = useState(false), [claiming, setClaiming] = useState(false), [muted, setMuted] = useState(false);
+  const [msg, setMsg] = useState({ t: "", err: false }), [checking, setChecking] = useState(false), [claiming, setClaiming] = useState(false), [muted, setMuted] = useState(false);
   const [vid, setVid] = useState({ status: "idle", left: 0 }), deb = useRef();
   const busy = phase === "reading" || phase === "engraving" || checking;
   const norm = v => v.trim().toLowerCase(), okName = n => HL().validHl(n) || HL().validEth(n);
 
   const onType = e => {
     if (busy) return; const v = e.target.value, n = norm(v); setName(v); setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 });
-    setMsg(!n ? { t: "The card updates as you type.", err: false } : okName(n) ? { t: "This is how it will be etched.", err: false } : { t: "Names end in .hl or .eth", err: true });
+    setMsg(!n ? { t: "", err: false } : okName(n) ? { t: "This is how it will be etched.", err: false } : { t: "Names end in .hl or .eth", err: true });
     clearTimeout(deb.current); deb.current = setTimeout(() => HL().setName(n), 250);
   };
   const submit = async e => {
@@ -227,7 +227,7 @@ export default function App({ socials }) {
           <Plate hot={phase === "engraving"} />
           <aside className="console" aria-label="Check your name">
             <motion.h1 {...rise(1, reduce)}>Your name, <i>laser etched</i> in metal.</motion.h1>
-            <motion.p className="sub" {...rise(2, reduce)}>25 NFC metal cards from Hyperliquid India and ENS for House of HYPE. Enter your .hl or .eth name to see your card.</motion.p>
+            <motion.p className="sub" {...rise(2, reduce)}>Get one of only 25 NFC metal cards from Hyperliquid India and ENS for House of HYPE.</motion.p>
             <motion.div className="full" {...rise(3, reduce)}><Meters info={info} now={now} /></motion.div>
 
             <motion.form className="apply" onSubmit={submit} noValidate {...rise(4, reduce)}>
@@ -250,8 +250,6 @@ export default function App({ socials }) {
 
             <AnimatePresence>{res && <Result key={res.name + res.score} j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} />}</AnimatePresence>
             <VideoPanel vid={vid} />
-
-            <motion.p className="fine" {...rise(6, reduce)}>Winners collect in person at the House of HYPE event in Mumbai on 3 November. At pickup, the winner shows proof of the wallet behind their name, so the card goes to the person who owns the name.</motion.p>
           </aside>
         </div>
       </main>
