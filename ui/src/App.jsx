@@ -195,11 +195,17 @@ function Leaderboard({ me, refresh }) {
 
 /* ---------- terms ---------- */
 function Terms() {
+  const T = [
+    ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. Top 25 eligible names get one."],
+    ["48h", "Claim window", "Opens 22 October, 12:00 IST. Closes 24 October, 12:00 IST."],
+    ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
+  ];
   return (
     <section className="tnc" aria-label="Terms and conditions">
       <h2>Terms and conditions</h2>
-      <p>There are 25 numbered NFC metal cards, made by Hyperliquid India and ENS. Claims open on 22 October at 12:00 IST and close on 24 October at 12:00 IST.</p>
-      <p>Winners collect in person at the House of HYPE event in Mumbai on 3 November. At pickup, the winner shows proof of the wallet behind their name, so the card goes to the person who owns the name.</p>
+      <div className="tnc-g">{T.map(([k, t, d]) => (
+        <div className="tnc-c" key={k}><b>{k}</b><h3>{t}</h3><p>{d}</p></div>
+      ))}</div>
     </section>
   );
 }
@@ -287,7 +293,7 @@ export default function App({ socials }) {
                   <div className="wal">
                     {!pair ? <button type="button" className="wal-t" onClick={() => { setPair(true); if (!wallets.length) setWallets([""]); }}>Pair more wallets</button> : (
                       <div className="wal-box">
-                        <span className="rlab">Paired wallets, up to 4. Their activity adds to your score.</span>
+                        <span className="rlab">Paired wallets, up to 4. Their activity adds to your score. They are never shown publicly.</span>
                         {wallets.map((w, i) => (
                           <div className="wal-row" key={i}>
                             <input type="text" value={w} placeholder="0x…" spellCheck={false} autoComplete="off" maxLength={42} aria-label={"Paired wallet " + (i + 1)} onChange={e => setWallets(a => a.map((x, k) => k === i ? e.target.value : x))} />
