@@ -150,44 +150,44 @@ function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack }) {
 function Leaderboard({ me, refresh }) {
   const [lb, setLb] = useState(null), [open, setOpen] = useState(null);
   useEffect(() => { let live = true; fetch("/api/leaderboard").then(r => r.json()).then(j => live && setLb(j)).catch(() => live && setLb({ rows: [], cards: 25 })); return () => { live = false; }; }, [refresh]);
-  useEffect(() => { if (me) setOpen(me); }, [me]);
-  const SHORT = { tenure: "Time", hype: "HYPE", volume: "Volume", hip: "HIP-3/4", trades: "Trades", name: "Name age" };
-  const rows = lb?.rows || [], cols = (rows[0]?.parts || []).map(p => ({ key: p.key, label: SHORT[p.key] || p.label })), cards = lb?.cards || 25, shown = rows;
+  const rows = lb?.rows || [], cards = lb?.cards || 25;
   return (
     <section className="lb" aria-label="Leaderboard">
       <div className="lb-h"><h2>Leaderboard</h2></div>
       {!lb ? <p className="lb-empty">Loading…</p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
-        <>
-        <div className="lb-head" aria-hidden="true"><span /><span>Name</span><span className="lb-cells">{cols.map(c => <span key={c.key}>{c.label}</span>)}</span><span>Score</span><span /></div>
         <ol className="lb-list">
-          {shown.map(r => {
+          {rows.map(r => {
             const on = open === r.name, you = me === r.name;
             return (
               <li key={r.name} className={"lb-row" + (on ? " on" : "") + (you ? " you" : "") + (r.rank === cards ? " cut" : "")}>
                 <button type="button" className="lb-main" aria-expanded={on} onClick={() => setOpen(on ? null : r.name)}>
                   <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
                   <span className="lb-name">{r.name}{you && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
-                  <span className="lb-cells">{r.parts.map(p => <span key={p.key} className="lb-cell" title={p.label + ": " + p.pts + " / " + p.max}><b>{p.pts}</b><i style={{ width: (p.max ? (p.pts / p.max) * 100 : 0) + "%" }} /></span>)}</span>
+                  <span className="lb-bar"><i style={{ width: r.score + "%" }} /></span>
                   <span className="lb-score">{r.score}</span>
                   <span className="lb-chev" aria-hidden="true">{on ? "−" : "+"}</span>
                 </button>
                 {on && (
-                  <ul className="lb-parts">
-                    {r.parts.map(p => (
-                      <li key={p.key}>
-                        <span className="pl">{p.label}</span>
-                        <span className="pp">{p.pts}<small> / {p.max}</small></span>
-                        <span className="pb"><i style={{ width: (p.max ? (p.pts / p.max) * 100 : 0) + "%" }} /></span>
-                        <span className="pd">{p.detail}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="lb-detail">
+                    <div className="lb-stack" aria-hidden="true">
+                      {r.parts.map((p, i) => <i key={p.key} style={{ width: p.pts + "%", opacity: 1 - i * .13 }} title={p.label} />)}
+                    </div>
+                    <ul className="lb-tiles">
+                      {r.parts.map(p => (
+                        <li key={p.key}>
+                          <span className="t-l">{p.label}</span>
+                          <span className="t-n">{p.pts}<small>/{p.max}</small></span>
+                          <span className="t-b"><i style={{ width: (p.max ? (p.pts / p.max) * 100 : 0) + "%" }} /></span>
+                          <span className="t-d">{p.detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </li>
             );
           })}
         </ol>
-        </>
       )}
     </section>
   );
