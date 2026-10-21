@@ -50,18 +50,6 @@
    "meta": "Etched | Hex glyphs"
   },
   {
-   "id": "waist",
-   "n": "04",
-   "label": "Signed message",
-   "desc": "The message across the waist ties the name, the card number and the HYPE token together.",
-   "x": 760,
-   "y": 483,
-   "w": 825,
-   "h": 40,
-   "side": "r",
-   "meta": "Etched | Mint"
-  },
-  {
    "id": "no",
    "n": "05",
    "label": "Number",
