@@ -541,7 +541,7 @@ function lockup(x, c, X, Y, h) {
         const ns = nameSize(x, d, 722, 150, 44, v => SANS(500, v), SERIF);
         const NY = 0; const CX = 792; const NYY = Math.round(500 + ns * .25); const WA = Math.floor((NYY - ns * .3) / 18) * 18; x.font = SANS(600, ns); let nw = x.measureText(d.base).width; x.font = SERIF(ns); nw += x.measureText(d.tld).width;
         const keep = [[CX - nw / 2 - 14, NYY - ns * .95, CX + nw / 2 + 14, NYY + ns * .3]];
-        const hash = (d.node || "0x" + "0".repeat(64)).slice(2); const band = keep[0]; const nm = document.createElement("canvas"); nm.width = TEX_W; nm.height = TEX_H; const nmx = nm.getContext("2d"); drawName(nmx, d, CX, NYY, ns, "#f00", "#0f0", "center", v => SANS(600, v)); const nmd = nmx.getImageData(0, 0, TEX_W, TEX_H).data; const px = (a, b2) => { const o = ((b2 | 0) * TEX_W + (a | 0)) * 4; return nmd[o] > 128 ? 1 : nmd[o + 1] > 128 ? 2 : 0; }; const near = (a, b2) => { for (let j = -10; j <= 10; j += 5) for (let i = -6; i <= 6; i += 3) if (px(a + i, b2 + j)) return 1; return 0; };
+        const hash = (d.node || "0x" + "0".repeat(64)).slice(2); const band = keep[0]; const nm = document.createElement("canvas"); nm.width = TEX_W; nm.height = TEX_H; const nmx = nm.getContext("2d"); drawName(nmx, d, CX, NYY, ns, "#f00", "#0f0", "center", v => SANS(600, v)); const nmd = nmx.getImageData(0, 0, TEX_W, TEX_H).data; const px = (a, b2) => { const o = ((b2 | 0) * TEX_W + (a | 0)) * 4; return nmd[o] > 128 ? 1 : nmd[o + 1] > 128 ? 2 : 0; }; const near = (a, b2) => { for (let j = -6; j <= 6; j += 3) for (let i = -4; i <= 4; i += 2) if (px(a + i, b2 + j)) return 1; return 0; };
         const waist = SIGNATURE ? `SIG ${SIGNATURE} ` : `MSG ${signMessage(d)} `;
         let k = 0, kw = 0, cells = 0, wcells = 0;
         x.save(); x.font = MONO(400, 16); x.textAlign = "center"; x.textBaseline = "middle";
@@ -554,7 +554,7 @@ function lockup(x, c, X, Y, h) {
           const ch = hash[k++ % hash.length]; cells++;
           const edge = !inside(cx - 10, cy) || !inside(cx + 10, cy) || !inside(cx, cy - 19) || !inside(cx, cy + 19);
           const t = (cx - 560) / 1025, w = 0.5 + 0.5 * Math.sin(t * 5.6 + cy * 0.011 + Math.sin(cy * 0.004) * 1.4);
-          x.fillStyle = hair(mode, inB ? .1 + .25 * w : edge ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);
+          x.fillStyle = hair(mode, edge && !inB ? .95 : .16 + .6 * w); x.fillText(ch, cx, cy);
         }
         x.font = MONO(600, 9); let kn = 0;
         for (let gy = Math.floor(band[1]); gy < band[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(band[0]); gx <= band[2]; gx++) { const L = gx < band[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = rl === 2 ? ink(mode, MINT) : hair(mode, .92); x.fillRect(run, gy, gx - run, 2.2); } run = gx; rl = L; } } }
