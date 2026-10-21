@@ -61,9 +61,26 @@ if os.environ.get('CLASSIC'):
     eng = eng.replace('          lockup(x, c, M, 854, 34);\n          x.fillStyle = c; x.font = MONO(400, 26); spaced(x, `${d.no}/${d.edition}`, RGT, 890, 3, "right");', '          lockup(x, c, M, 854, 34);\n          x.fillStyle = ink(mode, DIM); x.font = MONO(400, 26); x.textAlign = "left"; spaced(x, `${d.no}/${d.edition}`, M, 590 + Math.round(ns * .3) + 60, 3);', 1)
     _i = eng.index('front(x, mode, d) {'); _j = eng.index('back(x, mode, d) {', _i)
     _f = eng[_i:_j]
-    _f = _f.replace('x.font = SANS(500, ns); let nw', 'const NY = Math.round(470 + ns * .24); x.font = SANS(500, ns); let nw', 1)
+    _f = _f.replace('x.font = SANS(500, ns); let nw', 'const NY = 509; x.font = SANS(500, ns); let nw', 1)
     _f = _f.replace('590', 'NY').replace('lockup(x, c, M, 854, 34)', 'lockup(x, c, M, 866, 34)')
+    _num = 'x.fillStyle = ink(mode, DIM); x.font = MONO(400, 26); x.textAlign = "left"; spaced(x, `${d.no}/${d.edition}`, M, NY + Math.round(ns * .3) + 60, 3);'
+    assert _num in _f
+    _f = _f.replace(_num, 'dotText(x, `${d.no}/${d.edition}`, M, NY + Math.round(ns * .3) + 92, 76, c, 6);')
+    _dot = """
+  function dotText(x, text, X, Y, size, color, pitch) {
+    const oc = document.createElement("canvas"), o = oc.getContext("2d"); o.font = MONO(700, size);
+    const w = Math.ceil(o.measureText(text).width) + 8, h = Math.ceil(size * 1.1); oc.width = w; oc.height = h;
+    o.font = MONO(700, size); o.fillStyle = "#fff"; o.textBaseline = "alphabetic"; o.fillText(text, 2, h * .86);
+    const px = o.getImageData(0, 0, w, h).data; x.save(); x.fillStyle = color;
+    for (let yy = 0; yy < h; yy += pitch) for (let xx = 0; xx < w; xx += pitch) {
+      let a = 0; for (let j = 0; j < pitch; j += 2) for (let i = 0; i < pitch; i += 2) a += px[((yy + j) * w + xx + i) * 4 + 3];
+      if (a / 9 > 120) { x.beginPath(); x.arc(X + xx + pitch / 2 - 2, Y - h * .86 + yy + pitch / 2, pitch * .34, 0, 6.2832); x.fill(); }
+    }
+    x.restore();
+  }
+"""
     eng = eng[:_i] + _f + eng[_j:]
+    eng = eng.replace('function lockup(x, c, X, Y, h) {', _dot + 'function lockup(x, c, X, Y, h) {', 1)
     eng = eng.replace('const bs = 1320 / 200, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(600, -160).scale(bs, bs));', 'const bs = 4.96, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(616.6, 4.2).scale(bs, bs));', 1)
     assert eng != _n and ')))' not in eng.split('back(x, mode, d)')[0].split('marks(x, mode')[-1]
 

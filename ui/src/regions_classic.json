@@ -19,7 +19,7 @@
    "label": "Name",
    "desc": "Your .hl or .eth name. The ending is filled in mint.",
    "x": 95,
-   "y": 387,
+   "y": 399,
    "w": 600,
    "h": 140,
    "side": "l",
@@ -67,9 +67,9 @@
    "label": "Number",
    "desc": "Your number out of 25.",
    "x": 95,
-   "y": 555,
-   "w": 200,
-   "h": 46,
+   "y": 591,
+   "w": 260,
+   "h": 80,
    "side": "l",
    "meta": "Etched | Edition"
   }
