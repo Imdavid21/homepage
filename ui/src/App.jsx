@@ -166,49 +166,32 @@ const Detail = ({ r }) => (
 function Leaderboard({ me, refresh }) {
   const [lb, setLb] = useState(null), [open, setOpen] = useState(null);
   useEffect(() => { let live = true; fetch("/api/leaderboard").then(r => r.json()).then(j => live && setLb(j)).catch(() => live && setLb({ rows: [], cards: 25 })); return () => { live = false; }; }, [refresh]);
-  const rows = lb?.rows || [], cards = lb?.cards || 25, top = rows.slice(0, 3), rest = rows.slice(3), openTop = top.find(r => r.name === open);
-  const tog = n => setOpen(o => o === n ? null : n);
+  const rows = lb?.rows || [], cards = lb?.cards || 25;
   return (
     <section className="lb" aria-label="Leaderboard">
       <div className="lb-h"><h2>Leaderboard</h2></div>
       {!lb ? <p className="lb-empty">Loading…</p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
-        <>
-          <div className="podium">
-            {top.map(r => (
-              <button key={r.name} type="button" className={"pod p" + r.rank + (open === r.name ? " on" : "") + (me === r.name ? " you" : "")} aria-expanded={open === r.name} onClick={() => tog(r.name)}>
-                <span className="pod-rank">{String(r.rank).padStart(2, "0")}</span>
-                <span className="pod-score">{r.score}</span>
-                <Meter score={r.score} />
-                <span className="pod-name">{r.name}{me === r.name && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
-              </button>
-            ))}
-          </div>
-          {openTop && <Detail r={openTop} />}
-          {rest.length > 0 && (
-            <ol className="lb-list" start={4}>
-              {rest.map(r => {
-                const on = open === r.name, you = me === r.name;
-                return (
-                  <li key={r.name} className={"lb-row" + (on ? " on" : "") + (you ? " you" : "") + (r.rank === cards ? " cut" : "")}>
-                    <button type="button" className="lb-main" aria-expanded={on} onClick={() => tog(r.name)}>
-                      <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
-                      <span className="lb-name">{r.name}{you && <em>You</em>}{r.claimed && <em className="c">Claimed</em>}</span>
-                      <Meter score={r.score} />
-                      <span className="lb-score">{r.score}</span>
-                      <span className="lb-chev" aria-hidden="true">{on ? "−" : "+"}</span>
-                    </button>
-                    {on && <Detail r={r} />}
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </>
+        <ol className="lb-list">
+          {rows.map(r => {
+            const on = open === r.name, you = me === r.name;
+            return (
+              <li key={r.name} className={"lb-row" + (on ? " on" : "") + (you ? " you" : "") + (r.rank === cards ? " cut" : "")}>
+                <button type="button" className="lb-main" aria-expanded={on} onClick={() => setOpen(on ? null : r.name)}>
+                  <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
+                  <span className="lb-name"><span className="nm">{r.name}</span>{you && <em>You</em>}</span>
+                  <span className="lb-bar"><i style={{ width: r.score + "%" }} /></span>
+                  <span className="lb-score">{r.score}</span>
+                  <span className="lb-chev" aria-hidden="true">{on ? "−" : "+"}</span>
+                </button>
+                {on && <Detail r={r} />}
+              </li>
+            );
+          })}
+        </ol>
       )}
     </section>
   );
 }
-
 
 /* ---------- terms ---------- */
 function Terms() {
