@@ -1,0 +1,152 @@
+{
+ "front": [
+  {
+   "id": "card",
+   "n": "00",
+   "label": "Front",
+   "desc": "Your name, your number out of 25 and the two brands. The Hyperliquid shape is filled with your namehash.",
+   "x": 0,
+   "y": 0,
+   "w": 1585,
+   "h": 1000,
+   "side": "l",
+   "meta": "",
+   "kicker": "Side one | The face"
+  },
+  {
+   "id": "name",
+   "n": "01",
+   "label": "Name",
+   "desc": "Your .hl or .eth name. The ending is filled in mint.",
+   "x": 95,
+   "y": 480,
+   "w": 600,
+   "h": 140,
+   "side": "l",
+   "meta": "Etched | Mint infill"
+  },
+  {
+   "id": "brands",
+   "n": "02",
+   "label": "Brands",
+   "desc": "Hyperliquid India and ENS, the two parties behind the card.",
+   "x": 90,
+   "y": 845,
+   "w": 380,
+   "h": 55,
+   "side": "l",
+   "meta": "Etched | Two marks"
+  },
+  {
+   "id": "mark",
+   "n": "03",
+   "label": "Namehash fill",
+   "desc": "The Hyperliquid shape is filled with your namehash, so no two cards carry the same text.",
+   "x": 755,
+   "y": 115,
+   "w": 830,
+   "h": 740,
+   "side": "r",
+   "meta": "Etched | Hex glyphs"
+  },
+  {
+   "id": "waist",
+   "n": "04",
+   "label": "Signed message",
+   "desc": "The message across the waist ties the name, the card number and the HYPE token together.",
+   "x": 760,
+   "y": 483,
+   "w": 825,
+   "h": 40,
+   "side": "r",
+   "meta": "Etched | Mint"
+  },
+  {
+   "id": "no",
+   "n": "05",
+   "label": "Number",
+   "desc": "Your number out of 25.",
+   "x": 95,
+   "y": 648,
+   "w": 200,
+   "h": 46,
+   "side": "l",
+   "meta": "Etched | Edition"
+  }
+ ],
+ "back": [
+  {
+   "id": "card",
+   "n": "00",
+   "label": "Back",
+   "desc": "The HYPE genesis record, the token, and the holder this card was made for.",
+   "x": 0,
+   "y": 0,
+   "w": 1585,
+   "h": 1000,
+   "side": "l",
+   "meta": "",
+   "kicker": "Side two | The record"
+  },
+  {
+   "id": "genesis",
+   "n": "01",
+   "label": "Genesis record",
+   "desc": "Date, unix time, token address, supply, distribution and wallets of the HYPE genesis.",
+   "x": 95,
+   "y": 120,
+   "w": 900,
+   "h": 450,
+   "side": "l",
+   "meta": "Etched | Register"
+  },
+  {
+   "id": "holder",
+   "n": "02",
+   "label": "Holder",
+   "desc": "Your name and the namehash of the name this card belongs to.",
+   "x": 95,
+   "y": 635,
+   "w": 860,
+   "h": 110,
+   "side": "l",
+   "meta": "Etched | Holder"
+  },
+  {
+   "id": "brands",
+   "n": "03",
+   "label": "Brands",
+   "desc": "Hyperliquid India and ENS.",
+   "x": 90,
+   "y": 845,
+   "w": 380,
+   "h": 55,
+   "side": "l",
+   "meta": "Etched | Two marks"
+  },
+  {
+   "id": "qr",
+   "n": "04",
+   "label": "QR",
+   "desc": "Scan or tap to open the card page and verify the holder onchain.",
+   "x": 1245,
+   "y": 145,
+   "w": 245,
+   "h": 285,
+   "side": "r",
+   "meta": "Etched | QR"
+  },
+  {
+   "id": "no",
+   "n": "05",
+   "label": "Number",
+   "desc": "Your number out of 25.",
+   "x": 1385,
+   "y": 862,
+   "w": 110,
+   "h": 36,
+   "side": "r",
+   "meta": "Etched | Edition"
+  }
+ ]
+}
