@@ -112,64 +112,54 @@ function verdictFor(j, st, phase) {
   return "You're eligible. Claim your card before they run out.";
 }
 
-function Result({ j, phase, st, onClaim, claiming, onReplay, vid }) {
-  const reduce = useReducedMotion(), busy = phase === "engraving", done = phase === "done";
-  const canClaim = done && j.eligible && !j.claimed && st === "open" && j.left > 0;
+function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack }) {
+  const done = phase === "done", canClaim = done && j.eligible && !j.claimed && st === "open" && j.left > 0;
   const addr = j.address ? j.address.slice(0, 6) + "…" + j.address.slice(-4) : "";
   return (
-    <motion.section className="result" aria-live="polite" initial={reduce ? false : { opacity: 0, y: 36, scale: .97 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: "spring", stiffness: 140, damping: 20 }}>
-      <Ring score={Math.max(0, Math.min(100, j.score || 0))} ok={j.eligible} />
-      <p className="rlab">Hyperliquid onchain score</p>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.h2 key={verdictFor(j, st, phase)} className={"verdict" + (j.eligible ? " ok" : "")} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: .35, ease }}>{verdictFor(j, st, phase)}</motion.h2>
-      </AnimatePresence>
-      <p className="who"><span>{j.name}</span>{addr && <span className="mono">{addr}</span>}</p>
-      <AnimatePresence>
-        {done && j.eligible && (
-          <motion.div className="acts" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            {canClaim && <Button variant="accent" onClick={onClaim} disabled={claiming}>{claiming ? "Claiming…" : "Claim your card"}</Button>}
-            {vid.status !== "ready" && <Button variant="ghost" disabled>{vid.status === "error" ? "Video not supported here" : "Preparing your video"}</Button>}
-            <Button variant="ghost" onClick={onReplay} disabled={vid.status === "rec"}>Replay engraving</Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {j.explorers && j.explorers.length > 0 && (
-        <div className="chips"><span className="rlab">Verify onchain</span>
-          {j.explorers.map((e, i) => <motion.a key={e.label} href={e.url} target="_blank" rel="noopener" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .5 + i * .08 }}>{e.label}</motion.a>)}
+    <div className="score" aria-live="polite">
+      <div className="score-top">
+        <Ring score={Math.max(0, Math.min(100, j.score || 0))} ok={j.eligible} />
+        <div className="score-id">
+          <h2 className={"verdict" + (j.eligible ? " ok" : "")}>{verdictFor(j, st, phase)}</h2>
+          <p className="who"><span>{j.name}</span>{addr && <span className="mono">{addr}</span>}</p>
+        </div>
+      </div>
+      {phase === "engraving" && <p className="etch-note">Etching your name…</p>}
+      <ul className="sc-parts">
+        {(j.parts || []).map(p => (
+          <li key={p.key}>
+            <span className="pl">{p.label}</span><span className="pp">{p.pts}<small> / {p.max}</small></span>
+            <span className="pb"><i style={{ width: (p.max ? (p.pts / p.max) * 100 : 0) + "%" }} /></span>
+            <span className="pd">{p.detail}</span>
+          </li>
+        ))}
+      </ul>
+      {done && j.eligible && (
+        <div className="acts">
+          {canClaim && <Button variant="accent" onClick={onClaim} disabled={claiming}>{claiming ? "Claiming…" : "Claim your card"}</Button>}
+          {vid.status === "ready" ? <Button href={vid.url} download={vid.file}>Export video</Button> : <Button variant="ghost" disabled>{vid.status === "error" ? "Video not supported here" : "Preparing video…"}</Button>}
+          <Button variant="ghost" onClick={onReplay} disabled={vid.status === "rec"}>Replay engraving</Button>
         </div>
       )}
-    </motion.section>
-  );
-}
-
-function VideoPanel({ vid }) {
-  if (vid.status !== "ready") return null;
-  return (
-    <motion.section className="vidbox" initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7, ease }}>
-      <video src={vid.url} controls playsInline loop autoPlay muted />
-      <div className="vidside">
-        <p className="rlab">Your video is ready</p>
-        <p className="cap-text">{vid.caption}</p>
-        <div className="acts left">
-          <Button href={vid.url} download={vid.file}>Export video</Button>
-          <Button variant="ghost" onClick={() => navigator.clipboard.writeText(vid.caption)}>Copy caption</Button>
-          <Button variant="ghost" href={"https://twitter.com/intent/tweet?text=" + encodeURIComponent(vid.caption)} target="_blank" rel="noopener">Post on X</Button>
+      {j.explorers && j.explorers.length > 0 && (
+        <div className="chips"><span className="rlab">Verify wallet</span>
+          {j.explorers.map(e => <a key={e.label} href={e.url} target="_blank" rel="noopener">{e.label}</a>)}
         </div>
-        <p className="small">{vid.ext === "mp4" ? "Attach the video to your post. The caption is also burned into the video." : "This browser saved WebM. X needs MP4, so use Chrome for an MP4 file or convert this one first. The caption is also burned into the video."}</p>
-      </div>
-    </motion.section>
+      )}
+      <button type="button" className="again" onClick={onBack}>Check another name</button>
+    </div>
   );
 }
 
 /* ---------- leaderboard ---------- */
 function Leaderboard({ me, refresh }) {
-  const [lb, setLb] = useState(null), [open, setOpen] = useState(null), [all, setAll] = useState(false);
+  const [lb, setLb] = useState(null), [open, setOpen] = useState(null);
   useEffect(() => { let live = true; fetch("/api/leaderboard").then(r => r.json()).then(j => live && setLb(j)).catch(() => live && setLb({ rows: [], cards: 25 })); return () => { live = false; }; }, [refresh]);
   useEffect(() => { if (me) setOpen(me); }, [me]);
-  const rows = lb?.rows || [], cards = lb?.cards || 25, shown = all ? rows : rows.slice(0, 10);
+  const rows = lb?.rows || [], cards = lb?.cards || 25, shown = rows;
   return (
     <section className="lb" aria-label="Leaderboard">
-      <div className="lb-h"><h2>Leaderboard</h2><span>Top {cards} get a card. Tap a row for the score breakdown.</span></div>
+      <div className="lb-h"><h2>Leaderboard</h2><span>Every name checked, eligible or not. Top {cards} eligible get a card. Tap a row for the breakdown.</span></div>
       {!lb ? <p className="lb-empty">Loading…</p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
         <ol className="lb-list">
           {shown.map(r => {
@@ -200,7 +190,6 @@ function Leaderboard({ me, refresh }) {
           })}
         </ol>
       )}
-      {rows.length > 10 && <button type="button" className="lb-more" onClick={() => setAll(a => !a)}>{all ? "Show top 10" : `Show all ${rows.length}`}</button>}
     </section>
   );
 }
@@ -247,6 +236,7 @@ export default function App({ socials }) {
       if (j.eligible) makeVideo(j);
     } catch (err) { console.error("CHK", err); setMsg({ t: "Network error. Try again.", err: true }); setChecking(false); setPhase("idle"); }
   };
+  const again = () => { if (phase === "engraving" || phase === "reading") return; setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 }); setMsg({ t: "", err: false }); };
   const replay = async () => { if (phase !== "done") return; setPhase("engraving"); await HL().engrave(); setPhase("done"); };
   const claim = async () => {
     setClaiming(true);
@@ -269,31 +259,26 @@ export default function App({ socials }) {
       <main className="hero">
         <div className="deck">
           <Plate hot={phase === "engraving"} />
-          <aside className="console" aria-label="Check your name">
-            <motion.h1 {...rise(1, reduce)}>Your name, <i>laser etched</i> in metal.</motion.h1>
-            <motion.p className="sub" {...rise(2, reduce)}>Get one of only 25 NFC metal cards from Hyperliquid India and ENS for House of HYPE.</motion.p>
-            <motion.div className="full" {...rise(3, reduce)}><Meters info={info} now={now} /></motion.div>
-
-            <motion.form className="apply" onSubmit={submit} noValidate {...rise(4, reduce)}>
-              <label className="vh" htmlFor="name">Your .hl or .eth name</label>
-              <div className="field">
-                <input id="name" type="text" value={name} onChange={onType} placeholder="yourname.hl or yourname.eth" autoComplete="off" autoCapitalize="off" spellCheck={false} maxLength={64} />
-                <Button type="submit" disabled={busy}>{checking ? "Checking…" : "Check eligibility"}</Button>
+          <aside className={"console flip" + (res ? " on" : "")} aria-label="Check your name">
+            <div className="flip-in">
+              <div className="face front" inert={!!res}>
+                <motion.h1 {...rise(1, reduce)}>Your name, <i>laser etched</i> in metal.</motion.h1>
+                <motion.p className="sub" {...rise(2, reduce)}>Get one of only 25 NFC metal cards from Hyperliquid India and ENS for House of HYPE.</motion.p>
+                <motion.div className="full" {...rise(3, reduce)}><Meters info={info} now={now} /></motion.div>
+                <motion.form className="apply" onSubmit={submit} noValidate {...rise(4, reduce)}>
+                  <label className="vh" htmlFor="name">Your .hl or .eth name</label>
+                  <div className="field">
+                    <input id="name" type="text" value={name} onChange={onType} placeholder="yourname.hl or yourname.eth" autoComplete="off" autoCapitalize="off" spellCheck={false} maxLength={64} />
+                    <Button type="submit" disabled={busy}>{busy ? "Checking…" : "Check eligibility"}</Button>
+                  </div>
+                  <span className={"status" + (msg.err ? " err" : "")} aria-live="polite">{msg.t}</span>
+                  <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
+                </motion.form>
               </div>
-              <span className={"status" + (msg.err ? " err" : "")} aria-live="polite">{msg.t}</span>
-              <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
-            </motion.form>
-
-            <AnimatePresence>
-              {(phase === "engraving" || phase === "reading") && (
-                <motion.div key={phase} className="etch" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 34 }} exit={{ opacity: 0, height: 0 }}>
-                  <span>{phase === "reading" ? "Reading the chain" : "Etching your name"}</span><div className="etch-bar"><motion.i initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: phase === "reading" ? 1.2 : 3.4, ease: "easeInOut" }} /></div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <AnimatePresence>{res && <Result key={res.name + res.score} j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} />}</AnimatePresence>
-            <VideoPanel vid={vid} />
+              <div className="face back" inert={!res}>
+                {res && <ScoreCard j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} onBack={again} />}
+              </div>
+            </div>
           </aside>
         </div>
         <Leaderboard me={res?.name} refresh={res?.name} />
