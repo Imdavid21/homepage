@@ -141,11 +141,6 @@ function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack }) {
           <Button variant="ghost" onClick={onReplay} disabled={vid.status === "rec"}>Replay engraving</Button>
         </div>
       )}
-      {j.explorers && j.explorers.length > 0 && (
-        <div className="chips"><span className="rlab">Verify wallet</span>
-          {j.explorers.map(e => <a key={e.label} href={e.url} target="_blank" rel="noopener">{e.label}</a>)}
-        </div>
-      )}
       <button type="button" className="again" onClick={onBack}>Check another name</button>
     </div>
   );
