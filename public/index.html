@@ -781,11 +781,7 @@ Error generating stack: `+i.message+`
   function drawVideo(x, t, vo, j) {
     const bgp = Math.min(1, t / .8), ease = p => 1 - Math.pow(1 - p, 3);
     x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
-    x.fillStyle = "#050505"; x.fillRect(0, 0, VW, VH);
-    const g = x.createRadialGradient(VW / 2, 640, 0, VW / 2, 640, 760); g.addColorStop(0, `rgba(151,252,228,${.17 * bgp})`); g.addColorStop(1, "rgba(5,5,5,0)"); x.fillStyle = g; x.fillRect(0, 0, VW, VH);
-    x.strokeStyle = "rgba(255,255,255,.035)"; x.lineWidth = 1; for (let i = 0; i < VW; i += 90) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, VH); x.stroke(); } for (let i = 0; i < VH; i += 90) { x.beginPath(); x.moveTo(0, i); x.lineTo(VW, i); x.stroke(); }
-    // dithered Hyperliquid mark behind everything
-    if (window.__dither) { blobCv = blobCv || document.createElement("canvas"); blobMask = blobMask || __dither.pathMask(SVG.blob.d, 200, 200); __dither.paintBlob(blobCv, 200, 200, blobMask, t, [236, 231, 223]); x.save(); x.globalAlpha = .2 * bgp; x.imageSmoothingEnabled = false; const bz = 860; x.drawImage(blobCv, (VW - bz) / 2, 140, bz, bz); x.restore(); }
+    x.fillStyle = "#060606"; x.fillRect(0, 0, VW, VH);
     // brands
     x.globalAlpha = ease(bgp);
     if (logoImgs.hl && logoImgs.ens) { const h = 34, wl = h * 1145 / 156, ve = logoImgs.ens, we = h * (ve.width / ve.height || 1), gap = 26, tot = wl + gap * 2 + 14 + we, sx = (VW - tot) / 2; x.drawImage(logoImgs.hl, sx, 70, wl, h); x.fillStyle = "#8C8C8C"; x.font = '500 24px "Instrument Sans", sans-serif'; x.textBaseline = "middle"; x.fillText("x", sx + wl + gap, 70 + h / 2 + 1); x.drawImage(ve, sx + wl + gap * 2 + 14, 70, we, h); }
@@ -798,7 +794,7 @@ Error generating stack: `+i.message+`
     const rev = Math.min(1, Math.max(0, (t - .5) / .9));
     const p = Math.min(1, Math.max(0, (t - ENG0) / (ENG1 - ENG0)));
     comp(p, vo, p > 0 && p < 1, Math.floor(t * 30));
-    x.filter = "brightness(1.9) contrast(1.12) saturate(1.1)";
+    x.filter = "none";
     if (rev < 1 && window.__dither) {
       // 1-bit reveal: the card arrives through an ordered dither
       const tc = vidTmp || (vidTmp = document.createElement("canvas")); tc.width = Math.round(cw); tc.height = Math.round(chh); const tx = tc.getContext("2d"); tx.clearRect(0, 0, tc.width, tc.height); tx.drawImage(vo.col, 0, 0, tc.width, tc.height);
