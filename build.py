@@ -144,28 +144,15 @@ if os.environ.get('CLASSIC'):
         base(x, mode, false);
         const mint = ink(mode, MINT), dim = ink(mode, DIM);
         const lab = (t, X, Y) => { x.fillStyle = dim; x.font = MONO(400, 12); x.textAlign = "left"; x.textBaseline = "middle"; spaced(x, t, X, Y, 3); };
-        const val = (t, X, Y, c, s) => { x.fillStyle = c; x.font = MONO(500, s || 21); x.textAlign = "left"; x.textBaseline = "middle"; x.fillText(t, X, Y); };
-        const hl = (Y, a, X0, X1) => { x.save(); x.strokeStyle = hair(mode, a || .5); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X0 == null ? M : X0, Y); x.lineTo(X1 == null ? RGT : X1, Y); x.stroke(); x.restore(); };
-        const tag = (t, X, Y) => { x.fillStyle = mint; x.fillRect(X, Y - 5, 8, 8); x.font = MONO(500, 13); x.textAlign = "left"; x.textBaseline = "middle"; spaced(x, t, X + 20, Y, 5); };
+        const val = (t, X, Y, c) => { x.fillStyle = c; x.font = MONO(500, 22); x.textAlign = "left"; x.textBaseline = "middle"; x.fillText(t, X, Y); };
+        const hl = (Y, X0, X1) => { x.save(); x.strokeStyle = hair(mode, .18); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X0, Y); x.lineTo(X1, Y); x.stroke(); x.restore(); };
         marks(x, mode, c => {
-          // I. genesis ledger
-          tag("HYPE GENESIS RECORD", M, 118); hl(142, .35, M, 905);
-          const G = [["DATE", D.genesisDate + "   " + D.genesisClock], ["UNIX TIME", D.genesisUnix], ["TOKEN ID", D.genesisId], ["MAX SUPPLY", D.maxSupply], ["DISTRIBUTION", D.airdrop + "   ·   " + D.airdropPct], ["GENESIS WALLETS", D.wallets], ["ASSISTANCE FUND", short(D.fund, 8, 6)]];
-          G.forEach(([k, v], i) => { const y = 178 + i * 46; lab(k, M, y); val(v, M + 250, y, c); if (i < G.length - 1) hl(y + 23, .16, M, 905); });
-          // QR with reticle corners
-          const qs = 190, qx = RGT - qs - 10, qy = 150; drawQR(x, qrUrl(d), qx, qy, qs, mode);
-          x.save(); x.strokeStyle = mint; x.lineWidth = 2; const bk = 22, g = 16;
-          [[qx - g, qy - g, 1, 1], [qx + qs + g, qy - g, -1, 1], [qx - g, qy + qs + g, 1, -1], [qx + qs + g, qy + qs + g, -1, -1]].forEach(([px, py, sx, sy]) => { x.beginPath(); x.moveTo(px, py + sy * bk); x.lineTo(px, py); x.lineTo(px + sx * bk, py); x.stroke(); }); x.restore();
-          x.fillStyle = mint; x.globalAlpha = .75; x.font = MONO(400, 12); x.textAlign = "center"; spaced(x, "SCAN   ·   TAP   TO   VERIFY", qx + qs / 2, qy + qs + 52, 3, "center"); x.globalAlpha = 1;
-          // II. onchain identity
-          tag("ONCHAIN IDENTITY", M, 520); hl(544, .35);
-          const I = [["REGISTRY", short(D.registry, 8, 6), "HYPERLIQUID INDIA NAMES"], ["ROOT  .HL", short(D.rootHl, 8, 6), "NAMEHASH OF .HL"], ["THIS CARD", short(d.node, 8, 6), "NAMEHASH OF HOLDER"], ["NETWORK", "HYPEREVM", "HYPERCORE  ·  HYPERBFT"]];
-          I.forEach(([k, v, s2], i) => { const X = M + i * 350; lab(k, X, 584); val(v, X, 620, c, 22); lab(s2, X, 654); if (i) { x.save(); x.strokeStyle = hair(mode, .3); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X - 30, 570); x.lineTo(X - 30, 668); x.stroke(); x.restore(); } });
-          // III. the event
-          tag("THE EVENT", M, 716); hl(740, .35);
-          const E = [["CLAIM WINDOW", "23 OCT  →  25 OCT", "6:30 PM IST BOTH DAYS"], ["UNVEILING", "HOUSE OF HYPE", "MUMBAI  ·  03 NOV 2026"], ["BUILD", "NFC · METAL", "LASER ETCHED · PVD BLACK"], ["RUN", "25 CARDS", "ONE NAME EACH"]];
-          E.forEach(([k, v, s2], i) => { const X = M + i * 350; lab(k, X, 778); val(v, X, 812, c, 22); lab(s2, X, 844); if (i) { x.save(); x.strokeStyle = hair(mode, .3); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X - 30, 764); x.lineTo(X - 30, 858); x.stroke(); x.restore(); } });
-          lockup(x, c, M - 30, 912, 34);
+          const L = [["DATE", D.genesisDate], ["TIME", D.genesisClock], ["UNIX TIME", D.genesisUnix], ["TOKEN ID", D.genesisId], ["MAX SUPPLY", D.maxSupply], ["DISTRIBUTION", D.airdrop + "  ·  " + D.airdropPct], ["WALLETS", D.wallets]];
+          const R = [["EXECUTION", "HYPERCORE"], ["EVM", "HYPEREVM"], ["CONSENSUS", "HYPERBFT"], ["MARKETS", "PERPS  ·  SPOT"], ["ORDER BOOK", "FULLY ONCHAIN"], ["BUILDER MARKETS", "HIP-3"], ["TOKEN", "HYPE"]];
+          const col = (rows, X0, X1) => rows.forEach(([k, v], i) => { const y = 150 + i * 98; lab(k, X0, y); val(v, X0 + 230, y + 1, c); if (i < rows.length - 1) hl(y + 49, X0, X1); });
+          col(L, M, 780); col(R, 890, RGT);
+          x.save(); x.strokeStyle = mint; x.globalAlpha = .3; x.lineWidth = 1.5; x.beginPath(); x.moveTo(835, 120); x.lineTo(835, 700); x.stroke(); x.restore();
+          lockup(x, c, M - 30, 880, 34);
         });
       },
 """
