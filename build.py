@@ -84,9 +84,9 @@ if os.environ.get('CLASSIC'):
     eng = eng.replace('const bs = 1320 / 200, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(600, -160).scale(bs, bs));', 'const bs = 4.96, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(616.6, 4.2).scale(bs, bs));', 1)
     if os.environ.get('FULLBLOB', '1') == '1':
         _R = [
-          ('new DOMMatrix().translate(616.6, 4.2).scale(bs, bs)', 'new DOMMatrix().translate(-0.5, -293).scale(bs, bs)'),
-          ('const bs = 4.96', 'const bs = 7.93'),
-          ('nameSize(x, d, 580, 112, 36,', 'nameSize(x, d, 722, 132, 44,'),
+          ('new DOMMatrix().translate(616.6, 4.2).scale(bs, bs)', 'new DOMMatrix().translate(197.5, -95).scale(bs, bs)'),
+          ('const bs = 4.96', 'const bs = 5.95'),
+          ('nameSize(x, d, 580, 112, 36,', 'nameSize(x, d, 540, 112, 36,'),
           ('const NY = 509;', 'const NY = 0; const CX = 792; const NYY = Math.round(500 + ns * .25); const WA = Math.floor((NYY - ns * .3) / 18) * 18;'),
           ('const keep = [[M - 12, NY - ns * .9, M + nw + 24, NY + ns * .3]];', 'const keep = [[CX - nw / 2 - 14, NYY - ns * .95, CX + nw / 2 + 14, NYY + ns * .3]];'),
           ('gx = 540; gx < TEX_W', 'gx = 0; gx < TEX_W'),
@@ -97,7 +97,7 @@ if os.environ.get('CLASSIC'):
         ]
         if os.environ.get('NAMEGLYPH', '1') == '1':
             _R += [
-              ('nameSize(x, d, 722, 132, 44,', 'nameSize(x, d, 722, 150, 44,'),
+              ('nameSize(x, d, 540, 112, 36,', 'nameSize(x, d, 540, 112, 36,'),
               ('x.font = SANS(500, ns); let nw = x.measureText(d.base).width;', 'x.font = SANS(600, ns); let nw = x.measureText(d.base).width;'),
               ('const hash = (d.node || "0x" + "0".repeat(64)).slice(2);', 'const hash = (d.node || "0x" + "0".repeat(64)).slice(2); const band = keep[0]; const nm = document.createElement("canvas"); nm.width = TEX_W; nm.height = TEX_H; const nmx = nm.getContext("2d"); drawName(nmx, d, CX, NYY, ns, "#f00", "#0f0", "center", v => SANS(600, v)); const nmd = nmx.getImageData(0, 0, TEX_W, TEX_H).data; const px = (a, b2) => { const o = ((b2 | 0) * TEX_W + (a | 0)) * 4; return nmd[o] > 128 ? 1 : nmd[o + 1] > 128 ? 2 : 0; }; const near = (a, b2) => { for (let j = -6; j <= 6; j += 3) for (let i = -4; i <= 4; i += 2) if (px(a + i, b2 + j)) return 1; return 0; };'),
               ('if (keep.some(([a, b, c2, d2]) => cx > a && cx < c2 && cy > b && cy < d2)) continue;\n          if (!inside(cx, cy)) continue;\n          if (gy === WA || gy === WA + 18) {', 'const inB = cx > band[0] && cx < band[2] && cy > band[1] && cy < band[3];\n          if (!inside(cx, cy) && !inB) continue;\n          if (inB && near(cx, cy)) continue;\n          if ((gy === WA || gy === WA + 18) && !inB) {'),
