@@ -138,6 +138,22 @@ if os.environ.get('CLASSIC'):
             eng = eng.replace(_a, _b, 1)
     assert eng != _n and ')))' not in eng.split('back(x, mode, d)')[0].split('marks(x, mode')[-1]
 
+    # back: same Hyperliquid shape, genesis fill and corner marks as the front. The QR sits in the bridge where the name is on the front.
+    _fi = eng.index('front(x, mode, d) {'); _bi = eng.index('back(x, mode, d) {', _fi); _ei = eng.index('      notes: d => ({', _bi)
+    _B = eng[_fi:_bi].replace('front(x, mode, d) {', 'back(x, mode, d) {', 1)
+    def _r(a, c):
+        global _B
+        assert a in _B, a[:70]; _B = _B.replace(a, c, 1)
+    _r('!(isW && near(cx, cy))', '!near(cx, cy)')
+    _r('let ns = nameSize(x, d, 459, 95, 30, v => SANS(600, v), SERIF); if (ns < 60) ns = nameSize(x, d, 720, 60, 30, v => SANS(600, v), SERIF);', 'let ns = 95;')
+    _r('drawName(nmx, d, CX, NYY, ns, "#f00", "#0f0", "center", v => SANS(600, v));', 'nmx.fillStyle = "#f00"; nmx.fillRect(CX - 128, 372, 256, 280);')
+    _r('const nr = [CX - nw / 2 - 8, NYY - ns, CX + nw / 2 + 8, NYY + ns * .35];', 'const nr = [CX - 132, 368, CX + 132, 656];')
+    _r('const WT = ["HYPERLIQUID", "HYPERCORE", "HYPEREVM", "HYPERBFT", "HIP-3", "HIP-4", "ONCHAIN ORDER BOOK", "PERPS", "SPOT", "HYPE"];', 'const WT = ["HOLDER", d.name, "NAMEHASH", hash.slice(0, 18), hash.slice(18, 36), hash.slice(36, 54), "VERIFY ONCHAIN"];')
+    _s = _B.index('x.font = MONO(600, 9); let kn = 0;'); _e = _B.index('        x.restore();\n        blobStats')
+    _B = _B[:_s] + _B[_e:]
+    _r('        marks(x, mode, c => {', '        drawQR(x, qrUrl(d), CX - 100, 400, 200, mode); x.save(); x.textAlign = "center"; x.fillStyle = ink(mode, MINT); x.globalAlpha = .6; x.font = MONO(400, 13); spaced(x, "SCAN  \u00b7  TAP", CX, 636, 3, "center"); x.restore();\n        marks(x, mode, c => {')
+    eng = eng[:_bi] + _B + eng[_ei:]
+
 eng = eng.replace('__REGIONS__', open('ui/src/regions_classic.json' if os.environ.get('CLASSIC') else 'ui/src/regions.json').read())
 eng = eng.replace('H * 1.5 / 2', 'H * 1.22 / 2').replace('</script', '<\\/script')
 
