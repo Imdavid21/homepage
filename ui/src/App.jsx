@@ -217,7 +217,6 @@ function Footer({ socials }) {
     <footer className="site-foot">
       <Brands cls="brands foot-brands" />
       <nav className="soc" aria-label="Social links">{socials.map(s => <Soc key={s.label} href={s.url}>{s.label}</Soc>)}</nav>
-      <p className="legal">An independent community of Hyperliquid users. Not Hyperliquid, not Hyper Foundation, not officially affiliated.</p>
     </footer>
   );
 }
