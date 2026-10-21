@@ -223,33 +223,37 @@ export default function App({ socials }) {
       <Masthead muted={muted} setMuted={setMuted} />
 
       <main className="hero">
-        <motion.div className="full" {...rise(0, reduce)}><Meters info={info} now={now} /></motion.div>
-        <motion.h1 {...rise(1, reduce)}>Your name, <i>laser etched</i> in metal.</motion.h1>
-        <motion.p className="sub" {...rise(2, reduce)}>25 NFC metal cards from Hyperliquid India and ENS for House of HYPE. Enter your .hl or .eth name to see your card.</motion.p>
-        <motion.div className="bleed" {...rise(4, reduce)}><Plate hot={phase === "engraving"} /></motion.div>
+        <div className="deck">
+          <Plate hot={phase === "engraving"} />
+          <aside className="console" aria-label="Check your name">
+            <motion.h1 {...rise(1, reduce)}>Your name, <i>laser etched</i> in metal.</motion.h1>
+            <motion.p className="sub" {...rise(2, reduce)}>25 NFC metal cards from Hyperliquid India and ENS for House of HYPE. Enter your .hl or .eth name to see your card.</motion.p>
+            <motion.div className="full" {...rise(3, reduce)}><Meters info={info} now={now} /></motion.div>
 
-        <AnimatePresence>
-          {(phase === "engraving" || phase === "reading") && (
-            <motion.div key={phase} className="etch" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 34 }} exit={{ opacity: 0, height: 0 }}>
-              <span>{phase === "reading" ? "Reading the chain" : "Etching your name"}</span><div className="etch-bar"><motion.i initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: phase === "reading" ? 1.2 : 3.4, ease: "easeInOut" }} /></div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            <motion.form className="apply" onSubmit={submit} noValidate {...rise(4, reduce)}>
+              <label className="vh" htmlFor="name">Your .hl or .eth name</label>
+              <div className="field">
+                <input id="name" type="text" value={name} onChange={onType} placeholder="yourname.hl or yourname.eth" autoComplete="off" autoCapitalize="off" spellCheck={false} maxLength={64} />
+                <Button type="submit" disabled={busy}>{checking ? "Checking…" : "Check eligibility"}</Button>
+              </div>
+              <span className={"status" + (msg.err ? " err" : "")} aria-live="polite">{msg.t}</span>
+              <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
+            </motion.form>
 
-        <motion.form className="apply" onSubmit={submit} noValidate {...rise(5, reduce)}>
-          <label className="vh" htmlFor="name">Your .hl or .eth name</label>
-          <div className="field">
-            <input id="name" type="text" value={name} onChange={onType} placeholder="yourname.hl or yourname.eth" autoComplete="off" autoCapitalize="off" spellCheck={false} maxLength={64} />
-            <Button type="submit" disabled={busy}>{checking ? "Checking…" : "Check eligibility"}</Button>
-          </div>
-          <span className={"status" + (msg.err ? " err" : "")} aria-live="polite">{msg.t}</span>
-          <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
-        </motion.form>
+            <AnimatePresence>
+              {(phase === "engraving" || phase === "reading") && (
+                <motion.div key={phase} className="etch" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 34 }} exit={{ opacity: 0, height: 0 }}>
+                  <span>{phase === "reading" ? "Reading the chain" : "Etching your name"}</span><div className="etch-bar"><motion.i initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: phase === "reading" ? 1.2 : 3.4, ease: "easeInOut" }} /></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        <AnimatePresence>{res && <Result key={res.name + res.score} j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} />}</AnimatePresence>
-        <VideoPanel vid={vid} />
+            <AnimatePresence>{res && <Result key={res.name + res.score} j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} />}</AnimatePresence>
+            <VideoPanel vid={vid} />
 
-        <motion.p className="fine" {...rise(6, reduce)}>Winners collect in person at the House of HYPE event in Mumbai on 3 November. At pickup, the winner shows proof of the wallet behind their name, so the card goes to the person who owns the name.</motion.p>
+            <motion.p className="fine" {...rise(6, reduce)}>Winners collect in person at the House of HYPE event in Mumbai on 3 November. At pickup, the winner shows proof of the wallet behind their name, so the card goes to the person who owns the name.</motion.p>
+          </aside>
+        </div>
       </main>
       <Footer socials={socials} />
       <span id="stageTag" hidden /><aside id="notes" hidden />
