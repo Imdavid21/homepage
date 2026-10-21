@@ -3,20 +3,24 @@ import assert from "node:assert/strict";
 import { computeScore } from "../lib/score.js";
 
 const NOW = Date.parse("2026-10-20");
-const maxed = { firstTs: Date.parse("2024-01-01"), volume: 2e7, activeDays14: 14, activeDays90: 80, markets: 20 };
+const maxed = { firstTs: Date.parse("2024-01-01"), volume: 2e7, hype: 5000, hipMarkets: 12, trades: 9000, nameTs: Date.parse("2020-01-01"), nameKind: "eth" };
 
 test("a fully maxed OG scores 100", () => assert.equal(computeScore(maxed, NOW).score, 100));
-test("an empty wallet scores 0", () => assert.equal(computeScore({ firstTs: 0, volume: 0, activeDays14: 0, activeDays90: 0, markets: 0 }, NOW).score, 0));
+test("an empty wallet scores 0", () => assert.equal(computeScore({ firstTs: 0, volume: 0, hype: 0, hipMarkets: 0, trades: 0 }, NOW).score, 0));
 test("volume is capped: 100x more volume adds nothing past the cap", () => {
   const a = computeScore({ ...maxed, volume: 5e6 }, NOW).score, b = computeScore({ ...maxed, volume: 5e8 }, NOW).score;
   assert.equal(a, b);
 });
-test("being before genesis is worth 10 points", () => {
-  const a = computeScore({ ...maxed, firstTs: Date.parse("2024-12-01") - 0 }, NOW).parts.find((p) => p.key === "early").pts;
-  assert.equal(a, 0); assert.equal(computeScore(maxed, NOW).parts.find((p) => p.key === "early").pts, 10);
+test("holding HYPE is rewarded and capped", () => {
+  const f = (h) => computeScore({ ...maxed, hype: h }, NOW).parts.find((p) => p.key === "hype").pts;
+  assert.equal(f(0), 0); assert.ok(f(100) > 0 && f(100) < 20); assert.equal(f(1000), f(1e6));
+});
+test("name age counts per name type", () => {
+  const p = (o) => computeScore({ ...maxed, ...o }, NOW).parts.find((x) => x.key === "name").pts;
+  assert.equal(p({ nameKind: "hl", nameTs: NOW - 400 * 864e5 }), 10); assert.ok(p({ nameKind: "eth", nameTs: NOW - 400 * 864e5 }) < 10); assert.equal(p({ nameTs: null }), 0);
 });
 test("a new whale cannot reach 90", () => {
-  const r = computeScore({ firstTs: NOW - 5 * 864e5, volume: 1e10, activeDays14: 14, activeDays90: 5, markets: 20 }, NOW);
+  const r = computeScore({ firstTs: NOW - 5 * 864e5, volume: 1e10, hype: 0, hipMarkets: 0, trades: 20, nameTs: null }, NOW);
   assert.ok(r.score < 60, String(r.score));
 });
 test("window state follows the dates", async () => {
