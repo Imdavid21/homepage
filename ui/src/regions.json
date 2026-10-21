@@ -29,13 +29,13 @@
    "id": "brands",
    "n": "02",
    "label": "Brands",
-   "desc": "Hyperliquid India x ENS in the same laser dot type as the number, at half depth so it sits back.",
-   "x": 62,
-   "y": 866,
-   "w": 570,
-   "h": 58,
+   "desc": "Hyperliquid India and ENS, etched at half depth so they sit back.",
+   "x": 60,
+   "y": 868,
+   "w": 390,
+   "h": 55,
    "side": "l",
-   "meta": "Etched | Dot matrix"
+   "meta": "Etched | Two marks"
   },
   {
    "id": "mark",

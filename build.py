@@ -119,7 +119,7 @@ if os.environ.get('CLASSIC'):
         _R += [
           ('x.fillStyle = rl === 2 ? ink(mode, MINT) : hair(mode, .85);', 'x.fillStyle = ink(mode, MINT);'),
           ('x.lineWidth = 1.8; x.strokeStyle = hair(mode, 1);', 'x.lineWidth = 1.8; x.strokeStyle = ink(mode, MINT);'),
-          ('lockup(x, c, M - 30, 880, 34);', 'dotText(x, "HYPERLIQUID INDIA \\u00d7 ENS", M - 30, 914, 40, hair(mode, .5), 4);'),
+          ('lockup(x, c, M - 30, 880, 34);', 'lockup(x, hair(mode, .42), M - 30, 880, 34);'),
           ('["HYPE", D.genesisDate,', '["HYPERLIQUID INDIA ENS HYPE", D.genesisDate,'),
         ]
         for _a, _b in _R:
