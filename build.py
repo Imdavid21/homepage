@@ -42,14 +42,14 @@ _ill = open('assets/ill_bw.b64').read()
 _hli = json.load(open('ui/src/brand.json'))['hli']
 eng = 'window.__ILL__ = "data:image/png;base64,' + _ill + '";\n' + eng
 eng = eng.replace('const [hl, blob, ens, ensmark] = await Promise.all([', 'const ill = await loadImg(window.__ILL__); const [hl, blob, ens, ensmark] = await Promise.all([').replace('IMG = { hl, blob, ens, ensmark };', 'IMG = { hl, blob, ens, ensmark, ill };')
-_l2 = """const HLI = %s;
+_l2 = """const ENSD = %s; const HLI = %s;
   function lockup2(x, c, X, Y, h) {
     const s = h / 156.45; x.save(); x.translate(X, Y); x.scale(s, s); x.fillStyle = c; HLI.paths.forEach(p => x.fill(new Path2D(p.d))); x.restore();
     const w = 1145.15 * s, xx = X + w + h * .55, cy = Y + h * .5, k = h * .14;
     x.lineWidth = Math.max(2, h * .07); x.strokeStyle = c; x.lineCap = "round"; x.beginPath(); x.moveTo(xx - k, cy - k); x.lineTo(xx + k, cy + k); x.moveTo(xx + k, cy - k); x.lineTo(xx - k, cy + k); x.stroke();
-    return drawLogo(x, IMG.ens, c, xx + k + h * .45, Y - h * .02, h * .95) + xx + k + h * .45 - X;
+    const s2 = h * 1.05 / 94, ex = xx + k + h * .45, ey = Y - h * .04; x.save(); x.translate(ex, ey); x.scale(s2, s2); x.fillStyle = c; x.fill(new Path2D(ENSD), "evenodd"); x.restore(); return ex + 300 * s2 - X;
   }
-  function lockup(x, c, X, Y, h) {""" % json.dumps(_hli)
+  function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);""" % (json.dumps(open('assets/ens_white.svg').read().split(' d="')[1].split('"')[0]), json.dumps(_hli))
 eng = eng.replace('function lockup(x, c, X, Y, h) {', _l2, 1)
 
 
@@ -119,7 +119,7 @@ if os.environ.get('CLASSIC'):
         _R += [
           ('x.fillStyle = rl === 2 ? ink(mode, MINT) : hair(mode, .85);', 'x.fillStyle = ink(mode, MINT);'),
           ('x.lineWidth = 1.8; x.strokeStyle = hair(mode, 1);', 'x.lineWidth = 1.8; x.strokeStyle = ink(mode, MINT);'),
-          ('lockup(x, c, M - 30, 880, 34);', 'lockup(x, hair(mode, .42), M - 30, 880, 34);'),
+          ('lockup(x, c, M - 30, 880, 34);', 'lockup(x, c, M - 30, 880, 34);'),
           ('["HYPE", D.genesisDate,', '["HYPERLIQUID INDIA ENS HYPE", D.genesisDate,'),
         ]
         _R += [('const waist = SIGNATURE ? `SIG ${SIGNATURE} ` : `MSG ${signMessage(d)} `;', 'const waist = `${(d.node || "0x" + "0".repeat(64))} `;')]
