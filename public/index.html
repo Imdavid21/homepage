@@ -560,14 +560,14 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
           const ch = CM.get(gy + "_" + gx) || " "; k++; if (ch === " ") continue; cells++;
           const edge = !inside(cx - 10, cy) || !inside(cx + 10, cy) || !inside(cx, cy - 19) || !inside(cx, cy + 19);
           const t = (cx - 560) / 1025, w = 0.5 + 0.5 * Math.sin(t * 5.6 + cy * 0.011 + Math.sin(cy * 0.004) * 1.4);
-          if (cy > band[1] && cy < band[3] + 18) { x.globalAlpha = .18 + .42 * w; x.fillStyle = ink(mode, MINT); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = hair(mode, edge ? 1 : .36 + .6 * w); x.fillText(ch, cx, cy); }
+          if (cy > band[1] && cy < band[3] + 18) { x.globalAlpha = .18 + .42 * w; x.fillStyle = ink(mode, MINT); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = hair(mode, 1); x.fillText(ch, cx, cy); }
         }
         x.font = MONO(600, 9); let kn = 0;
         for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = ink(mode, MINT); x.fillRect(run, gy, gx - run, 2); } run = gx; rl = L; } } }
         x.textAlign = "left"; x.textBaseline = "alphabetic"; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.font = SERIF(ns); const bW = x.measureText(d.tld).width; const sx = CX - (aW + bW) / 2;
         x.lineWidth = 1.8; x.strokeStyle = ink(mode, MINT); x.font = SANS(600, ns); x.strokeText(d.base, sx, NYY); x.strokeStyle = ink(mode, MINT); x.font = SERIF(ns); x.strokeText(d.tld, sx + aW + ns * .02, NYY);
         x.restore();
-        x.save(); x.strokeStyle = ink(mode, MINT); x.globalAlpha = .6; x.lineWidth = 2.4; x.stroke(path); x.restore();
+        x.save(); x.strokeStyle = ink(mode, MINT); x.globalAlpha = 1; x.lineWidth = 4; x.stroke(path); x.restore();
         blobStats = { cells, waist: wcells };
         marks(x, mode, c => {
           
@@ -583,10 +583,10 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
         marks(x, mode, c => {
           const L = [["DATE", D.genesisDate], ["TIME", D.genesisClock], ["UNIX TIME", D.genesisUnix], ["TOKEN ID", D.genesisId], ["MAX SUPPLY", D.maxSupply], ["DISTRIBUTION", D.airdrop + "  \u00b7  " + D.airdropPct], ["WALLETS", D.wallets]];
           const R = [["EXECUTION", "HYPERCORE"], ["EVM", "HYPEREVM"], ["CONSENSUS", "HYPERBFT"], ["MARKETS", "PERPS  \u00b7  SPOT"], ["ORDER BOOK", "FULLY ONCHAIN"], ["BUILDER MARKETS", "HIP-3"], ["TOKEN", "HYPE"]];
-          const col = (rows, X0, X1) => rows.forEach(([k, v], i) => { const y = i < 4 ? 130 + i * 84 : 655 + (i - 4) * 84; x.textAlign = "left"; x.textBaseline = "middle"; x.font = MONO(400, 22); x.fillStyle = dim; x.fillText(cap(k), X0, y); x.font = MONO(500, 22); x.fillStyle = c; x.fillText(v, X0 + 250, y + 1); hl(y + 42, X0, X1); });
+          const col = (rows, X0, X1) => rows.forEach(([k, v], i) => { const y = 140 + i * 98; x.textAlign = "left"; x.textBaseline = "middle"; x.font = MONO(400, 22); x.fillStyle = dim; x.fillText(cap(k), X0, y); x.font = MONO(500, 22); x.fillStyle = c; x.fillText(v, X0 + 250, y + 1); hl(y + 42, X0, X1); });
           col(L, M, 740); col(R, 845, RGT);
-          const h2 = 46, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
-          lockup(x, c, Math.round(TEX_W / 2 - w2 / 2), Math.round(500 - h2 / 2), h2);
+          const h2 = 44, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
+          lockup(x, c, Math.round(TEX_W / 2 - w2 / 2), Math.round(880 - h2 / 2), h2);
         });
       },
       notes: d => ({
@@ -1044,11 +1044,11 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "id": "brands",
    "n": "03",
    "label": "Brands",
-   "desc": "Hyperliquid India and ENS, the official wordmarks, centred on the back.",
+   "desc": "Hyperliquid India and ENS, the official wordmarks, centred at the bottom.",
    "x": 520,
-   "y": 468,
+   "y": 850,
    "w": 545,
-   "h": 64,
+   "h": 60,
    "side": "r",
    "meta": "Etched | Two marks"
   }
