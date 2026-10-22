@@ -562,32 +562,47 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
       },
       back(x, mode, d) {
         base(x, mode, false);
-        // patterns lifted from the Hyperliquid India site: the live market bar field, interfering rings, the dotted scan
-        const dimC = ink(mode, "#2C5F60"), midC = ink(mode, "#3E8A8B"), gC = ink(mode, GRN), tipC = ink(mode, MINT);
-        const BOT = 800;
-        x.save();
-        x.beginPath(); x.rect(0, 0, TEX_W, BOT + 6); x.clip();
-        // two ring families, their overlap throws moire fringes
-        x.lineWidth = 1.6; x.strokeStyle = dimC;
-        [[330, 250, 11], [1210, 330, 11.5], [790, 60, 17]].forEach(([cx, cy, st]) => {
-          for (let r = st; r < 1500; r += st) { x.beginPath(); x.ellipse(cx, cy, r, r * .82, 0, 0, 6.2832); x.stroke(); }
-        });
-        // market bars: one per market, log volume, dotted by scanline, leaning on two travelling waves
-        const pitch = 9, bw = 6, n = Math.ceil(TEX_W / pitch);
-        for (let i = 0; i < n; i++) {
-          const u = i / n, s = Math.sin(i * 12.9898) * 43758.5453, r1 = s - Math.floor(s);
-          const wv = .5 + .28 * Math.sin(u * 9 + 1) + .18 * Math.sin(u * 31 + 2) + .1 * Math.sin(u * 77);
-          const hgt = Math.round((70 + 560 * Math.pow(Math.max(.04, wv * (.55 + .45 * r1)), 1.35)) / 9) * 9;
-          const x0 = i * pitch + 1;
-          x.fillStyle = "#000"; x.fillRect(x0 - 1, BOT - hgt, bw + 2, hgt);
-          for (let y = BOT - 6, k = 0; y > BOT - hgt; y -= 9, k++) {
-            const f = (BOT - y) / hgt;
-            x.fillStyle = f > .93 ? tipC : f > .55 ? gC : f > .22 ? midC : dimC;
-            x.fillRect(x0, y, bw, 6);
+        // hyperliquid.xyz language: the flowing web stripe, the pointillist planet, particle orbits
+        const rn = i => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+        const dimC = ink(mode, "#3E8A8B"), gC = ink(mode, GRN), tipC = ink(mode, MINT);
+        const BOT = 800, PX = 1030, PY = 395, R = 300;
+        const dot = (cx, cy, r, col) => { x.fillStyle = col; x.beginPath(); x.arc(cx, cy, r, 0, 6.2832); x.fill(); };
+        const orbit = (rx, ry, rot, k, back) => {
+          const cs = Math.cos(rot), sn = Math.sin(rot);
+          for (let i = 0; i < 360; i++) {
+            const t = i / 360 * 6.2832, ox = rx * Math.cos(t), oy = ry * Math.sin(t);
+            if ((oy < 0) !== back) continue;
+            const px = PX + ox * cs - oy * sn, py = PY + ox * sn + oy * cs;
+            dot(px, py, i % 12 === 0 ? 3.2 : 1.5, i % 12 === 0 ? tipC : dimC);
+          }
+        };
+        x.save(); x.beginPath(); x.rect(0, 0, TEX_W, BOT + 6); x.clip();
+        // web stripe: parallel flowing lines of dots
+        for (let s = 0; s < 46; s++) {
+          const base = 40 + s * 17;
+          for (let px = 0; px < TEX_W; px += 6) {
+            const u = px / TEX_W, y = base + 70 * Math.sin(u * 5.2 + s * .09) + 38 * Math.sin(u * 11 - s * .14 + 1.7) + 16 * Math.sin(u * 23 + s * .3);
+            const dens = .5 + .5 * Math.sin(u * 7 - s * .22);
+            const r = .7 + 1.9 * dens * dens;
+            dot(px, y, r, dens > .8 ? gC : dimC);
           }
         }
+        orbit(470, 130, -.35, 1, true); orbit(380, 90, .5, 1, true);
+        // planet: black disc, then a stipple lit from the upper left
+        x.fillStyle = "#0A0A0B"; x.beginPath(); x.arc(PX, PY, R + 6, 0, 6.2832); x.fill();
+        const p = 7;
+        for (let yy = PY - R; yy <= PY + R; yy += p) for (let xx = PX - R; xx <= PX + R; xx += p) {
+          const nx = (xx - PX) / R, ny = (yy - PY) / R, q = nx * nx + ny * ny; if (q > 1) continue;
+          const nz = Math.sqrt(1 - q), lit = Math.max(0, nx * -.55 + ny * -.6 + nz * .58) ;
+          const band = .5 + .5 * Math.sin(ny * 9 + Math.sin(nx * 4) * 1.5);
+          const v = Math.min(1, lit * (.7 + .5 * band) + .05);
+          const j = rn(xx * 7 + yy * 13); if (j > .25 + v * 1.1) continue;
+          dot(xx + (rn(xx + yy) - .5) * 2, yy + (rn(xx * 3 + yy) - .5) * 2, .6 + 2.6 * v, v > .75 ? tipC : v > .35 ? gC : dimC);
+        }
+        // rim
+        x.lineWidth = 2; x.strokeStyle = gC; x.beginPath(); x.arc(PX, PY, R + 4, 2.4, 4.3); x.stroke();
+        orbit(470, 130, -.35, 1, false); orbit(380, 90, .5, 1, false);
         x.restore();
-        // clear band for the name and lockup
         const gr = x.createLinearGradient(0, BOT - 70, 0, BOT + 6); gr.addColorStop(0, "rgba(10,10,11,0)"); gr.addColorStop(1, "#0A0A0B");
         x.fillStyle = gr; x.fillRect(0, BOT - 70, TEX_W, 76);
         marks(x, mode, c => {
@@ -1002,7 +1017,7 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "id": "card",
    "n": "00",
    "label": "Back",
-   "desc": "Patterns from the Hyperliquid India site, with your name bottom left and logo x logo bottom right.",
+   "desc": "Hyperliquid's own visual language in dots, with your name bottom left and logo x logo bottom right.",
    "x": 0,
    "y": 0,
    "w": 1585,
@@ -1014,8 +1029,8 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
   {
    "id": "stack",
    "n": "01",
-   "label": "Market bars",
-   "desc": "The site's market bar field, one dotted column per market, over interfering rings that throw moire fringes.",
+   "label": "Planet and stripe",
+   "desc": "A stippled planet with particle orbits over the flowing web stripe, all in aquamarine dots.",
    "x": 0,
    "y": 0,
    "w": 1585,
