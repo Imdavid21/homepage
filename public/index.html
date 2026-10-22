@@ -561,49 +561,48 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
       },
       back(x, mode, d) {
         base(x, mode, false);
-        // hyperliquid.xyz language: the flowing web stripe, the pointillist planet, particle orbits
+        // the front holds the shape solid; the back lets it go liquid: the grid loosens at the base, drips, and pours into a pool
         const rn = i => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
         const dimC = ink(mode, "#3E8A8B"), gC = ink(mode, GRN), tipC = ink(mode, MINT);
-        const BOT = 800, PX = 1030, PY = 395, R = 300;
-        const dot = (cx, cy, r, col) => { x.fillStyle = col; x.beginPath(); x.arc(cx, cy, r, 0, 6.2832); x.fill(); };
-        const orbit = (rx, ry, rot, k, back) => {
-          const cs = Math.cos(rot), sn = Math.sin(rot);
-          for (let i = 0; i < 360; i++) {
-            const t = i / 360 * 6.2832, ox = rx * Math.cos(t), oy = ry * Math.sin(t);
-            if ((oy < 0) !== back) continue;
-            const px = PX + ox * cs - oy * sn, py = PY + ox * sn + oy * cs;
-            dot(px, py, i % 12 === 0 ? 3.2 : 1.5, i % 12 === 0 ? tipC : dimC);
-          }
-        };
-        x.save(); x.beginPath(); x.rect(0, 0, TEX_W, BOT + 6); x.clip();
-        // web stripe: parallel flowing lines of dots
-        for (let s = 0; s < 46; s++) {
-          const base = 40 + s * 17;
-          for (let px = 0; px < TEX_W; px += 6) {
-            const u = px / TEX_W, y = base + 70 * Math.sin(u * 5.2 + s * .09) + 38 * Math.sin(u * 11 - s * .14 + 1.7) + 16 * Math.sin(u * 23 + s * .3);
-            const dens = .5 + .5 * Math.sin(u * 7 - s * .22);
-            const r = .7 + 1.9 * dens * dens;
-            dot(px, y, r, dens > .8 ? gC : dimC);
-          }
+        const dot = (px, py, r, col) => { x.fillStyle = col; x.beginPath(); x.arc(px, py, r, 0, 6.2832); x.fill(); };
+        const SC = .64, CX = 792.5, CY = 318, POOL = 745;
+        const shp = new Path2D(); shp.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(CX, CY).scale(SC).translate(-792.5, -500).translate(197.5, -95).scale(5.95, 5.95));
+        const top = CY - 330 * SC, bot = CY + 330 * SC, p = 9;
+        // bottom edge of the shape per column
+        const edge = {};
+        for (let xx = p / 2; xx < TEX_W; xx += p) for (let yy = bot + p; yy > top - p; yy -= p) if (hitCtx.isPointInPath(shp, xx, yy)) { edge[xx] = yy; break; }
+        const lowest = Math.max(...Object.values(edge)), land = [];
+        // the shape, eroding toward its base
+        for (let yy = top - p; yy < bot + p; yy += p) for (let xx = p / 2; xx < TEX_W; xx += p) {
+          if (!hitCtx.isPointInPath(shp, xx, yy)) continue;
+          const e = edge[xx], lw = Math.max(0, (e - lowest + 130) / 130), m = Math.max(0, (yy - (e - 70 * lw)) / 70) * lw;     // melts only where the shape hangs low
+          const j = rn(xx * 3 + yy * 7);
+          if (j < m * m * m * .8) continue;                                   // dots already gone
+          const wob = m * m * (rn(xx + yy * 2) - .5) * 6;
+          const r = p * .36 * (1 - m * .35);
+          dot(xx + wob, yy + m * m * rn(xx * 5 + yy) * 10, r, m > .55 ? tipC : gC);
         }
-        orbit(470, 130, -.35, 1, true); orbit(380, 90, .5, 1, true);
-        // planet: black disc, then a stipple lit from the upper left
-        x.fillStyle = "#0A0A0B"; x.beginPath(); x.arc(PX, PY, R + 6, 0, 6.2832); x.fill();
-        const p = 7;
-        for (let yy = PY - R; yy <= PY + R; yy += p) for (let xx = PX - R; xx <= PX + R; xx += p) {
-          const nx = (xx - PX) / R, ny = (yy - PY) / R, q = nx * nx + ny * ny; if (q > 1) continue;
-          const nz = Math.sqrt(1 - q), lit = Math.max(0, nx * -.55 + ny * -.6 + nz * .58) ;
-          const band = .5 + .5 * Math.sin(ny * 9 + Math.sin(nx * 4) * 1.5);
-          const v = Math.min(1, lit * (.7 + .5 * band) + .05);
-          const j = rn(xx * 7 + yy * 13); if (j > .25 + v * 1.1) continue;
-          dot(xx + (rn(xx + yy) - .5) * 2, yy + (rn(xx * 3 + yy) - .5) * 2, .6 + 2.6 * v, v > .75 ? tipC : v > .35 ? gC : dimC);
-        }
-        // rim
-        x.lineWidth = 2; x.strokeStyle = gC; x.beginPath(); x.arc(PX, PY, R + 4, 2.4, 4.3); x.stroke();
-        orbit(470, 130, -.35, 1, false); orbit(380, 90, .5, 1, false);
-        x.restore();
-        const gr = x.createLinearGradient(0, BOT - 70, 0, BOT + 6); gr.addColorStop(0, "rgba(10,10,11,0)"); gr.addColorStop(1, "#0A0A0B");
-        x.fillStyle = gr; x.fillRect(0, BOT - 70, TEX_W, 76);
+        // drips: every column at the base can let go; some become long streams
+        const cols = Object.keys(edge).map(Number).sort((a, b) => a - b);
+        cols.forEach((xx, i) => {
+          const e = edge[xx], s = rn(i * 11 + 3), lng = rn(i * 29 + 5);
+          const low = (e - lowest + 130) / 130;                              // 1 at the lowest points of the lobes, 0 higher up
+          if (low <= 0 || s > low * .75) return;
+          const full = lng < .3 * Math.min(1, low + .35);
+          const len = full ? POOL - e : 30 + lng * 160 * low;
+          let y = e + p, k = 0, gap = p * .9;
+          const drift = (rn(i * 7) - .5) * .35;
+          while (y < e + len && y < POOL - 8) {
+            const f = (y - e) / (POOL - e);
+            dot(xx + drift * (y - e) + Math.sin(y * .02 + i) * 3 * f, y, p * (.34 - .14 * f), f < .25 ? tipC : f < .6 ? gC : dimC);
+            gap *= 1.045; y += gap; k++;                                    // accelerates as it falls
+          }
+          if (full) { const lx = xx + drift * (POOL - e); dot(lx, POOL - 2, 3.4, tipC); land.push(lx); }   // drop meets the pool
+        });
+        // the pool: one wide faint sheet of ripples, and tight bright rings where each drop lands
+        const ripple = (ox, k, rx, col, r) => { const ry = rx * .15, n = Math.round(rx * .6); for (let t = 0; t < n; t++) { const a = t / n * 6.2832; if (rn(k * 97 + t + ox) < k / 11) continue; dot(ox + rx * Math.cos(a), POOL + ry * Math.sin(a), r, col); } };
+        for (let k = 2; k < 9; k++) ripple(CX, k, 120 + k * 58, dimC, 1.6);
+        const seen = []; land.forEach(lx => { if (seen.some(s => Math.abs(s - lx) < 110)) return; seen.push(lx); for (let k = 0; k < 3; k++) ripple(lx, k, 26 + k * 26, k ? dimC : gC, 1.9); });
         marks(x, mode, c => {
           const h2 = 44, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
           lockup(x, c, Math.round((TEX_W - w2) / 2), Math.round(895 - h2 / 2), h2);
@@ -1015,7 +1014,7 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "id": "card",
    "n": "00",
    "label": "Back",
-   "desc": "Hyperliquid's visual language in dots, with logo x logo bottom centre.",
+   "desc": "The front holds the shape solid. The back lets it go liquid.",
    "x": 0,
    "y": 0,
    "w": 1585,
@@ -1027,12 +1026,12 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
   {
    "id": "stack",
    "n": "01",
-   "label": "Planet and stripe",
-   "desc": "A stippled planet with particle orbits over the flowing web stripe, all in aquamarine dots.",
-   "x": 0,
-   "y": 0,
-   "w": 1585,
-   "h": 800,
+   "label": "Going liquid",
+   "desc": "The same dots as the front, but the grid loosens at the low points, drips, and pours into a pool of ripples.",
+   "x": 320,
+   "y": 60,
+   "w": 945,
+   "h": 720,
    "side": "r",
    "meta": "Etched | Ledger"
   },
