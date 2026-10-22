@@ -561,51 +561,35 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
       },
       back(x, mode, d) {
         base(x, mode, false);
-        // the front holds the shape solid; the back lets it go liquid: the grid loosens at the base, drips, and pours into a pool
-        const rn = i => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
-        const dimC = ink(mode, "#3E8A8B"), gC = ink(mode, GRN), tipC = ink(mode, MINT);
-        const dot = (px, py, r, col) => { x.fillStyle = col; x.beginPath(); x.arc(px, py, r, 0, 6.2832); x.fill(); };
-        const SC = .64, CX = 792.5, CY = 318, POOL = 745;
-        const shp = new Path2D(); shp.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(CX, CY).scale(SC).translate(-792.5, -500).translate(197.5, -95).scale(5.95, 5.95));
-        const top = CY - 330 * SC, bot = CY + 330 * SC, p = 9;
-        // bottom edge of the shape per column
-        const edge = {};
-        for (let xx = p / 2; xx < TEX_W; xx += p) for (let yy = bot + p; yy > top - p; yy -= p) if (hitCtx.isPointInPath(shp, xx, yy)) { edge[xx] = yy; break; }
-        const lowest = Math.max(...Object.values(edge)), land = [];
-        // the shape, eroding toward its base
-        for (let yy = top - p; yy < bot + p; yy += p) for (let xx = p / 2; xx < TEX_W; xx += p) {
-          if (!hitCtx.isPointInPath(shp, xx, yy)) continue;
-          const e = edge[xx], lw = Math.max(0, (e - lowest + 130) / 130), m = Math.max(0, (yy - (e - 70 * lw)) / 70) * lw;     // melts only where the shape hangs low
-          const j = rn(xx * 3 + yy * 7);
-          if (j < m * m * m * .8) continue;                                   // dots already gone
-          const wob = m * m * (rn(xx + yy * 2) - .5) * 6;
-          const r = p * .36 * (1 - m * .35);
-          dot(xx + wob, yy + m * m * rn(xx * 5 + yy) * 10, r, m > .55 ? tipC : gC);
+        // a hex dump of the card's own bytes: header, HYPE genesis, the holder's namehash, the issuers, edition, then hash noise
+        const enc = s => Array.from(new TextEncoder().encode(s));
+        const hexb = h => { const s = (h || "").replace(/^0x/, ""); const o = []; for (let i = 0; i + 1 < s.length; i += 2) o.push(parseInt(s.slice(i, i + 2), 16) || 0); return o; };
+        const u = parseInt(D.genesisUnix, 10) || 0;
+        let bytes = [1].concat(new Array(31).fill(0));
+        bytes = bytes.concat(hexb(D.genesisId), [(u >>> 24) & 255, (u >>> 16) & 255, (u >>> 8) & 255, u & 255]);
+        bytes = bytes.concat(enc(`HYPE genesis 29/Nov/2024 06:45:52 UTC airdrop to ${D.wallets} wallets`), [0]);
+        const nh = hexb(d.node); bytes = bytes.concat(nh.length === 32 ? nh : new Array(32).fill(0));
+        bytes = bytes.concat(enc("Hyperliquid India x ENS"), [0], enc(`${d.no}/${d.edition}`), [0]);
+        const ROWS = 18; let seed = nh.length ? nh.reduce((s, v, i) => (s * 31 + v * (i + 1)) >>> 0, 7) : 7;
+        const rs = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+        while (bytes.length < ROWS * 16) bytes.push(Math.floor(rs() * 256));
+        bytes.length = ROWS * 16;
+        const hx = v => v.toString(16).toUpperCase().padStart(2, "0");
+        const dimC = ink(mode, "#3E8A8B"), hexC = ink(mode, GRN), ascC = ink(mode, MINT);
+        const y0 = 128, pitch = 44, fs = 26;
+        x.textBaseline = "middle"; x.textAlign = "left"; x.font = MONO(500, fs);
+        for (let r = 0; r < ROWS; r++) {
+          const y = y0 + r * pitch;
+          x.fillStyle = dimC; x.fillText((r * 16).toString(16).toUpperCase().padStart(8, "0"), M, y);
+          x.fillStyle = hexC;
+          for (let i = 0; i < 16; i++) x.fillText(hx(bytes[r * 16 + i]), 292 + i * 41 + (i > 7 ? 22 : 0), y);
+          if (r === 0) continue;                                            // the lockup sits on the first row
+          for (let i = 0; i < 16; i++) { const v = bytes[r * 16 + i], ch = v >= 32 && v < 127 ? String.fromCharCode(v) : "."; x.fillStyle = ch === "." ? dimC : ascC; x.fillText(ch, 1018 + i * 29, y); }
         }
-        // drips: every column at the base can let go; some become long streams
-        const cols = Object.keys(edge).map(Number).sort((a, b) => a - b);
-        cols.forEach((xx, i) => {
-          const e = edge[xx], s = rn(i * 11 + 3), lng = rn(i * 29 + 5);
-          const low = (e - lowest + 130) / 130;                              // 1 at the lowest points of the lobes, 0 higher up
-          if (low <= 0 || s > low * .75) return;
-          const full = lng < .3 * Math.min(1, low + .35);
-          const len = full ? POOL - e : 30 + lng * 160 * low;
-          let y = e + p, k = 0, gap = p * .9;
-          const drift = (rn(i * 7) - .5) * .35;
-          while (y < e + len && y < POOL - 8) {
-            const f = (y - e) / (POOL - e);
-            dot(xx + drift * (y - e) + Math.sin(y * .02 + i) * 3 * f, y, p * (.34 - .14 * f), f < .25 ? tipC : f < .6 ? gC : dimC);
-            gap *= 1.045; y += gap; k++;                                    // accelerates as it falls
-          }
-          if (full) { const lx = xx + drift * (POOL - e); dot(lx, POOL - 2, 3.4, tipC); land.push(lx); }   // drop meets the pool
-        });
-        // the pool: one wide faint sheet of ripples, and tight bright rings where each drop lands
-        const ripple = (ox, k, rx, col, r) => { const ry = rx * .15, n = Math.round(rx * .6); for (let t = 0; t < n; t++) { const a = t / n * 6.2832; if (rn(k * 97 + t + ox) < k / 11) continue; dot(ox + rx * Math.cos(a), POOL + ry * Math.sin(a), r, col); } };
-        for (let k = 2; k < 9; k++) ripple(CX, k, 120 + k * 58, dimC, 1.6);
-        const seen = []; land.forEach(lx => { if (seen.some(s => Math.abs(s - lx) < 110)) return; seen.push(lx); for (let k = 0; k < 3; k++) ripple(lx, k, 26 + k * 26, k ? dimC : gC, 1.9); });
         marks(x, mode, c => {
-          const h2 = 44, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
-          lockup(x, c, Math.round((TEX_W - w2) / 2), Math.round(895 - h2 / 2), h2);
+          const w0 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, 44);
+          const h2 = Math.min(44, 44 * 462 / w0), w2 = w0 * h2 / 44;
+          lockup(x, c, Math.round(RGT - w2), Math.round(y0 - h2 / 2), h2);
         });
       },
       notes: d => ({
@@ -1012,40 +996,39 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
  "back": [
   {
    "id": "card",
-   "n": "00",
    "label": "Back",
-   "desc": "The front holds the shape solid. The back lets it go liquid.",
+   "desc": "A hex dump of the card's own bytes, offsets left, ASCII right, logo x logo top right.",
    "x": 0,
    "y": 0,
    "w": 1585,
-   "h": 1000,
-   "side": "l",
-   "meta": "",
-   "kicker": "Side two | The stack"
+   "h": 1000
   },
   {
-   "id": "stack",
-   "n": "01",
-   "label": "Going liquid",
-   "desc": "The same dots as the front, but the grid loosens at the low points, drips, and pours into a pool of ripples.",
-   "x": 320,
-   "y": 60,
-   "w": 945,
-   "h": 720,
-   "side": "r",
-   "meta": "Etched | Ledger"
+   "id": "dump",
+   "label": "The bytes",
+   "desc": "Header, the HYPE genesis id and time, the holder's ENS namehash, the issuers and the edition, then hash noise seeded by the namehash. The readable parts surface in the right column.",
+   "x": 95,
+   "y": 100,
+   "w": 880,
+   "h": 810
+  },
+  {
+   "id": "ascii",
+   "label": "ASCII column",
+   "desc": "Each byte as a character where it is printable, a dot where it is not.",
+   "x": 1010,
+   "y": 150,
+   "w": 475,
+   "h": 760
   },
   {
    "id": "brands",
-   "n": "03",
-   "label": "Brands",
-   "desc": "Hyperliquid India and ENS, the official wordmarks, bottom right.",
-   "x": 500,
-   "y": 858,
-   "w": 585,
-   "h": 44,
-   "side": "r",
-   "meta": "Etched | Two marks"
+   "label": "Logo x logo",
+   "desc": "Hyperliquid India x ENS.",
+   "x": 1010,
+   "y": 100,
+   "w": 475,
+   "h": 50
   }
  ]
 };
