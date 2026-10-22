@@ -556,8 +556,7 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
           // holder name bottom left
           x.textAlign = "left"; x.textBaseline = "alphabetic"; const ns = 62; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.fillStyle = ink(mode, MINT); x.fillText(d.base, M, 905); x.font = SERIF(ns); x.fillText(d.tld, M + aW + ns * .02, 905);
           // logo x logo bottom right
-          const h2 = 44, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
-          lockup(x, c, Math.round(RGT - w2), Math.round(880 - h2 / 2), h2);
+          x.font = MONO(700, 52); { const t = `${d.no}/${d.edition}`; dotText(x, t, TEX_W - M - Math.ceil(x.measureText(t).width) - 8, 914, 52, c, 4); }
         });
       },
       back(x, mode, d) {
@@ -606,9 +605,8 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
         const gr = x.createLinearGradient(0, BOT - 70, 0, BOT + 6); gr.addColorStop(0, "rgba(10,10,11,0)"); gr.addColorStop(1, "#0A0A0B");
         x.fillStyle = gr; x.fillRect(0, BOT - 70, TEX_W, 76);
         marks(x, mode, c => {
-          x.textAlign = "left"; x.textBaseline = "alphabetic"; const ns = 62; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.fillStyle = ink(mode, MINT); x.fillText(d.base, M, 905); x.font = SERIF(ns); x.fillText(d.tld, M + aW + ns * .02, 905);
           const h2 = 44, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
-          lockup(x, c, Math.round(RGT - w2), Math.round(880 - h2 / 2), h2);
+          lockup(x, c, Math.round((TEX_W - w2) / 2), Math.round(895 - h2 / 2), h2);
         });
       },
       notes: d => ({
@@ -1000,14 +998,14 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "meta": "Etched | Genesis record"
   },
   {
-   "id": "brands",
+   "id": "no",
    "n": "03",
-   "label": "Brands",
-   "desc": "Hyperliquid India and ENS, the official wordmarks, bottom right.",
-   "x": 960,
-   "y": 858,
-   "w": 525,
-   "h": 44,
+   "label": "Rarity number",
+   "desc": "Your card number out of 25, in dot matrix.",
+   "x": 1345,
+   "y": 868,
+   "w": 165,
+   "h": 56,
    "side": "r",
    "meta": "Etched | Two marks"
   }
@@ -1017,7 +1015,7 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "id": "card",
    "n": "00",
    "label": "Back",
-   "desc": "Hyperliquid's own visual language in dots, with your name bottom left and logo x logo bottom right.",
+   "desc": "Hyperliquid's visual language in dots, with logo x logo bottom centre.",
    "x": 0,
    "y": 0,
    "w": 1585,
@@ -1039,25 +1037,13 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "meta": "Etched | Ledger"
   },
   {
-   "id": "holder",
-   "n": "02",
-   "label": "Name",
-   "desc": "Your name, etched in aquamarine at the bottom left.",
-   "x": 95,
-   "y": 850,
-   "w": 560,
-   "h": 80,
-   "side": "l",
-   "meta": "Etched | Name"
-  },
-  {
    "id": "brands",
    "n": "03",
    "label": "Brands",
    "desc": "Hyperliquid India and ENS, the official wordmarks, bottom right.",
-   "x": 960,
+   "x": 500,
    "y": 858,
-   "w": 525,
+   "w": 585,
    "h": 44,
    "side": "r",
    "meta": "Etched | Two marks"
