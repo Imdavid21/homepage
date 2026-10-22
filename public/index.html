@@ -427,7 +427,7 @@ Error generating stack: `+i.message+`
     for (let y = 0; y < TEX_H; y++) { const a = r() * 0.035; x.fillStyle = r() > .5 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a * 1.5})`; x.fillRect(0, y, TEX_W, 1); }
   }
   // color pass paints what the eye sees; rough pass paints the roughness map (dark = polished, light = matte)
-  const GRN = "#3BE36A";
+  const GRN = "#78CDCE";
   function base(x, mode, matte) { if (mode === "color") brushed(x, "#0A0A0B"); else { x.fillStyle = matte ? "#A6A6A6" : "#8C8C8C"; x.fillRect(0, 0, TEX_W, TEX_H); } }
   const ink = (mode, color = SILVER) => mode === "color" ? color : "#3A3A3A";
   const hair = (mode, a = .5) => mode === "color" ? `rgba(216,216,214,${a})` : `rgba(58,58,58,${a})`;
