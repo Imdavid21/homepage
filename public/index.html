@@ -579,14 +579,18 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
       },
       back(x, mode, d) {
         base(x, mode, false);
-        const mint = ink(mode, MINT), dim = ink(mode, DIM);
-        const cap = s => s[0] + s.slice(1).toLowerCase();
-        const hl = (Y, X0, X1) => { x.save(); x.strokeStyle = hair(mode, .18); x.lineWidth = 1.5; x.beginPath(); x.moveTo(X0, Y); x.lineTo(X1, Y); x.stroke(); x.restore(); };
+        const rn = i => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+        const dim = ink(mode, DIM), dot = ink(mode, GRN);
+        x.save(); x.fillStyle = dot; const p = 11;
+        for (let yy = p / 2; yy < TEX_H; yy += p) for (let xx = p / 2; xx < TEX_W; xx += p) {
+          const wave = TEX_H * .57 + Math.sin(xx * .008) * 90 + Math.sin(xx * .021) * 30, v = Math.max(0, 1 - Math.abs(yy - wave) / 150) - rn(xx + yy * 7) * .35;
+          if (v <= 0) continue; const r = Math.min(p * .42, p * .42 * Math.sqrt(v)); if (r < 1) continue;
+          x.beginPath(); x.arc(xx, yy, r, 0, 6.2832); x.fill();
+        }
+        x.restore();
         marks(x, mode, c => {
-          const L = [["DATE", D.genesisDate], ["TIME", D.genesisClock], ["UNIX TIME", D.genesisUnix], ["TOKEN ID", D.genesisId], ["MAX SUPPLY", D.maxSupply], ["DISTRIBUTION", D.airdrop + "  \u00b7  " + D.airdropPct], ["WALLETS", D.wallets]];
-          const R = [["EXECUTION", "HYPERCORE"], ["EVM", "HYPEREVM"], ["CONSENSUS", "HYPERBFT"], ["MARKETS", "PERPS  \u00b7  SPOT"], ["ORDER BOOK", "FULLY ONCHAIN"], ["BUILDER MARKETS", "HIP-3"], ["TOKEN", "HYPE"]];
-          const col = (rows, X0, X1) => rows.forEach(([k, v], i) => { const y = 140 + i * 98; x.textAlign = "left"; x.textBaseline = "middle"; x.font = MONO(400, 22); x.fillStyle = dim; x.fillText(cap(k), X0, y); x.font = MONO(500, 22); x.fillStyle = c; x.fillText(v, X0 + 250, y + 1); hl(y + 42, X0, X1); });
-          col(L, M, 740); col(R, 845, RGT);
+          const P = [["HYPERCORE", "Order book, perps, spot"], ["HYPEREVM", "Smart contracts"], ["HYPERBFT", "Consensus"], ["HIP-3", "Builder markets"]];
+          P.forEach(([n, l], i) => { const X = M + i * 350, Y = 190; x.textAlign = "left"; x.textBaseline = "middle"; x.fillStyle = c; x.font = MONO(700, 30); x.fillText(n, X, Y + 46); x.fillStyle = dim; x.font = MONO(400, 19); x.fillText(l, X, Y + 88); });
           const h2 = 44, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
           lockup(x, c, Math.round(TEX_W / 2 - w2 / 2), Math.round(880 - h2 / 2), h2);
         });
@@ -1009,36 +1013,36 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "id": "card",
    "n": "00",
    "label": "Back",
-   "desc": "Two columns, nothing else: the HYPE genesis on the left, how Hyperliquid runs on the right.",
+   "desc": "Four pillars of Hyperliquid over a particle wave, with the logo x logo at the bottom.",
    "x": 0,
    "y": 0,
    "w": 1585,
    "h": 1000,
    "side": "l",
    "meta": "",
-   "kicker": "Side two | The record"
+   "kicker": "Side two | The stack"
   },
   {
    "id": "genesis",
    "n": "01",
-   "label": "Genesis",
-   "desc": "Date, time, unix time, token ID, max supply, distribution and genesis wallets of HYPE.",
+   "label": "Pillars",
+   "desc": "HyperCore, HyperEVM, HyperBFT and HIP-3 with what each does.",
    "x": 95,
-   "y": 115,
-   "w": 660,
-   "h": 620,
+   "y": 225,
+   "w": 1400,
+   "h": 110,
    "side": "l",
    "meta": "Etched | Ledger"
   },
   {
    "id": "stack",
    "n": "02",
-   "label": "The stack",
-   "desc": "HyperCore, HyperEVM, HyperBFT, perps and spot, a fully onchain order book, HIP-3 builder markets.",
-   "x": 855,
-   "y": 115,
-   "w": 640,
-   "h": 620,
+   "label": "Particle wave",
+   "desc": "Aquamarine dots in a wave across the lower half, dense in the middle and fading out.",
+   "x": 0,
+   "y": 440,
+   "w": 1585,
+   "h": 330,
    "side": "r",
    "meta": "Etched | Ledger"
   },
