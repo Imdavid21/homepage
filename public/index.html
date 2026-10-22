@@ -427,6 +427,7 @@ Error generating stack: `+i.message+`
     for (let y = 0; y < TEX_H; y++) { const a = r() * 0.035; x.fillStyle = r() > .5 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a * 1.5})`; x.fillRect(0, y, TEX_W, 1); }
   }
   // color pass paints what the eye sees; rough pass paints the roughness map (dark = polished, light = matte)
+  const GRN = "#3BE36A";
   function base(x, mode, matte) { if (mode === "color") brushed(x, "#0A0A0B"); else { x.fillStyle = matte ? "#A6A6A6" : "#8C8C8C"; x.fillRect(0, 0, TEX_W, TEX_H); } }
   const ink = (mode, color = SILVER) => mode === "color" ? color : "#3A3A3A";
   const hair = (mode, a = .5) => mode === "color" ? `rgba(216,216,214,${a})` : `rgba(58,58,58,${a})`;
@@ -556,18 +557,18 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
           const inB = cx > band[0] && cx < band[2] && cy > band[1] && cy < band[3];
           if (!inside(cx, cy) && !inB) continue;
           if (cx > nr[0] && cx < nr[2] && cy > nr[1] && cy < nr[3] && near(cx, cy)) continue;
-          if ((gy === WA || gy === WA + 18) && !inB) { x.fillStyle = ink(mode, MINT); { const wc = CM.get(gy + "_" + gx) || " "; x.globalAlpha = .18 + .42 * (.5 + .5 * Math.sin((cx - 560) / 1025 * 5.6 + cy * .011 + Math.sin(cy * .004) * 1.4)); if (wc !== " ") x.fillText(wc, cx, cy); x.globalAlpha = 1; } wcells++; continue; }
+          if ((gy === WA || gy === WA + 18) && !inB) { x.fillStyle = ink(mode, GRN); { const wc = CM.get(gy + "_" + gx) || " "; x.globalAlpha = .18 + .42 * (.5 + .5 * Math.sin((cx - 560) / 1025 * 5.6 + cy * .011 + Math.sin(cy * .004) * 1.4)); if (wc !== " ") x.fillText(wc, cx, cy); x.globalAlpha = 1; } wcells++; continue; }
           const ch = CM.get(gy + "_" + gx) || " "; k++; if (ch === " ") continue; cells++;
           const edge = !inside(cx - 10, cy) || !inside(cx + 10, cy) || !inside(cx, cy - 19) || !inside(cx, cy + 19);
           const t = (cx - 560) / 1025, w = 0.5 + 0.5 * Math.sin(t * 5.6 + cy * 0.011 + Math.sin(cy * 0.004) * 1.4);
-          if (cy > band[1] && cy < band[3] + 18) { x.globalAlpha = .18 + .42 * w; x.fillStyle = ink(mode, MINT); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = hair(mode, 1); x.fillText(ch, cx, cy); }
+          if (cy > band[1] && cy < band[3] + 18) { x.globalAlpha = .18 + .42 * w; x.fillStyle = ink(mode, GRN); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = ink(mode, GRN); x.fillText(ch, cx, cy); }
         }
         x.font = MONO(600, 9); let kn = 0;
-        for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = ink(mode, MINT); x.fillRect(run, gy, gx - run, 2); } run = gx; rl = L; } } }
+        for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = ink(mode, GRN); x.fillRect(run, gy, gx - run, 2); } run = gx; rl = L; } } }
         x.textAlign = "left"; x.textBaseline = "alphabetic"; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.font = SERIF(ns); const bW = x.measureText(d.tld).width; const sx = CX - (aW + bW) / 2;
-        x.lineWidth = 1.8; x.strokeStyle = ink(mode, MINT); x.font = SANS(600, ns); x.strokeText(d.base, sx, NYY); x.strokeStyle = ink(mode, MINT); x.font = SERIF(ns); x.strokeText(d.tld, sx + aW + ns * .02, NYY);
+        x.lineWidth = 1.8; x.strokeStyle = ink(mode, GRN); x.font = SANS(600, ns); x.strokeText(d.base, sx, NYY); x.strokeStyle = ink(mode, GRN); x.font = SERIF(ns); x.strokeText(d.tld, sx + aW + ns * .02, NYY);
         x.restore();
-        x.save(); x.strokeStyle = ink(mode, MINT); x.globalAlpha = 1; x.lineWidth = 4; x.stroke(path); x.restore();
+        x.save(); x.strokeStyle = ink(mode, GRN); x.globalAlpha = 1; x.lineWidth = 4; x.stroke(path); x.restore();
         blobStats = { cells, waist: wcells };
         marks(x, mode, c => {
           
