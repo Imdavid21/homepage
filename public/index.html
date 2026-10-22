@@ -581,18 +581,21 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
         base(x, mode, false);
         const rn = i => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
         const dim = ink(mode, DIM), dot = ink(mode, GRN);
-        x.save(); x.fillStyle = dot; const p = 11;
+        // the Hyperliquid shape, built from dots only
+        const shp = new Path2D(); shp.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(792, 495).scale(.88).translate(-792.5, -500).translate(197.5, -95).scale(5.95, 5.95));
+        x.save(); x.fillStyle = dot; const p = 9;
         for (let yy = p / 2; yy < TEX_H; yy += p) for (let xx = p / 2; xx < TEX_W; xx += p) {
-          const wave = TEX_H * .57 + Math.sin(xx * .008) * 90 + Math.sin(xx * .021) * 30, v = Math.max(0, 1 - Math.abs(yy - wave) / 150) - rn(xx + yy * 7) * .35;
-          if (v <= 0) continue; const r = Math.min(p * .42, p * .42 * Math.sqrt(v)); if (r < 1) continue;
+          if (!hitCtx.isPointInPath(shp, xx, yy)) continue;
+          const t = .5 + .5 * Math.sin(xx * .012 + yy * .009 + 1.2), v = .5 + .5 * t - rn(xx * 3 + yy * 5) * .22, r = Math.min(p * .46, p * .46 * Math.sqrt(Math.max(.2, v)));
           x.beginPath(); x.arc(xx, yy, r, 0, 6.2832); x.fill();
         }
         x.restore();
         marks(x, mode, c => {
-          const P = [["HYPERCORE", "Order book, perps, spot"], ["HYPEREVM", "Smart contracts"], ["HYPERBFT", "Consensus"], ["HIP-3", "Builder markets"]];
-          P.forEach(([n, l], i) => { const X = M + i * 350, Y = 190; x.textAlign = "left"; x.textBaseline = "middle"; x.fillStyle = c; x.font = MONO(700, 30); x.fillText(n, X, Y + 46); x.fillStyle = dim; x.font = MONO(400, 19); x.fillText(l, X, Y + 88); });
+          // holder name bottom left
+          x.textAlign = "left"; x.textBaseline = "alphabetic"; const ns = 62; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.fillStyle = ink(mode, MINT); x.fillText(d.base, M, 905); x.font = SERIF(ns); x.fillText(d.tld, M + aW + ns * .02, 905);
+          // logo x logo bottom right
           const h2 = 44, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
-          lockup(x, c, Math.round(TEX_W / 2 - w2 / 2), Math.round(880 - h2 / 2), h2);
+          lockup(x, c, Math.round(RGT - w2), Math.round(880 - h2 / 2), h2);
         });
       },
       notes: d => ({
@@ -1013,7 +1016,7 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "id": "card",
    "n": "00",
    "label": "Back",
-   "desc": "Four pillars of Hyperliquid over a particle wave, with the logo x logo at the bottom.",
+   "desc": "The Hyperliquid shape built from dots, your name bottom left and logo x logo bottom right.",
    "x": 0,
    "y": 0,
    "w": 1585,
@@ -1023,38 +1026,38 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "kicker": "Side two | The stack"
   },
   {
-   "id": "genesis",
+   "id": "stack",
    "n": "01",
-   "label": "Pillars",
-   "desc": "HyperCore, HyperEVM, HyperBFT and HIP-3 with what each does.",
-   "x": 95,
-   "y": 225,
-   "w": 1400,
-   "h": 110,
-   "side": "l",
+   "label": "Hyperliquid shape",
+   "desc": "The Hyperliquid shape built only from aquamarine dots, no lines.",
+   "x": 335,
+   "y": 200,
+   "w": 915,
+   "h": 600,
+   "side": "r",
    "meta": "Etched | Ledger"
   },
   {
-   "id": "stack",
+   "id": "holder",
    "n": "02",
-   "label": "Particle wave",
-   "desc": "Aquamarine dots in a wave across the lower half, dense in the middle and fading out.",
-   "x": 0,
-   "y": 440,
-   "w": 1585,
-   "h": 330,
-   "side": "r",
-   "meta": "Etched | Ledger"
+   "label": "Name",
+   "desc": "Your name, etched in aquamarine at the bottom left.",
+   "x": 95,
+   "y": 850,
+   "w": 560,
+   "h": 80,
+   "side": "l",
+   "meta": "Etched | Name"
   },
   {
    "id": "brands",
    "n": "03",
    "label": "Brands",
-   "desc": "Hyperliquid India and ENS, the official wordmarks, centred at the bottom.",
-   "x": 520,
-   "y": 850,
-   "w": 545,
-   "h": 60,
+   "desc": "Hyperliquid India and ENS, the official wordmarks, bottom right.",
+   "x": 960,
+   "y": 858,
+   "w": 525,
+   "h": 44,
    "side": "r",
    "meta": "Etched | Two marks"
   }
