@@ -540,41 +540,24 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
     {
       id: "card", name: "Tide front, Ledger back", accent: MINT,
       front(x, mode, d) {
-        base(x, mode, false); 
-        // the blob is data: every glyph is the next character of the holder's namehash, read left to right, top to bottom.
-        // Brightness is etch depth only. The two waist rows carry the signed message in mint.
-        const bs = 5.95, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(792.5, 500).scale(.88).translate(-792.5, -500).translate(197.5, -95).scale(bs, bs));
-        const inside = (px, py) => hitCtx.isPointInPath(path, px, py);
-        const safe = (cx, cy) => inside(cx - 13, cy) && inside(cx + 13, cy) && inside(cx, cy - 10) && inside(cx, cy + 10);
-        let ns = nameSize(x, d, 459, 95, 30, v => SANS(600, v), SERIF); if (ns < 60) ns = nameSize(x, d, 720, 60, 30, v => SANS(600, v), SERIF);
-        const NY = 0; const CX = 792; const NYY = Math.round(514 + ns * .25); const WA = Math.floor((NYY - ns * .3) / 18) * 18; x.font = SANS(600, ns); let nw = x.measureText(d.base).width; x.font = SERIF(ns); nw += x.measureText(d.tld).width;
-        const keep = [[CX - nw / 2 - 14, NYY - ns * .95, CX + nw / 2 + 14, NYY + ns * .3]];
-        const hash = ["HYPERLIQUID INDIA ENS HYPE", D.genesisDate, D.genesisClock.replace(" ", ""), D.genesisUnix, D.genesisId.slice(2), D.maxSupply.replace(/,/g, ""), D.airdrop.replace(/,/g, ""), D.airdropPct, D.wallets.replace(/,/g, ""), ""].join("·"); const band = [CX - 312, 432, CX + 312, 552]; const nr = [CX - nw / 2 - 8, NYY - ns, CX + nw / 2 + 8, NYY + ns * .35]; const nm = document.createElement("canvas"); nm.width = TEX_W; nm.height = TEX_H; const nmx = nm.getContext("2d"); drawName(nmx, d, CX, NYY, ns, "#f00", "#0f0", "center", v => SANS(600, v)); const nmd = nmx.getImageData(0, 0, TEX_W, TEX_H).data; const px = (a, b2) => { const o = ((b2 | 0) * TEX_W + (a | 0)) * 4; return nmd[o] > 128 ? 1 : nmd[o + 1] > 128 ? 2 : 0; }; const near = (a, b2) => { for (let j = -9; j <= 9; j += 3) for (let i = -7; i <= 7; i += 7 / 3) if (px(a + i, b2 + j)) return 1; return 0; };
-        const WT = ["HYPERLIQUID", "HYPERCORE", "HYPEREVM", "HYPERBFT", "HIP-3", "HIP-4", "ONCHAIN ORDER BOOK", "PERPS", "SPOT", "HYPE"];
-        let k = 0, kw = 0, cells = 0, wcells = 0; const TOK = hash.split(/[· ]+/).filter(Boolean), FILL = "1732862752"; let ti = 0, tw = 0, fi = 0; const CM = new Map(); for (let gy = 0; gy < TEX_H; gy += 18) { const isW = gy === WA || gy === WA + 18; if (gy === WA + 18) tw += 2; let run = []; const flush = () => { if (!run.length) return; let s = ""; for (;;) { const t = isW ? WT[tw % WT.length] : TOK[ti % TOK.length], add = (s ? "  " : "") + t; if (s.length + add.length > run.length) break; s += add; if (isW) tw++; else ti++; } while (s.length < run.length) { const t = isW ? WT[tw++ % WT.length] : TOK[ti++ % TOK.length]; s += "  " + t; } s = s.slice(0, run.length); run.forEach((key, i) => CM.set(key, s[i])); run = []; }; for (let gx = 0; gx < TEX_W; gx += 9.5) { const cx = gx + 4.75, cy = gy + 9; const inB0 = cx > band[0] && cx < band[2] && cy > band[1] && cy < band[3]; if (safe(cx, cy) && !(isW && near(cx, cy))) run.push(gy + "_" + gx); else flush(); } flush(); }
-        x.save(); x.font = MONO(400, 16); x.textAlign = "center"; x.textBaseline = "middle";
-        for (let gy = 0; gy < TEX_H; gy += 18) for (let gx = 0; gx < TEX_W; gx += 9.5) {
-          const cx = gx + 4.75, cy = gy + 9;
-          const inB = cx > band[0] && cx < band[2] && cy > band[1] && cy < band[3];
-          if (!safe(cx, cy)) continue;
-          if (cx > nr[0] && cx < nr[2] && cy > nr[1] && cy < nr[3] && near(cx, cy)) continue;
-          if ((gy === WA || gy === WA + 18) && !inB) { x.fillStyle = ink(mode, GRN); { const wc = CM.get(gy + "_" + gx) || " "; x.globalAlpha = 1; if (wc !== " ") x.fillText(wc, cx, cy); x.globalAlpha = 1; } wcells++; continue; }
-          const ch = CM.get(gy + "_" + gx) || " "; k++; if (ch === " ") continue; cells++;
-          const edge = !inside(cx - 10, cy) || !inside(cx + 10, cy) || !inside(cx, cy - 19) || !inside(cx, cy + 19);
-          const t = (cx - 560) / 1025, w = 0.5 + 0.5 * Math.sin(t * 5.6 + cy * 0.011 + Math.sin(cy * 0.004) * 1.4);
-          if (cy > band[1] && cy < band[3] + 18) { x.globalAlpha = 1; x.fillStyle = ink(mode, GRN); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = ink(mode, GRN); x.fillText(ch, cx, cy); }
+        base(x, mode, false);
+        const rn = i => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+        const dim = ink(mode, DIM), dot = ink(mode, GRN);
+        // the Hyperliquid shape, built from dots only
+        const shp = new Path2D(); shp.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(792, 495).scale(.88).translate(-792.5, -500).translate(197.5, -95).scale(5.95, 5.95));
+        x.save(); x.fillStyle = dot; const p = 9;
+        for (let yy = p / 2; yy < TEX_H; yy += p) for (let xx = p / 2; xx < TEX_W; xx += p) {
+          if (!hitCtx.isPointInPath(shp, xx, yy)) continue;
+          const t = .5 + .5 * Math.sin(xx * .012 + yy * .009 + 1.2), v = .5 + .5 * t - rn(xx * 3 + yy * 5) * .22, r = Math.min(p * .46, p * .46 * Math.sqrt(Math.max(.2, v)));
+          x.beginPath(); x.arc(xx, yy, r, 0, 6.2832); x.fill();
         }
-        x.font = MONO(600, 9); let kn = 0;
-        for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = ink(mode, MINT); x.fillRect(run, gy, gx - run, 2); } run = gx; rl = L; } } }
-        x.textAlign = "left"; x.textBaseline = "alphabetic"; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.font = SERIF(ns); const bW = x.measureText(d.tld).width; const sx = CX - (aW + bW) / 2;
-        x.lineWidth = 1.8; x.strokeStyle = ink(mode, MINT); x.font = SANS(600, ns); x.strokeText(d.base, sx, NYY); x.strokeStyle = ink(mode, MINT); x.font = SERIF(ns); x.strokeText(d.tld, sx + aW + ns * .02, NYY);
         x.restore();
-        x.save(); x.strokeStyle = ink(mode, GRN); x.globalAlpha = 1; x.lineWidth = 4; x.stroke(path); x.restore();
-        blobStats = { cells, waist: wcells };
         marks(x, mode, c => {
-          
-          
-          x.font = MONO(700, 52); dotText(x, `${d.no}/${d.edition}`, TEX_W - 70 - Math.ceil(x.measureText(`${d.no}/${d.edition}`).width) - 8, 914, 52, c, 4);
+          // holder name bottom left
+          x.textAlign = "left"; x.textBaseline = "alphabetic"; const ns = 62; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.fillStyle = ink(mode, MINT); x.fillText(d.base, M, 905); x.font = SERIF(ns); x.fillText(d.tld, M + aW + ns * .02, 905);
+          // logo x logo bottom right
+          const h2 = 44, w2 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, h2);
+          lockup(x, c, Math.round(RGT - w2), Math.round(880 - h2 / 2), h2);
         });
       },
       back(x, mode, d) {
@@ -956,21 +939,21 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
   },
   {
    "id": "name",
-   "n": "01",
+   "n": "02",
    "label": "Name",
-   "desc": "Your .hl or .eth name, etched and filled in Hyperliquid mint.",
-   "x": 555,
-   "y": 445,
-   "w": 475,
-   "h": 100,
+   "desc": "Your name, etched in aquamarine at the bottom left.",
+   "x": 95,
+   "y": 850,
+   "w": 560,
+   "h": 80,
    "side": "l",
-   "meta": "Etched | Mint infill"
+   "meta": "Etched | Name"
   },
   {
    "id": "mark",
    "n": "02",
-   "label": "Genesis fill",
-   "desc": "The Hyperliquid shape is written in the HYPE genesis record. HYPERLIQUID, INDIA and ENS are always whole words.",
+   "label": "Hyperliquid shape",
+   "desc": "The Hyperliquid shape built from aquamarine dots.",
    "x": 345,
    "y": 170,
    "w": 894,
@@ -979,28 +962,16 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
    "meta": "Etched | Genesis record"
   },
   {
-   "id": "waist",
+   "id": "brands",
    "n": "03",
-   "label": "Hyperliquid line",
-   "desc": "Hyperliquid terms in dimmed mint beside the name: HyperCore, HyperEVM, HyperBFT, HIP-3, HIP-4.",
-   "x": 345,
-   "y": 480,
-   "w": 894,
+   "label": "Brands",
+   "desc": "Hyperliquid India and ENS, the official wordmarks, bottom right.",
+   "x": 960,
+   "y": 858,
+   "w": 525,
    "h": 44,
    "side": "r",
-   "meta": "Etched | Mint"
-  },
-  {
-   "id": "no",
-   "n": "04",
-   "label": "Number",
-   "desc": "Your number out of 25.",
-   "x": 1345,
-   "y": 868,
-   "w": 165,
-   "h": 56,
-   "side": "l",
-   "meta": "Etched | Edition"
+   "meta": "Etched | Two marks"
   }
  ],
  "back": [
