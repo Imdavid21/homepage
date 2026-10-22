@@ -546,7 +546,7 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
         const bs = 5.95, path = new Path2D(); path.addPath(new Path2D(SVG.blob.d), new DOMMatrix().translate(197.5, -95).scale(bs, bs));
         const inside = (px, py) => hitCtx.isPointInPath(path, px, py);
         let ns = nameSize(x, d, 459, 95, 30, v => SANS(600, v), SERIF); if (ns < 60) ns = nameSize(x, d, 720, 60, 30, v => SANS(600, v), SERIF);
-        const NY = 0; const CX = 792; const NYY = Math.round(500 + ns * .25); const WA = Math.floor((NYY - ns * .3) / 18) * 18; x.font = SANS(600, ns); let nw = x.measureText(d.base).width; x.font = SERIF(ns); nw += x.measureText(d.tld).width;
+        const NY = 0; const CX = 727; const NYY = Math.round(500 + ns * .25); const WA = Math.floor((NYY - ns * .3) / 18) * 18; x.font = SANS(600, ns); let nw = x.measureText(d.base).width; x.font = SERIF(ns); nw += x.measureText(d.tld).width;
         const keep = [[CX - nw / 2 - 14, NYY - ns * .95, CX + nw / 2 + 14, NYY + ns * .3]];
         const hash = ["HYPERLIQUID INDIA ENS HYPE", D.genesisDate, D.genesisClock.replace(" ", ""), D.genesisUnix, D.genesisId.slice(2), D.maxSupply.replace(/,/g, ""), D.airdrop.replace(/,/g, ""), D.airdropPct, D.wallets.replace(/,/g, ""), ""].join("·"); const band = [CX - 312, 432, CX + 312, 552]; const nr = [CX - nw / 2 - 8, NYY - ns, CX + nw / 2 + 8, NYY + ns * .35]; const nm = document.createElement("canvas"); nm.width = TEX_W; nm.height = TEX_H; const nmx = nm.getContext("2d"); drawName(nmx, d, CX, NYY, ns, "#f00", "#0f0", "center", v => SANS(600, v)); const nmd = nmx.getImageData(0, 0, TEX_W, TEX_H).data; const px = (a, b2) => { const o = ((b2 | 0) * TEX_W + (a | 0)) * 4; return nmd[o] > 128 ? 1 : nmd[o + 1] > 128 ? 2 : 0; }; const near = (a, b2) => { for (let j = -9; j <= 9; j += 3) for (let i = -7; i <= 7; i += 7 / 3) if (px(a + i, b2 + j)) return 1; return 0; };
         const WT = ["HYPERLIQUID", "HYPERCORE", "HYPEREVM", "HYPERBFT", "HIP-3", "HIP-4", "ONCHAIN ORDER BOOK", "PERPS", "SPOT", "HYPE"];
@@ -564,9 +564,9 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
           if (cy > band[1] && cy < band[3] + 18) { x.globalAlpha = .18 + .42 * w; x.fillStyle = ink(mode, GRN); x.fillText(ch, cx, cy); x.globalAlpha = 1; } else { x.fillStyle = ink(mode, GRN); x.fillText(ch, cx, cy); }
         }
         x.font = MONO(600, 9); let kn = 0;
-        for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = ink(mode, GRN); x.fillRect(run, gy, gx - run, 2); } run = gx; rl = L; } } }
+        for (let gy = Math.floor(nr[1]); gy < nr[3]; gy += 4) { let run = 0, rl = 0; for (let gx = Math.floor(nr[0]); gx <= nr[2]; gx++) { const L = gx < nr[2] ? px(gx, gy + 1) : 0; if (L !== rl) { if (rl) { x.fillStyle = ink(mode, MINT); x.fillRect(run, gy, gx - run, 2); } run = gx; rl = L; } } }
         x.textAlign = "left"; x.textBaseline = "alphabetic"; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.font = SERIF(ns); const bW = x.measureText(d.tld).width; const sx = CX - (aW + bW) / 2;
-        x.lineWidth = 1.8; x.strokeStyle = ink(mode, GRN); x.font = SANS(600, ns); x.strokeText(d.base, sx, NYY); x.strokeStyle = ink(mode, GRN); x.font = SERIF(ns); x.strokeText(d.tld, sx + aW + ns * .02, NYY);
+        x.lineWidth = 1.8; x.strokeStyle = ink(mode, MINT); x.font = SANS(600, ns); x.strokeText(d.base, sx, NYY); x.strokeStyle = ink(mode, MINT); x.font = SERIF(ns); x.strokeText(d.tld, sx + aW + ns * .02, NYY);
         x.restore();
         x.save(); x.strokeStyle = ink(mode, GRN); x.globalAlpha = 1; x.lineWidth = 4; x.stroke(path); x.restore();
         blobStats = { cells, waist: wcells };
