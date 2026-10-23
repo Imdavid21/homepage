@@ -133,7 +133,7 @@ function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack }) {
           <p className="who"><span>{j.name}</span>{addr && <span className="mono">{addr}</span>}{j.wallets > 1 && <span className="mono">+{j.wallets - 1} paired</span>}</p>
         </div>
       </div>
-      {phase === "engraving" && <p className="etch-note">Etching your name…</p>}
+      {phase === "engraving" && <p className="etch-note">Etching your card, front then back…</p>}
       <ul className="sc-parts">
         {(j.parts || []).map(p => (
           <li key={p.key}>
@@ -272,7 +272,7 @@ export default function App({ socials }) {
     setClaiming(false);
   };
   const makeVideo = async j => {
-    setVid({ status: "rec", left: 9.5 });
+    setVid({ status: "rec", left: 14 });
     try { const o = await HL().record(j, (p, left) => setVid(v => v.status === "rec" ? { ...v, left } : v)); setVid({ status: "ready", ...o }); }
     catch (err) { console.error("VID", err); setVid({ status: "error" }); }
   };

@@ -9,40 +9,50 @@
   let actx = null, muted = false;
   function ac() { if (!AC) return null; if (!actx) actx = new AC(); if (actx.state === "suspended") actx.resume(); return actx; }
   // ---------- the engraving plan ----------
-  // One schedule drives everything: which pixel is etched when, where the beam is, and every sound. Times are 0..1 of the run.
-  // The laser rasters the name in bidirectional passes, travels across, rasters the number, then the card locks at LOCK.
-  const LOCK = .93, WARM = .05;
-  function makePlan(jobs) {
-    // jobs: [{ x0, x1, y0, y1, passes, t0, t1 }] in texture pixels; returns passes with start, end, direction and row
-    const out = [];
-    jobs.forEach(j => {
-      const n = j.passes, pd = (j.t1 - j.t0) / n, on = pd * .84, hh = (j.y1 - j.y0) / n;
-      for (let i = 0; i < n; i++) out.push({ t0: j.t0 + i * pd, t1: j.t0 + i * pd + on, x0: j.x0, x1: j.x1, y0: j.y0 + i * hh, y1: j.y0 + (i + 1) * hh, dir: i % 2 ? -1 : 1, job: j.id });
-    });
-    return out;
+  // The whole card is engraved from blank brushed metal, on one timeline (0..1) that drives the reveal, the beam, the turn and every sound:
+  // front: the Hyperliquid shape dot row by dot row, then the name, then the number. The card turns. Back: the hex dump row by row. Lock.
+  const TL = { shape: [.02, .33], name: [.345, .44], no: [.45, .49], turn: .5, hex: [.585, .915] }, LOCK = .935, WARM = TL.shape[0];
+  const JOBS = {
+    front: (tx, ty) => tx > 1250 && ty > 820 ? "no" : ty > 820 ? "name" : "shape",
+    back: () => "hex",
+  };
+  // rows per pass for each job, in texture pixels: two dot rows of the shape, a few scan lines of the name, one text row of the dump
+  const PITCH = { shape: 18, name: 5, no: 7, hex: 44 };
+  const LIMIT = { shape: [10, 40], name: [6, 16], no: [4, 8], hex: [10, 24] };
+  function planJob(id, face, px, idxs, k2t, mw) {
+    // px: pixel list for this job [k...]. Returns passes, each with its own x span, and the time of every pixel.
+    let y0 = 1e9, y1 = -1; for (const k of idxs) { const y = ((k / mw) | 0) * k2t; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    y1 += k2t; const [t0, t1] = TL[id], [lo, hi] = LIMIT[id];
+    const n = Math.max(lo, Math.min(hi, Math.round((y1 - y0) / PITCH[id]))), hh = (y1 - y0) / n, pd = (t1 - t0) / n, on = pd * .84;
+    const passes = Array.from({ length: n }, (_, i) => ({ face, job: id, t0: t0 + i * pd, t1: t0 + i * pd + on, x0: 1e9, x1: -1, y0: y0 + i * hh, y1: y0 + (i + 1) * hh, dir: i % 2 ? -1 : 1 }));
+    const which = new Int16Array(idxs.length);
+    idxs.forEach((k, n2) => { const x = (k % mw) * k2t, y = ((k / mw) | 0) * k2t, i = Math.min(n - 1, Math.max(0, Math.floor((y - y0) / hh))), s = passes[i]; which[n2] = i; if (x < s.x0) s.x0 = x; if (x + k2t > s.x1) s.x1 = x + k2t; });
+    const T = idxs.map((k, n2) => { const s = passes[which[n2]], x = (k % mw) * k2t, u = Math.min(1, Math.max(0, (x - s.x0) / Math.max(1, s.x1 - s.x0))); return s.t0 + (s.dir > 0 ? u : 1 - u) * (s.t1 - s.t0); });
+    return { passes: passes.filter(s => s.x1 >= 0), T };
   }
   // without the 3D engine (or with reduced motion) the sound still needs a rhythm to follow
-  const FALLBACK_PLAN = makePlan([{ id: "name", x0: 100, x1: 560, y0: 850, y1: 922, passes: 12, t0: WARM, t1: .74 }, { id: "no", x0: 1320, x1: 1485, y0: 872, y1: 920, passes: 6, t0: .79, t1: .9 }]);
-  function headAt(plan, p) {
-    // beam position at progress p, or null while the beam is blanked (between passes, before and after)
-    for (const s of plan) if (p >= s.t0 && p <= s.t1) { const u = (p - s.t0) / (s.t1 - s.t0), a = s.dir > 0 ? s.x0 : s.x1, b = s.dir > 0 ? s.x1 : s.x0; return [a + (b - a) * u, (s.y0 + s.y1) / 2, s]; }
+  const fakePasses = (id, face, n, x0, x1, y0, y1) => { const [t0, t1] = TL[id], pd = (t1 - t0) / n; return Array.from({ length: n }, (_, i) => ({ face, job: id, t0: t0 + i * pd, t1: t0 + i * pd + pd * .84, x0, x1, y0: y0 + i * (y1 - y0) / n, y1: y0 + (i + 1) * (y1 - y0) / n, dir: i % 2 ? -1 : 1 })); };
+  const FALLBACK_PLAN = [...fakePasses("shape", "front", 32, 400, 1190, 200, 790), ...fakePasses("name", "front", 9, 100, 460, 856, 906), ...fakePasses("no", "front", 7, 1320, 1475, 872, 920), ...fakePasses("hex", "back", 18, 100, 1485, 106, 898)];
+  function headAt(plan, face, p) {
+    // where the beam is at progress p on this face, or null while it is blanked (between passes, before, after)
+    for (const s of plan) if (s.face === face && p >= s.t0 && p <= s.t1) { const u = (p - s.t0) / (s.t1 - s.t0), a = s.dir > 0 ? s.x0 : s.x1, b = s.dir > 0 ? s.x1 : s.x0; return [a + (b - a) * u, (s.y0 + s.y1) / 2, s]; }
     return null;
   }
 
   // ---------- sound (synthesised, no files), scheduled from the same plan ----------
+  const PITCHES = { shape: [1900, 2900], name: [2500, 3600], no: [3300, 4300], hex: [2200, 3300] };
   function laserSound(dur, recDest, quiet, delay = 0.03, plan = FALLBACK_PLAN) {
     const c = ac(); if (!c) return null;
     const bus = c.createGain(); bus.gain.value = 1;
     const live = c.createGain(); live.gain.value = muted ? 0 : 1; if (!quiet) { bus.connect(live); live.connect(c.destination); }
     if (recDest) bus.connect(recDest);
     const t0 = c.currentTime + delay, at = p => t0 + p * dur, tl = at(LOCK), tEnd = tl + 1.4;
-    const first = plan.length ? plan[0].t0 : WARM, last = plan.length ? plan[plan.length - 1].t1 : .9;
-    // the source: a low hum that powers up before the first pass and drops away at lock
-    const hum = c.createOscillator(); hum.type = "sawtooth"; hum.frequency.setValueAtTime(70, t0); hum.frequency.exponentialRampToValueAtTime(96, at(first));
+    // the source: a low hum that powers up before the first pass, dips while the card turns, and drops away at lock
+    const hum = c.createOscillator(); hum.type = "sawtooth"; hum.frequency.setValueAtTime(70, t0); hum.frequency.exponentialRampToValueAtTime(96, at(WARM));
     const hlp = c.createBiquadFilter(); hlp.type = "lowpass"; hlp.frequency.value = 420; const hg = c.createGain();
-    hg.gain.setValueAtTime(0, t0); hg.gain.linearRampToValueAtTime(.07, at(first)); hg.gain.setValueAtTime(.07, at(last)); hg.gain.linearRampToValueAtTime(0, tl);
+    hg.gain.setValueAtTime(0, t0); hg.gain.linearRampToValueAtTime(.07, at(WARM)); hg.gain.setValueAtTime(.07, at(TL.no[1])); hg.gain.linearRampToValueAtTime(.035, at(TL.turn + .03)); hg.gain.linearRampToValueAtTime(.07, at(TL.hex[0])); hg.gain.setValueAtTime(.07, at(TL.hex[1])); hg.gain.linearRampToValueAtTime(0, tl);
     hum.connect(hlp); hlp.connect(hg); hg.connect(bus);
-    // the burn: band passed noise that is only open while the beam is firing. Its pitch glides with the head, up going right, down going left.
+    // the burn: band passed noise, open only while the beam fires. Its pitch glides with the head, up going right, down going left.
     const nb = c.createBuffer(1, c.sampleRate, c.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
     const ns = c.createBufferSource(); ns.buffer = nb; ns.loop = true;
     const bp = c.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 3.2; bp.frequency.setValueAtTime(2800, t0);
@@ -51,17 +61,20 @@
     ns.connect(bp); bp.connect(bg); bg.connect(bus); ns.connect(fizz); fizz.connect(fg); fg.connect(bus);
     // the galvo: a short tick each time the mirror steps to a new row
     const tick = c.createOscillator(); tick.type = "square"; tick.frequency.value = 2300; const tg = c.createGain(); tg.gain.setValueAtTime(0, t0); tick.connect(tg); tg.connect(bus);
-    // a faint whine that follows the head's speed
+    // a faint whine that follows the head
     const wh = c.createOscillator(); wh.type = "sine"; wh.frequency.setValueAtTime(2900, t0); const wg = c.createGain(); wg.gain.setValueAtTime(0, t0); wh.connect(wg); wg.connect(bus);
     plan.forEach(s => {
-      const a = at(s.t0), b = at(s.t1), lo = s.job === "no" ? 3300 : 2500, hi = s.job === "no" ? 4300 : 3600, f0 = s.dir > 0 ? lo : hi, f1 = s.dir > 0 ? hi : lo;
+      const a = at(s.t0), b = at(s.t1), [lo, hi] = PITCHES[s.job] || PITCHES.name, f0 = s.dir > 0 ? lo : hi, f1 = s.dir > 0 ? hi : lo, burn = s.job === "shape" ? .22 : .3;
       bp.frequency.setValueAtTime(f0, a); bp.frequency.linearRampToValueAtTime(f1, b);
-      bg.gain.setValueAtTime(0, a); bg.gain.linearRampToValueAtTime(.3, a + .006); bg.gain.setValueAtTime(.3, Math.max(a + .007, b - .012)); bg.gain.linearRampToValueAtTime(0, b);
-      fg.gain.setValueAtTime(0, a); fg.gain.linearRampToValueAtTime(.05, a + .006); fg.gain.setValueAtTime(.05, Math.max(a + .007, b - .012)); fg.gain.linearRampToValueAtTime(0, b);
-      tg.gain.setValueAtTime(0, a - .004); tg.gain.linearRampToValueAtTime(.035, a - .002); tg.gain.linearRampToValueAtTime(0, a + .006);
+      bg.gain.setValueAtTime(0, a); bg.gain.linearRampToValueAtTime(burn, a + .006); bg.gain.setValueAtTime(burn, Math.max(a + .007, b - .01)); bg.gain.linearRampToValueAtTime(0, b);
+      fg.gain.setValueAtTime(0, a); fg.gain.linearRampToValueAtTime(.05, a + .006); fg.gain.setValueAtTime(.05, Math.max(a + .007, b - .01)); fg.gain.linearRampToValueAtTime(0, b);
+      tg.gain.setValueAtTime(0, a - .004); tg.gain.linearRampToValueAtTime(.03, a - .002); tg.gain.linearRampToValueAtTime(0, a + .006);
       wh.frequency.setValueAtTime(f0 + 300, a); wh.frequency.linearRampToValueAtTime(f1 + 300, b);
-      wg.gain.setValueAtTime(0, a); wg.gain.linearRampToValueAtTime(.012, a + .01); wg.gain.setValueAtTime(.012, Math.max(a + .011, b - .01)); wg.gain.linearRampToValueAtTime(0, b);
+      wg.gain.setValueAtTime(0, a); wg.gain.linearRampToValueAtTime(.012, a + .008); wg.gain.setValueAtTime(.012, Math.max(a + .009, b - .008)); wg.gain.linearRampToValueAtTime(0, b);
     });
+    // the turn: a soft air swish as the card flips
+    const ta = at(TL.turn), sw = c.createBufferSource(); sw.buffer = nb; const swf = c.createBiquadFilter(); swf.type = "bandpass"; swf.Q.value = .8; swf.frequency.setValueAtTime(500, ta); swf.frequency.exponentialRampToValueAtTime(1800, ta + .35); swf.frequency.exponentialRampToValueAtTime(600, ta + .7);
+    const swg = c.createGain(); swg.gain.setValueAtTime(0, t0); swg.gain.setValueAtTime(0, ta); swg.gain.linearRampToValueAtTime(.16, ta + .3); swg.gain.linearRampToValueAtTime(0, ta + .75); sw.connect(swf); swf.connect(swg); swg.connect(bus); sw.start(ta); sw.stop(ta + .8);
     // lock: a thump and a soft chord, at the same instant the card flashes
     const th = c.createOscillator(); th.type = "sine"; th.frequency.setValueAtTime(150, tl); th.frequency.exponentialRampToValueAtTime(42, tl + .25);
     const thg = c.createGain(); thg.gain.setValueAtTime(0, t0); thg.gain.setValueAtTime(.32, tl); thg.gain.exponentialRampToValueAtTime(.001, tl + .32); th.connect(thg); thg.connect(bus);
@@ -70,61 +83,69 @@
     return t0;
   }
 
-  // ---------- laser engraving on the card texture ----------
+  // ---------- laser engraving on the card textures ----------
   let eng = null;
   const PXW = () => TEX_W * SCALE, PXH = () => TEX_H * SCALE, HS = innerWidth < 700 ? 3 : 2; // reveal maps run at half or a third of the texture
   function prepEngrave() {
-    const Cn = CONCEPTS[S.concept], d = data(), db = Object.assign({}, d, { base: "", tld: "", blank: true });
-    const mk = dd => { const o = { col: cv(), rough: cv() }; const g = c => { const x = c.getContext("2d"); x.setTransform(SCALE, 0, 0, SCALE, 0, 0); return x; }; Cn.front(g(o.col), "color", dd); Cn.front(g(o.rough), "rough", dd); return o; };
-    const full = mk(d), blank = mk(db), w = PXW(), h = PXH(), mw = Math.ceil(w / HS), mh = Math.ceil(h / HS), k2t = HS / SCALE;
-    const a = full.col.getContext("2d").getImageData(0, 0, w, h).data, b = blank.col.getContext("2d").getImageData(0, 0, w, h).data;
-    // what the laser has to write: every pixel that differs between the blank card and this holder's card, split into the name and the number
-    const jobs = { name: { id: "name", x0: 1e9, x1: -1, y0: 1e9, y1: -1 }, no: { id: "no", x0: 1e9, x1: -1, y0: 1e9, y1: -1 } }, idx = [], who = [];
-    for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) {
-      const i = ((y * HS) * w + x * HS) * 4; if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) <= 28) continue;
-      const tx = x * k2t, ty = y * k2t, j = tx > 1250 && ty > 820 ? jobs.no : jobs.name;
-      if (tx < j.x0) j.x0 = tx; if (tx > j.x1) j.x1 = tx; if (ty < j.y0) j.y0 = ty; if (ty > j.y1) j.y1 = ty; idx.push(y * mw + x); who.push(j.id === "no" ? 1 : 0);
+    const Cn = CONCEPTS[S.concept], d = data(), w = PXW(), h = PXH(), mw = Math.ceil(w / HS), mh = Math.ceil(h / HS), k2t = HS / SCALE;
+    const g = c => { const x = c.getContext("2d"); x.setTransform(SCALE, 0, 0, SCALE, 0, 0); return x; };
+    const out = { plan: [] };
+    for (const face of ["front", "back"]) {
+      // the finished face, and the blank brushed metal it starts as
+      const full = { col: cv(), rough: cv() }, blank = { col: cv(), rough: cv() };
+      Cn[face](g(full.col), "color", d); Cn[face](g(full.rough), "rough", d); base(g(blank.col), "color", false); base(g(blank.rough), "rough", false);
+      const a = full.col.getContext("2d").getImageData(0, 0, w, h).data, b = blank.col.getContext("2d").getImageData(0, 0, w, h).data;
+      // everything the laser writes: every pixel that differs from blank metal, sorted into jobs
+      const byJob = {};
+      for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) {
+        const i = ((y * HS) * w + x * HS) * 4; if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) <= 24) continue;
+        const id = JOBS[face](x * k2t, y * k2t); (byJob[id] || (byJob[id] = [])).push(y * mw + x);
+      }
+      const idx = [], T = [];
+      for (const id of Object.keys(byJob)) { const r = planJob(id, face, null, byJob[id], k2t, mw); r.passes.forEach(q => out.plan.push(q)); for (let n = 0; n < byJob[id].length; n++) { idx.push(byJob[id][n]); T.push(r.T[n]); } }
+      const mask = document.createElement("canvas"); mask.width = mw; mask.height = mh; const hot = document.createElement("canvas"); hot.width = mw; hot.height = mh;
+      out[face] = { face, full, blank, idx: Int32Array.from(idx), T: Float32Array.from(T), mask, hot, tmp: cv(), mw, mh, last: -1 };
     }
-    const list = [];
-    if (jobs.name.x1 >= 0) list.push(Object.assign(jobs.name, { passes: Math.max(6, Math.min(16, Math.round((jobs.name.y1 - jobs.name.y0) / 5))), t0: WARM, t1: jobs.no.x1 >= 0 ? .74 : .9 }));
-    if (jobs.no.x1 >= 0) list.push(Object.assign(jobs.no, { passes: Math.max(4, Math.min(8, Math.round((jobs.no.y1 - jobs.no.y0) / 7))), t0: jobs.name.x1 >= 0 ? .79 : WARM, t1: .9 }));
-    list.forEach(j => { j.x1 += k2t; j.y1 += k2t; });
-    const plan = list.length ? makePlan(list) : FALLBACK_PLAN;
-    // every etched pixel gets the moment the beam crosses it
-    const T = new Float32Array(idx.length);
-    for (let n = 0; n < idx.length; n++) {
-      const k = idx[n], tx = (k % mw) * k2t, ty = ((k / mw) | 0) * k2t, id = who[n] ? "no" : "name";
-      let s = plan.find(q => q.job === id && ty >= q.y0 && ty < q.y1) || plan.filter(q => q.job === id).pop() || plan[0];
-      const u = Math.min(1, Math.max(0, (tx - s.x0) / Math.max(1, s.x1 - s.x0)));
-      T[n] = s.t0 + (s.dir > 0 ? u : 1 - u) * (s.t1 - s.t0);
-    }
-    const mask = document.createElement("canvas"); mask.width = mw; mask.height = mh; const hot = document.createElement("canvas"); hot.width = mw; hot.height = mh;
-    eng = { full, blank, T, idx, mw, mh, mask, hot, tmp: cv(), plan };
+    out.plan.sort((p, q) => p.t0 - q.t0);
+    if (!out.plan.length) out.plan = FALLBACK_PLAN;
+    eng = out;
   }
-  // the etched mask and the cooling trail at progress p
-  function buildMaps(p) {
-    const { T, idx, mw, mh, mask, hot } = eng, mx = mask.getContext("2d"), hx = hot.getContext("2d");
-    const mi = eng.mi || (eng.mi = mx.createImageData(mw, mh)), hi = eng.hi || (eng.hi = hx.createImageData(mw, mh)), md = mi.data, hd = hi.data; md.fill(0); hd.fill(0);
-    const HW = .055; // how long a spot glows after the beam has passed, as a share of the run
+  // the etched mask and the cooling trail of one face at progress p
+  function buildMaps(f, p) {
+    const { T, idx, mw, mh, mask, hot } = f, mx = mask.getContext("2d"), hx = hot.getContext("2d");
+    const mi = f.mi || (f.mi = mx.createImageData(mw, mh)), hi = f.hi || (f.hi = hx.createImageData(mw, mh)), md = mi.data, hd = hi.data; md.fill(0); hd.fill(0);
+    const HW = .03; // how long a spot glows after the beam has passed, as a share of the run
     for (let n = 0; n < idx.length; n++) { const t = T[n]; if (t > p) continue; const q = idx[n] * 4; md[q + 3] = 255;
       const age = (p - t) / HW; if (age < 1) { const e = 1 - age, w = e * e; hd[q] = 140 + 115 * w; hd[q + 1] = 252; hd[q + 2] = 228 + 27 * w; hd[q + 3] = 255 * e; } }
     mx.putImageData(mi, 0, 0); hx.putImageData(hi, 0, 0);
   }
-  function comp(p, o, withBeam, frame) {
-    const { full, blank, mask, hot, tmp } = eng, w = PXW(), h = PXH(), s = SCALE; buildMaps(p);
+  // paints one face at progress p into o. Faces that are untouched (not started, or finished and cooled) are painted once and left alone.
+  function compFace(f, p, o, withBeam, frame) {
+    const w = PXW(), h = PXH(), s = SCALE;
+    const start = eng.plan.find(q => q.face === f.face), end = [...eng.plan].reverse().find(q => q.face === f.face);
+    const st = !start || p < start.t0 ? "blank" : p > end.t1 + .04 ? "done" : "live";
+    if (st !== "live" && f.last === st && f.lastObj === o) return false;
+    f.last = st; f.lastObj = o;
     for (const k of ["col", "rough"]) {
-      const t = o[k].getContext("2d"), tx = tmp.getContext("2d");
-      tx.setTransform(1, 0, 0, 1, 0, 0); tx.globalCompositeOperation = "source-over"; tx.clearRect(0, 0, w, h); tx.drawImage(full[k], 0, 0);
-      tx.globalCompositeOperation = "destination-in"; tx.imageSmoothingEnabled = true; tx.drawImage(mask, 0, 0, w, h);
-      t.setTransform(1, 0, 0, 1, 0, 0); t.globalCompositeOperation = "source-over"; t.clearRect(0, 0, w, h); t.drawImage(blank[k], 0, 0); t.drawImage(tmp, 0, 0);
+      const t = o[k].getContext("2d"); t.setTransform(1, 0, 0, 1, 0, 0); t.globalCompositeOperation = "source-over"; t.globalAlpha = 1; t.filter = "none";
+      if (st === "blank") { t.clearRect(0, 0, w, h); t.drawImage(f.blank[k], 0, 0); continue; }
+      if (st === "done") { t.clearRect(0, 0, w, h); t.drawImage(f.full[k], 0, 0); continue; }
     }
-    if (!withBeam || p <= 0 || p >= 1) return;
+    if (st !== "live") return true;
+    buildMaps(f, p);
+    for (const k of ["col", "rough"]) {
+      const t = o[k].getContext("2d"), tx = f.tmp.getContext("2d");
+      tx.setTransform(1, 0, 0, 1, 0, 0); tx.globalCompositeOperation = "source-over"; tx.clearRect(0, 0, w, h); tx.drawImage(f.full[k], 0, 0);
+      tx.globalCompositeOperation = "destination-in"; tx.imageSmoothingEnabled = true; tx.drawImage(f.mask, 0, 0, w, h);
+      t.clearRect(0, 0, w, h); t.drawImage(f.blank[k], 0, 0); t.drawImage(f.tmp, 0, 0);
+    }
+    if (!withBeam) return true;
     const t = o.col.getContext("2d"); t.save(); t.globalCompositeOperation = "lighter";
     // cooling metal: white, then aquamarine, then gone. Once sharp, once bloomed, with a slight chromatic split.
-    t.globalAlpha = .9; t.drawImage(hot, 0, 0, w, h);
-    t.globalAlpha = .65; t.filter = `blur(${5 * s}px)`; t.drawImage(hot, 0, 0, w, h); t.filter = "none";
-    t.globalAlpha = .22; t.filter = "hue-rotate(-40deg)"; t.drawImage(hot, -2 * s, 0, w, h); t.filter = "hue-rotate(40deg)"; t.drawImage(hot, 2 * s, 0, w, h); t.filter = "none"; t.globalAlpha = 1;
-    const hd = headAt(eng.plan, p);
+    t.globalAlpha = .9; t.drawImage(f.hot, 0, 0, w, h);
+    t.globalAlpha = .65; t.filter = `blur(${5 * s}px)`; t.drawImage(f.hot, 0, 0, w, h); t.filter = "none";
+    t.globalAlpha = .22; t.filter = "hue-rotate(-40deg)"; t.drawImage(f.hot, -2 * s, 0, w, h); t.filter = "hue-rotate(40deg)"; t.drawImage(f.hot, 2 * s, 0, w, h); t.filter = "none"; t.globalAlpha = 1;
+    const hd = headAt(eng.plan, f.face, p);
     if (hd) {
       // the beam: a white hot spot with bloom, a lens flare along the scan direction, and sparks thrown off the metal
       const hx = hd[0] * s, hy = hd[1] * s;
@@ -140,31 +161,41 @@
       for (let i = 0; i < 18; i++) { const ang = -Math.PI / 2 + back * .5 + (rnd() - .5) * 2.4, len = (6 + rnd() * 34) * s; t.strokeStyle = `rgba(${rnd() > .45 ? "255,240,205" : "200,255,245"},${.35 + rnd() * .6})`; t.lineWidth = (.8 + rnd() * 1.4) * s; t.beginPath(); t.moveTo(hx, hy); t.lineTo(hx + Math.cos(ang) * len, hy + Math.sin(ang) * len); t.stroke(); }
     }
     t.restore();
+    return true;
   }
-  async function engraveLive(dur = 4200, withSound = true) {
-    if (!three || reduce) { if (withSound && !reduce) laserSound(1.6); await sleep(reduce ? 0 : 1600); return; }
+  function comp(p, objs, withBeam, frame) {
+    // objs: { front: {col, rough}, back: {col, rough} }; returns which faces changed
+    const a = compFace(eng.front, p, objs.front, withBeam, frame), b = compFace(eng.back, p, objs.back, withBeam, frame);
+    return a || b;
+  }
+  const ENG_DUR = 10500;
+  async function engraveLive(dur = ENG_DUR, withSound = true) {
+    if (!three || reduce) { if (withSound && !reduce) laserSound(3, null, false, .03); await sleep(reduce ? 0 : 3000); return; }
     prepEngrave();
     if (shown !== "front") { showSide("front"); await sleep(900); }
-    comp(0, faces.front, false); three.tex.forEach(t => t.needsUpdate = true);
-    // the picture follows the audio clock, so the beam, the burn and the lock land on the same frame
+    comp(0, faces, false, 0); three.tex.forEach(t => t.needsUpdate = true);
+    // the picture follows the audio clock, so the beam, the burn, the turn and the lock land on the same frame
     const c0 = withSound ? ac() : null, lat = c0 ? (c0.outputLatency || c0.baseLatency || 0) : 0;
     const at0 = withSound ? laserSound(dur / 1000, null, false, 0.15, eng.plan) : null;
-    let flashed = false;
+    let turned = false, flashed = false;
     await new Promise(res => {
       const t0 = performance.now() + 150; let f = 0;
       const step = now => {
         const p = at0 != null && c0 && c0.state === "running" ? Math.min(1, Math.max(0, (c0.currentTime - lat - at0) / (dur / 1000))) : Math.min(1, Math.max(0, (now - t0) / dur));
-        comp(p, faces.front, true, f++); three.tex.forEach(t => t.needsUpdate = true);
+        if (comp(p, faces, true, f++)) three.tex.forEach(t => t.needsUpdate = true);
+        if (!turned && p >= TL.turn) { turned = true; showSide("back"); }
         if (!flashed && p >= LOCK) { flashed = true; const fl = $("flash"); fl && fl.animate([{ opacity: .95 }, { opacity: 0 }], { duration: 1100, easing: "ease-out" }); }
         if (p < 1) requestAnimationFrame(step); else res();
       };
       requestAnimationFrame(step);
     });
-    paintAll();
+    paintAll(); three.tex.forEach(t => t.needsUpdate = true);
+    // hold on the finished back for a beat, then turn to the front so the name is the last thing seen
+    await sleep(700); showSide("front"); await sleep(800);
   }
 
   // ---------- video export (4:5, made in the browser) ----------
-  const VW = 1080, VH = 1350, VD = 9.5, ENG0 = 1.2, ENG1 = 5.4;
+  const VW = 1080, VH = 1350, ENG0 = 1.0, ENG1 = ENG0 + ENG_DUR / 1000, VD = ENG1 + 2.6;
   const logoImgs = {};
   const svgImage = str => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(str); });
   async function loadLogos() {
@@ -185,26 +216,31 @@
     if (logoImgs.hl && logoImgs.ens) { const h = 34, wl = h * 1145 / 156, ve = logoImgs.ens, we = h * (ve.width / ve.height || 1), gap = 26, tot = wl + gap * 2 + 14 + we, sx = (VW - tot) / 2; x.drawImage(logoImgs.hl, sx, 70, wl, h); x.fillStyle = "#8C8C8C"; x.font = '500 24px "Instrument Sans", sans-serif'; x.textBaseline = "middle"; x.fillText("x", sx + wl + gap, 70 + h / 2 + 1); x.drawImage(ve, sx + wl + gap * 2 + 14, 70, we, h); }
     x.globalAlpha = 1;
     // card
-    const ca = ease(Math.min(1, Math.max(0, (t - .5) / .7))), cw = 940, chh = cw * TEX_H / TEX_W, sc = .94 + .06 * ca, cx = VW / 2, cy = 640 + Math.sin(t * 1.1) * 7, ang = Math.sin(t * .8) * .012;
-    x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(ang); x.scale(sc, sc);
-    x.save(); x.filter = "blur(26px)"; x.fillStyle = "rgba(0,0,0,.75)"; x.beginPath(); x.ellipse(0, chh / 2 + 36, cw * .42, 28, 0, 0, 7); x.fill(); x.restore();
-    x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.clip();
+    const ca = ease(Math.min(1, Math.max(0, (t - .5) / .7))), cw = 940, chh = cw * TEX_H / TEX_W, sc = .94 + .06 * ca, cx = VW / 2, cy = 640 + Math.sin(t * 1.1) * 7, tilt = Math.sin(t * .8) * .012;
     const rev = Math.min(1, Math.max(0, (t - .5) / .9));
     const p = Math.min(1, Math.max(0, (t - ENG0) / (ENG1 - ENG0)));
     comp(p, vo, p > 0 && p < 1, Math.floor(t * 30));
+    // the card turns to the back at the same moment as on the page, and turns home again after the lock
+    const tTurn = ENG0 + TL.turn * (ENG1 - ENG0), tHome = ENG1 + .5, sm = u => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u); };
+    const ang = Math.PI * (sm((t - tTurn) / .65) + sm((t - tHome) / .65)), cs = Math.cos(ang), face = cs >= 0 ? vo.front : vo.back, sx = Math.max(.02, Math.abs(cs));
+    x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(tilt);
+    x.save(); x.scale(sc, sc); x.filter = "blur(26px)"; x.fillStyle = "rgba(0,0,0,.75)"; x.beginPath(); x.ellipse(0, chh / 2 + 36, cw * .42 * sx, 28, 0, 0, 7); x.fill(); x.restore();
+    x.scale(sc * sx, sc);
+    x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.clip();
     x.filter = "none";
     const lockFlash = p >= LOCK ? Math.max(0, 1 - (t - (ENG0 + LOCK * (ENG1 - ENG0))) / 1.1) : 0;
     if (rev < 1 && window.__dither) {
       // 1-bit reveal: the card arrives through an ordered dither
-      const tc = vidTmp || (vidTmp = document.createElement("canvas")); tc.width = Math.round(cw); tc.height = Math.round(chh); const tx = tc.getContext("2d"); tx.clearRect(0, 0, tc.width, tc.height); tx.drawImage(vo.col, 0, 0, tc.width, tc.height);
+      const tc = vidTmp || (vidTmp = document.createElement("canvas")); tc.width = Math.round(cw); tc.height = Math.round(chh); const tx = tc.getContext("2d"); tx.clearRect(0, 0, tc.width, tc.height); tx.drawImage(face.col, 0, 0, tc.width, tc.height);
       const im = tx.getImageData(0, 0, tc.width, tc.height), dd = im.data, bs = 4;
       for (let j = 0; j < tc.height; j++) for (let i = 0; i < tc.width; i++) if (__dither.bayer(i / bs | 0, j / bs | 0) >= rev) dd[(j * tc.width + i) * 4 + 3] = 0;
       tx.putImageData(im, 0, 0); x.drawImage(tc, -cw / 2, -chh / 2, cw, chh);
-    } else x.drawImage(vo.col, -cw / 2, -chh / 2, cw, chh);
+    } else x.drawImage(face.col, -cw / 2, -chh / 2, cw, chh);
+    if (Math.abs(cs) < .999) { x.fillStyle = `rgba(0,0,0,${.55 * (1 - Math.abs(cs))})`; x.fillRect(-cw / 2, -chh / 2, cw, chh); }
     x.filter = "none";
     if (lockFlash > 0) { const fg = x.createRadialGradient(0, 0, 0, 0, 0, cw * .5); fg.addColorStop(0, `rgba(151,252,228,${.4 * lockFlash})`); fg.addColorStop(1, "rgba(151,252,228,0)"); x.fillStyle = fg; x.fillRect(-cw / 2, -chh / 2, cw, chh); }
     const sh = ((t * .22) % 1.6 - .3) * cw, sg = x.createLinearGradient(-cw / 2 + sh - 160, -chh / 2, -cw / 2 + sh + 160, chh / 2); sg.addColorStop(0, "rgba(255,255,255,0)"); sg.addColorStop(.5, "rgba(255,255,255,.10)"); sg.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = sg; x.fillRect(-cw / 2, -chh / 2, cw, chh);
-    x.restore(); x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(ang); x.scale(sc, sc); x.strokeStyle = "rgba(255,255,255,.22)"; x.lineWidth = 2; x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.stroke();
+    x.restore(); x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(tilt); x.scale(sc * sx, sc); x.strokeStyle = "rgba(255,255,255,.22)"; x.lineWidth = 2; x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.stroke();
     x.restore();
     x.globalAlpha = 1; x.textAlign = "center"; x.fillStyle = "#6f6f6f"; x.font = '400 22px "Instrument Sans", sans-serif'; x.fillText("House of HYPE  ·  Mumbai  ·  3 Nov 2026", VW / 2, 1312);
   }
@@ -213,7 +249,7 @@
     if (!window.MediaRecorder) throw new Error("unsupported");
     await loadLogos(); prepEngrave();
     const cvs = document.createElement("canvas"); cvs.width = VW; cvs.height = VH; const x = cvs.getContext("2d");
-    const vo = { col: cv(), rough: cv() };
+    const vo = { front: { col: cv(), rough: cv() }, back: { col: cv(), rough: cv() } };
     const c = ac(); const rd = c ? c.createMediaStreamDestination() : null;
     const stream = cvs.captureStream(30); if (rd) rd.stream.getAudioTracks().forEach(t => stream.addTrack(t));
     const mimes = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4;codecs=avc1,mp4a.40.2", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
