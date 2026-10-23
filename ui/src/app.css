@@ -154,7 +154,7 @@ canvas.track{position:absolute;left:0;top:0;width:100%;height:100%;pointer-event
 @media(max-width:700px){
 @media(max-width:640px){
   .sides{flex-wrap:wrap;gap:8px}.side{padding:4px 12px 4px 4px;font-size:12.5px;gap:8px}.side img{width:34px}
-  .co-d{display:none}.co.on .co-d{display:block}.co-m{font-size:11px}
+  .co-d{display:block;font-size:13px;line-height:1.45;max-width:none}.co-m{font-size:11px}
   .co-col{list-style:none;margin:0;padding:10px 0 50px;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
 }}
 
@@ -232,11 +232,13 @@ canvas.track{position:absolute;left:0;top:0;width:100%;height:100%;pointer-event
 @media(max-width:700px){.lb{width:100%}.lb-main{grid-template-columns:30px 1fr 40px 20px;gap:10px}.lb-bar{display:none}.lb-parts{grid-template-columns:1fr;padding-left:8px}.lb-h h2{font-size:30px}}
 
 /* flip: intro and form on one face, the score card on the other */
-.console{overflow:visible;max-height:none;perspective:1600px}
-.flip-in{display:grid;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.2,.7,.2,1)}
-.flip.on .flip-in{transform:rotateY(180deg)}
-.face{grid-area:1/1;display:flex;flex-direction:column;gap:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden;min-width:0}
-.face.back{transform:rotateY(180deg)}
+.console{overflow:visible;max-height:none}
+.flip-in{display:block;position:relative}
+.face{display:flex;flex-direction:column;gap:12px;min-width:0;animation:facein .45s cubic-bezier(.2,.7,.2,1) both}
+.face.back{display:none}
+.flip.on .face.front{display:none}
+.flip.on .face.back{display:flex}
+@keyframes facein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .score{display:flex;flex-direction:column;gap:14px;border:1px solid var(--line);border-radius:16px;padding:18px 16px;background:rgba(236,231,223,.02)}
 .score-top{display:flex;align-items:center;gap:16px}.score-id{min-width:0}
 .score .ring{width:92px;height:92px;flex:none}.score .verdict{margin:0;font-size:20px;line-height:1.2}
@@ -331,3 +333,37 @@ a.snd.luma{background:#fff;color:#0a0a0a;border-color:#fff;opacity:1}a.snd.luma:
 .site-foot{flex-direction:column;gap:16px}.soc{display:grid;grid-template-columns:repeat(2,auto);gap:10px}
 @media(min-width:701px) and (max-width:1240px){.console{max-width:640px;margin:0 auto;width:100%}}
 @media(min-width:701px) and (max-width:1240px){.stage{max-width:600px;margin:0 auto}.deck .plate-mid{max-width:none}}
+@media(max-width:640px){.mast{grid-template-columns:1fr;row-gap:10px;justify-items:center}.mast-l{display:none}.mast-r{justify-self:center;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}}
+html,body{overflow-x:hidden}
+
+@media(max-width:640px){.co-wrap{width:100%}.co-col{padding:6px 0 18px!important;gap:18px!important}.co h3{font-size:30px}}
+
+/* ---------- stacked (tablet and phone): the desktop composition, folded. The card on top, its two decode columns
+   directly under it with leaders running up the margins into the card, then the console. ---------- */
+@media(max-width:1240px){
+  .deck{grid-template-columns:1fr;gap:20px;width:100%}
+  .deck .plate{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"mid mid" "l r";column-gap:18px;row-gap:0;width:100%;max-width:760px;margin:0 auto}
+  .deck .plate-mid{grid-area:mid;order:0;position:relative;top:auto;z-index:auto;background:none;padding:0 0 2px;max-width:none}
+  .deck .co-wrap.l{grid-area:l;order:0;padding-left:24px}.deck .co-wrap.r{grid-area:r;order:0;padding-right:24px}
+  .deck .co-wrap{width:auto!important;min-width:0}
+  .deck .co-col{padding:22px 0 6px!important;gap:18px!important;justify-content:flex-start}
+  .deck .co{width:auto!important;margin-top:0!important;transform:none!important}
+  .deck .co.l{text-align:left!important;padding:0 0 0 14px!important}.deck .co.r{text-align:right!important;padding:0 14px 0 0!important}
+  .deck .co.l::before{left:0!important;right:auto!important}.deck .co.r::before{right:0!important;left:auto!important}
+  .deck .co-h{flex-direction:row-reverse}.deck .co.l .co-h{justify-content:flex-end}.deck .co.r .co-h{justify-content:flex-start}
+  .deck .co.r h4{text-align:right}
+  .deck .co.title h3{font-size:clamp(30px,7.4vw,46px)}
+  .deck .co h4{font-size:18px}
+  .deck .co-d{display:block!important;font-size:12.5px;line-height:1.45}
+  .deck .co-m{font-size:11px}
+  .plate .co-col{transition:opacity .4s}.plate.hot .co-col{opacity:.32}
+  .deck .console{order:0;max-width:760px;width:100%;margin:0 auto}
+  .deck .stage{aspect-ratio:3/2;max-width:none}
+}
+@media(max-width:480px){
+  .deck .plate{column-gap:12px}
+  .deck .co-wrap.l{padding-left:20px}.deck .co-wrap.r{padding-right:20px}
+  .deck .co h4{font-size:16.5px}.deck .co-d{font-size:11.5px}.deck .co-m{font-size:10px}
+  .deck .co-h{gap:6px}.deck .co-h b{font-size:10px;padding:3px 4px}
+  .deck .stage{aspect-ratio:4/3}
+}

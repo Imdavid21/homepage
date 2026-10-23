@@ -6,6 +6,14 @@ import regions from "./regions.json";
 
 const HL = () => window.HL;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const STACKED = "(max-width:1240px)";
+function useNarrow() {
+  const [n, setN] = useState(() => matchMedia(STACKED).matches);
+  useEffect(() => { const m = matchMedia(STACKED), f = () => setN(m.matches); m.addEventListener("change", f); return () => m.removeEventListener("change", f); }, []);
+  return n;
+}
+// stacked layouts: keep the card in view while the laser runs, then bring the result up
+const show = (sel, block) => { if (!matchMedia(STACKED).matches) return; const el = document.querySelector(sel); el && el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block }); };
 
 /* ---------- header ---------- */
 function Masthead({ muted, setMuted }) {
@@ -38,9 +46,10 @@ function Callout({ g, i, focus, setFocus }) {
 }
 
 const Plate = memo(function Plate({ hot }) {
-  const [decode, setDecode] = useState(true), [side, setSide] = useState("front"), [focus, setFocus] = useState(null), still = useRef(false);
+  const [decode, setDecode] = useState(true), [side, setSide] = useState("front"), [focus, setFocus] = useState(null), still = useRef(false), narrow = useNarrow();
   useEffect(() => { const f = e => setSide(e.detail); window.addEventListener("hl-side", f); return () => window.removeEventListener("hl-side", f); }, []);
-  const on = decode && !hot;
+  // on wide screens the map steps aside while the laser runs; stacked, it stays put (dimmed) so nothing below jumps
+  const on = decode && (!hot || narrow);
   useEffect(() => {
     const go = () => { window.HL.track.set(decode); window.HL.track.hide(hot); };
     if (window.HL) go(); else { window.addEventListener("hl-ready", go, { once: true }); return () => window.removeEventListener("hl-ready", go); }
@@ -61,7 +70,7 @@ const Plate = memo(function Plate({ hot }) {
     </AnimatePresence>
   );
   return (
-    <section className={"plate" + (on ? " decoded" : "")} aria-label="Card preview and decode">
+    <section className={"plate" + (on ? " decoded" : "") + (hot ? " hot" : "")} aria-label="Card preview and decode">
       <div className="co-wrap l">{col(L, "l")}</div>
       <div className="plate-mid">
         <i className="cm tl" /><i className="cm tr" /><i className="cm bl" /><i className="cm br" />
@@ -249,13 +258,13 @@ export default function App({ socials }) {
       apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("reading");
       await sleep(reduce ? 200 : 1200);
       setRes(j);
-      if (j.eligible) { setPhase("engraving"); await HL().engrave(); }
-      setPhase("done");
+      if (j.eligible) { setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); }
+      setPhase("done"); show(".console", "start");
       if (j.eligible) makeVideo(j);
     } catch (err) { console.error("CHK", err); setMsg({ t: "Network error. Try again.", err: true }); setChecking(false); setPhase("idle"); }
   };
   const again = () => { if (phase === "engraving" || phase === "reading") return; setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 }); setMsg({ t: "", err: false }); };
-  const replay = async () => { if (phase !== "done") return; setPhase("engraving"); await HL().engrave(); setPhase("done"); };
+  const replay = async () => { if (phase !== "done") return; setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); setPhase("done"); show(".console", "start"); };
   const claim = async () => {
     setClaiming(true);
     try { const [ok, j] = await post("/api/claim", { name: norm(name), wallets: cleanW() }); if (j && j.now) apply(j); if (ok) setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left })); else setMsg({ t: j.error || "Couldn't claim. Try again.", err: true }); }
