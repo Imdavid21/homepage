@@ -652,11 +652,14 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
         marks(x, mode, c => {
           // the blank card is what the laser starts from, and the name stays off it until the holder is eligible
           if (d.hide && mode === "color") window.__nameBox = [M - 8, 846, 560, 84];
-          if (d.blank || d.hide) return;
+          if (d.blank || (d.hide && mode !== "color")) return;
+          // until the holder is eligible a faint placeholder name and number sit on the card; the laser writes the real ones
+          const ph = d.hide; if (ph) x.globalAlpha = .4;
           // the holder's name, bottom left
           x.textAlign = "left"; x.textBaseline = "alphabetic"; const ns = 62; x.font = SANS(600, ns); const aW = x.measureText(d.base).width; x.fillStyle = ink(mode, MINT); x.fillText(d.base, M, 905); x.font = SERIF(ns); x.fillText(d.tld, M + aW + ns * .02, 905); if (mode === "color") window.__nameBox = [M - 8, 846, Math.ceil(aW + ns * .02 + x.measureText(d.tld).width) + 16, 84];
           // the card's number out of 25, bottom right, in dot matrix
           x.font = MONO(700, 52); { const t = `${d.no}/${d.edition}`; dotText(x, t, TEX_W - M - Math.ceil(x.measureText(t).width) - 8, 914, 52, c, 4); }
+          if (ph) x.globalAlpha = 1;
         });
       },
       back(x, mode, d) {
