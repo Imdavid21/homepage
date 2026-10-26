@@ -54,3 +54,20 @@ test("paired wallets add up and cannot repeat the main wallet", async () => {
   const c = combine([{ firstTs: 200, volume: 10, hype: 5, hipSet: ["a:X", "#10"], trades: 3 }, { firstTs: 100, volume: 20, hype: 1, hipSet: ["a:X"], trades: 4 }]);
   assert.equal(c.volume, 30); assert.equal(c.hype, 6); assert.equal(c.trades, 7); assert.equal(c.hipMarkets, 2); assert.equal(c.firstTs, 100);
 });
+
+test("a missing name date does not count against a name", () => {
+  const withDate = computeScore({ ...maxed }, NOW).score, none = computeScore({ ...maxed, nameTs: null }, NOW);
+  assert.equal(withDate, 100); assert.equal(none.score, 100);
+  const half = { firstTs: Date.parse("2025-10-20"), volume: 5e5, hype: 20, hipMarkets: 3, trades: 100 };
+  const a = computeScore({ ...half, nameTs: null }, NOW).score, b = computeScore({ ...half, nameTs: Date.parse("2020-01-01") }, NOW).score;
+  assert.ok(Math.abs(a - Math.round((b - 10) * 100 / 90)) <= 1, a + " vs " + b);
+});
+test("HLN registration date is found wherever the field lives", async () => {
+  const { findDate } = await import("../lib/resolve.js");
+  const t = Date.parse("2025-03-02T10:00:00Z");
+  assert.equal(findDate({ address: "0x1", registeredAt: "2025-03-02T10:00:00Z" }), t);
+  assert.equal(findDate({ name: { created_at: Math.floor(t / 1000) } }), t);
+  assert.equal(findDate({ data: { minted: String(t) }, expiry: Date.parse("2026-03-02") }), t);
+  assert.equal(findDate({ expiresAt: Date.parse("2026-03-02"), registered: true }), 0);
+  assert.equal(findDate({ address: "0x1" }), 0);
+});

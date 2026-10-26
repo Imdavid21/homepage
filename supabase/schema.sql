@@ -22,3 +22,4 @@ alter table scores add column if not exists legend boolean not null default fals
 
 -- the email each claimant registered with on Luma; server side only
 alter table entries add column if not exists email text;
+create unique index if not exists entries_email_unique on entries (lower(email)) where email is not null;
