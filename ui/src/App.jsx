@@ -21,7 +21,7 @@ function Masthead({ muted, setMuted }) {
     <header className="mast">
       <span className="mast-l" aria-hidden="true" />
       <Brands />
-      <span className="mast-r"><button type="button" className="snd" aria-pressed={!muted} onClick={() => { setMuted(!muted); HL().setMuted(!muted); }}>{muted ? "Sound off" : "Sound on"}</button><a className="snd luma" href="https://luma.com/x6m1zvfh" target="_blank" rel="noopener">Event on Luma <span aria-hidden="true">↗</span></a></span>
+      <span className="mast-r"><button type="button" className="snd" aria-pressed={!muted} onClick={() => { setMuted(!muted); HL().setMuted(!muted); }}>{muted ? "Sound off" : "Sound on"}</button><a className="snd luma" href="https://luma.com/x6m1zvfh" target="_blank" rel="noopener">Event on Luma</a></span>
     </header>
   );
 }
