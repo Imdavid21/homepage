@@ -198,15 +198,12 @@ function useLeaderboard(refresh) {
 
 /* ---------- how claiming works, with the top of the board, in the first screen ---------- */
 const fmtDay = ms => new Date(ms).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }) + " IST";
-function ClaimGuide({ info, st, lb, me }) {
-  const cards = info?.cards || 25, claimed = info ? cards - info.left : 0;
+function ClaimGuide({ info, st }) {
   const [open, setOpen] = useState(true);
   const step2 = !info ? <>Claim your card with the email you used to register on Luma.</>
     : st === "upcoming" ? <>Claim your card from {fmtDay(info.opensAt)} with the email you used to register on Luma.</>
     : st === "open" ? <>Claim your card before {fmtDay(info.closesAt)} with the email you used to register on Luma.</>
     : <>The claim window closed on {fmtDay(info.closesAt)}.</>;
-  const rows = lb?.rows || [], top = rows.slice(0, 5), mine = me && rows.find(r => r.name === me), extra = mine && mine.rank > 5 ? [mine] : [];
-  const toBoard = () => document.querySelector(".lb")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   return (
     <details className="guide" open={open} onToggle={e => setOpen(e.currentTarget.open)}>
       <summary><h2>How to claim</h2><i className="chev" aria-hidden="true" /></summary>
@@ -215,20 +212,6 @@ function ClaimGuide({ info, st, lb, me }) {
         <li><b>2</b><span>{step2}</span></li>
         <li><b>3</b><span>Collect it at House of HYPE, Mumbai, on 3 Nov. Bring the wallet behind your name.</span></li>
       </ol>
-      <div className="mini">
-        <div className="mini-h"><h3>Leaderboard</h3>{claimed > 0 && <span>{claimed} of {cards} claimed</span>}</div>
-        {!lb ? <p className="mini-e">Loading…</p> : lb.error ? <p className="mini-e">The leaderboard can't load right now.</p> : !rows.length ? <p className="mini-e">No names yet. Be the first.</p> : (
-          <ol className="mini-l">
-            {[...top, ...extra].map(r => (
-              <li key={r.name} className={(me === r.name ? "you" : "") + (r.claimed ? " got" : "")}>
-                <span className="r">{String(r.rank).padStart(2, "0")}</span><span className="n">{r.name}</span>
-                {r.claimed && <span className="c">Claimed</span>}<span className="s">{r.score}</span>
-              </li>
-            ))}
-          </ol>
-        )}
-        {rows.length > 5 && <button type="button" className="mini-all" onClick={toBoard}>See all {rows.length}</button>}
-      </div>
     </details>
   );
 }
@@ -377,7 +360,7 @@ export default function App({ socials }) {
                   <span className={"status" + (msg.err ? " err" : "")} aria-live="polite">{msg.t}</span>
                   <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
                 </motion.form>
-                <motion.div {...rise(5, reduce)}><ClaimGuide info={info} st={st} lb={lb} me={res?.name} /></motion.div>
+                <motion.div {...rise(5, reduce)}><ClaimGuide info={info} st={st} /></motion.div>
               </div>
               <div className="face back" inert={!res}>
                 {res && <ScoreCard j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} onBack={again} email={email} setEmail={setEmail} err={claimErr} />}
