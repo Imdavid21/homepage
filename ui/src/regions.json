@@ -16,7 +16,7 @@
    "id": "name",
    "n": "01",
    "label": "Name",
-   "desc": "Your .hl or .eth name. When you check, the laser writes it live, line by line, in passes that run left and right.",
+   "desc": "Your .hl or .eth name. It stays off the card until you are eligible, then the laser writes it live, line by line, in passes that run left and right.",
    "x": 92,
    "y": 846,
    "w": 420,

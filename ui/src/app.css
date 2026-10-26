@@ -405,3 +405,14 @@ h1{letter-spacing:-.02em}
 .mini-all:hover{color:var(--fg)}
 .mini-all:focus-visible{outline:1px solid var(--accent);outline-offset:3px}
 @media(max-width:1240px){.guide .mini{display:none}}
+
+/* claim by email */
+.mail{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:14px 0 6px}
+.mail label{font-size:13px;color:var(--mute)}
+.mail-row{display:grid;gap:8px;padding:6px;border:1px solid var(--line2);border-radius:20px;background:rgba(236,231,223,.025);transition:border-color .25s,box-shadow .25s}
+.mail-row:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px rgba(151,252,228,.08)}
+.mail-row input{min-width:0;border:0;outline:0;background:transparent;color:var(--fg);font:500 15px var(--sans);padding:10px 12px;text-align:left}
+.mail-row input::placeholder{color:var(--dim)}
+.score .mail-row .btn{width:100%;padding:11px 16px;font-size:14px}
+.mail-h{margin:0;font-size:12.5px;line-height:1.5;color:var(--mute);overflow-wrap:anywhere}.mail-h.err{color:var(--err)}
+.lb-retry{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}

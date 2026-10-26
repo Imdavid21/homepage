@@ -25,7 +25,7 @@ test("a new whale cannot reach 90", () => {
 });
 test("window state follows the dates", async () => {
   const { windowState } = await import("../lib/handlers.js");
-  const a = Date.parse("2026-10-23T18:30:00+05:30"), b = Date.parse("2026-10-25T18:30:00+05:30");
+  const a = Date.parse("2026-10-27T00:00:00+05:30"), b = Date.parse("2026-10-29T23:59:59+05:30");
   assert.equal(windowState(a - 1), "upcoming"); assert.equal(windowState(a), "open"); assert.equal(windowState(b - 1), "open"); assert.equal(windowState(b), "closed");
 });
 test("claims: window, eligibility, one per wallet, sold out", async () => {
@@ -34,14 +34,19 @@ test("claims: window, eligibility, one per wallet, sold out", async () => {
   const eligibleNames = []; for (let i = 0; eligibleNames.length < 3 && i < 5000; i++) { const n = "t" + i + ".hl"; if (computeScore(mockRaw(mockResolve(n).address)).score >= CONFIG.eligibleAt) eligibleNames.push(n); }
   assert.equal(eligibleNames.length, 3, "need eligible mock names");
   const now = Date.now(); CONFIG.cards = 2; CONFIG.everyone = false;
-  CONFIG.opensAt = now + 1e6; CONFIG.closesAt = now + 2e6; assert.equal((await H.claim({ name: eligibleNames[0], ip: "a" }))[0], 409);
+  CONFIG.opensAt = now + 1e6; CONFIG.closesAt = now + 2e6; assert.equal((await H.claim({ name: eligibleNames[0], email: "a@x.io", ip: "a" }))[0], 409);
   CONFIG.opensAt = now - 1e6; CONFIG.closesAt = now + 1e6;
-  assert.equal((await H.claim({ name: "nobody.hl", ip: "b" }))[0] === 403 || true, true);
-  const r1 = await H.claim({ name: eligibleNames[0], ip: "c" }); assert.equal(r1[0], 200); assert.equal(r1[1].left, 1);
-  const again = await H.claim({ name: eligibleNames[0], ip: "d" }); assert.equal(again[1].already, true); assert.equal(again[1].left, 1);
-  assert.equal((await H.claim({ name: eligibleNames[1], ip: "e" }))[1].left, 0);
-  assert.equal((await H.claim({ name: eligibleNames[2], ip: "f" }))[0], 409);
-  CONFIG.opensAt = now - 2e6; CONFIG.closesAt = now - 1e6; assert.equal((await H.claim({ name: eligibleNames[2], ip: "g" }))[0], 409);
+  assert.equal((await H.claim({ name: "nobody.hl", email: "n@x.io", ip: "b" }))[0] === 403 || true, true);
+  const r1 = await H.claim({ name: eligibleNames[0], email: "a@x.io", ip: "c" }); assert.equal(r1[0], 200); assert.equal(r1[1].left, 1);
+  const again = await H.claim({ name: eligibleNames[0], email: "a@x.io", ip: "d" }); assert.equal(again[1].already, true); assert.equal(again[1].left, 1);
+  assert.equal((await H.claim({ name: eligibleNames[1], email: "b@x.io", ip: "e" }))[1].left, 0);
+  assert.equal((await H.claim({ name: eligibleNames[2], email: "c@x.io", ip: "f" }))[0], 409);
+  // an email already used for a card cannot claim a second one; a bad email is refused
+  CONFIG.cards = 3;
+  assert.equal((await H.claim({ name: eligibleNames[2], email: "A@X.io", ip: "h" }))[0], 409);
+  assert.equal((await H.claim({ name: eligibleNames[2], email: "not-an-email", ip: "i" }))[0], 400);
+  CONFIG.cards = 2;
+  CONFIG.opensAt = now - 2e6; CONFIG.closesAt = now - 1e6; assert.equal((await H.claim({ name: eligibleNames[2], email: "c@x.io", ip: "g" }))[0], 409);
 });
 
 test("paired wallets add up and cannot repeat the main wallet", async () => {

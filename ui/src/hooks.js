@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 export const post = (p, body) => fetch(p, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then(async r => [r.ok, await r.json()]);
 
-// Server clock + claim window. Polls every 15 s and accepts fresher status from check/claim replies.
+// Server clock + claim window. Polls every 60 s and accepts fresher status from check/claim replies.
 export function useStatus() {
   const [info, setInfo] = useState(null);
   const offset = useRef(0);
@@ -10,7 +10,7 @@ export function useStatus() {
   useEffect(() => {
     let live = true;
     const load = () => fetch("/api/status").then(r => r.json()).then(j => live && apply(j)).catch(() => {});
-    load(); const id = setInterval(load, 15000); return () => { live = false; clearInterval(id); };
+    load(); const id = setInterval(load, 60000); return () => { live = false; clearInterval(id); };
   }, [apply]);
   return { info, apply, offset };
 }

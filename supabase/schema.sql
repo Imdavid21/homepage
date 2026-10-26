@@ -19,3 +19,6 @@ create table if not exists scores (
 alter table scores enable row level security; -- server side only
 create index if not exists scores_rank on scores (score desc, updated_at asc);
 alter table scores add column if not exists legend boolean not null default false;
+
+-- the email each claimant registered with on Luma; server side only
+alter table entries add column if not exists email text;

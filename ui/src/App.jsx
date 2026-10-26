@@ -111,18 +111,19 @@ function Meters({ info, now }) {
 }
 
 /* ---------- result ---------- */
+const MAILRE = /^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/;
 function verdictFor(j, st, phase) {
   if (phase === "engraving") return "Eligible. Etching your card";
   if (j.claimed) return "Your card is claimed. See you at House of HYPE.";
   if (!j.eligible) return "Not eligible this time. A score of 90 or more qualifies.";
   if (st === "closed") return "You're eligible, but claims are closed.";
   if (j.left <= 0) return "You're eligible, but all 25 cards are claimed.";
-  if (st === "upcoming") return "You're eligible. Claims open on 23 Oct, 6:30 pm IST.";
+  if (st === "upcoming") return "You're eligible. Claims open on " + fmtDay(j.opensAt) + ".";
   return "You're eligible. Claim your card before they run out.";
 }
 
-function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack }) {
-  const done = phase === "done", canClaim = done && j.eligible && !j.claimed && st === "open" && j.left > 0;
+function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack, email, setEmail, err }) {
+  const done = phase === "done", canClaim = done && j.eligible && !j.claimed && st === "open" && j.left > 0, mailOk = MAILRE.test(email.trim());
   const addr = j.address ? j.address.slice(0, 6) + "…" + j.address.slice(-4) : "";
   return (
     <div className="score" aria-live="polite">
@@ -143,9 +144,18 @@ function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack }) {
           </li>
         ))}
       </ul>
+      {canClaim && (
+        <form className="mail" onSubmit={e => { e.preventDefault(); if (mailOk && !claiming) onClaim(); }} noValidate>
+          <label htmlFor="mail">Email you used on Luma</label>
+          <div className="mail-row">
+            <input id="mail" type="email" inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false} maxLength={254} placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+            <Button type="submit" variant="accent" disabled={claiming || !mailOk}>{claiming ? "Claiming…" : "Claim your card"}</Button>
+          </div>
+          <p className={"mail-h" + (err ? " err" : "")}>{err || "Use the same email you registered with on Luma. We match it to the guest list when you collect your card."}</p>
+        </form>
+      )}
       {done && j.eligible && (
         <div className="acts">
-          {canClaim && <Button variant="accent" onClick={onClaim} disabled={claiming}>{claiming ? "Claiming…" : "Claim your card"}</Button>}
           {vid.status === "ready" ? <Button href={vid.url} download={vid.file}>Export video</Button> : <Button variant="ghost" disabled>{vid.status === "error" ? "Video not supported here" : "Preparing video…"}</Button>}
           <Button variant="ghost" onClick={onReplay} disabled={vid.status === "rec"}>Replay engraving</Button>
         </div>
@@ -172,33 +182,40 @@ const Detail = ({ r }) => (
     </ul>
   </div>
 );
+// the board refreshes itself every 90 s and right away (uncached) after you check a name
 function useLeaderboard(refresh) {
-  const [lb, setLb] = useState(null);
-  useEffect(() => { let live = true; fetch("/api/leaderboard").then(r => r.json()).then(j => live && setLb(j)).catch(() => live && setLb({ rows: [], cards: 25 })); return () => { live = false; }; }, [refresh]);
-  return lb;
+  const [lb, setLb] = useState(null), [tick, setTick] = useState(0), first = useRef(true);
+  useEffect(() => { const id = setInterval(() => setTick(t => t + 1), 90000); return () => clearInterval(id); }, []);
+  useEffect(() => {
+    let live = true; const fresh = !first.current && !!refresh; first.current = false;
+    fetch("/api/leaderboard" + (fresh ? "?fresh=1&t=" + Date.now() : "")).then(async r => { const j = await r.json().catch(() => ({})); if (!r.ok || !j.rows) throw new Error(j.error || "unavailable"); return j; })
+      .then(j => live && setLb(j)).catch(() => live && setLb(v => v && v.rows ? v : { rows: [], cards: 25, error: true }));
+    return () => { live = false; };
+  }, [refresh, tick]);
+  return [lb, () => { setLb(null); setTick(t => t + 1); }];
 }
 
 /* ---------- how claiming works, with the top of the board, in the first screen ---------- */
 const fmtDay = ms => new Date(ms).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }) + " IST";
 function ClaimGuide({ info, st, lb, me }) {
   const cards = info?.cards || 25, claimed = info ? cards - info.left : 0;
-  const step2 = !info ? <>Claim your card while the window is open. {cards} cards, one per wallet.</>
-    : st === "upcoming" ? <>Claim your card when the window opens on {fmtDay(info.opensAt)}. 25 cards, one per wallet.</>
-    : st === "open" ? <>Claim your card before {fmtDay(info.closesAt)}. {cards} cards, one per wallet, {info.left} left.</>
-    : <>The claim window closed on {info ? fmtDay(info.closesAt) : "25 Oct"}.</>;
+  const step2 = !info ? <>Claim your card with the email you used to register on Luma. {cards} cards, one per wallet.</>
+    : st === "upcoming" ? <>Claim your card from {fmtDay(info.opensAt)} with the email you used to register on Luma. {cards} cards, one per wallet.</>
+    : st === "open" ? <>Claim your card before {fmtDay(info.closesAt)} with the email you used to register on Luma. {cards} cards, one per wallet, {info.left} left.</>
+    : <>The claim window closed on {fmtDay(info.closesAt)}.</>;
   const rows = lb?.rows || [], top = rows.slice(0, 5), mine = me && rows.find(r => r.name === me), extra = mine && mine.rank > 5 ? [mine] : [];
   const toBoard = () => document.querySelector(".lb")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   return (
     <section className="guide" aria-label="How to claim">
       <h2>How to claim</h2>
       <ol className="steps">
-        <li><b>1</b><span>Check your .hl or .eth name. Your onchain score puts it on the leaderboard.</span></li>
+        <li><b>1</b><span>Check your .hl or .eth name. The laser etches it onto the card the moment you are eligible.</span></li>
         <li><b>2</b><span>{step2}</span></li>
         <li><b>3</b><span>Collect it at House of HYPE, Mumbai, on 3 Nov. Bring the wallet behind your name.</span></li>
       </ol>
       <div className="mini">
         <div className="mini-h"><h3>Leaderboard</h3>{claimed > 0 && <span>{claimed} of {cards} claimed</span>}</div>
-        {!lb ? <p className="mini-e">Loading…</p> : !rows.length ? <p className="mini-e">No names yet. Be the first.</p> : (
+        {!lb ? <p className="mini-e">Loading…</p> : lb.error ? <p className="mini-e">The leaderboard can't load right now.</p> : !rows.length ? <p className="mini-e">No names yet. Be the first.</p> : (
           <ol className="mini-l">
             {[...top, ...extra].map(r => (
               <li key={r.name} className={(me === r.name ? "you" : "") + (r.claimed ? " got" : "")}>
@@ -214,13 +231,13 @@ function ClaimGuide({ info, st, lb, me }) {
   );
 }
 
-function Leaderboard({ me, lb }) {
+function Leaderboard({ me, lb, retry }) {
   const [open, setOpen] = useState(null);
   const rows = lb?.rows || [], cards = lb?.cards || 25;
   return (
     <section className="lb" aria-label="Leaderboard">
       <div className="lb-h"><h2>Leaderboard</h2></div>
-      {!lb ? <p className="lb-empty">Loading…</p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
+      {!lb ? <p className="lb-empty">Loading…</p> : lb.error ? <p className="lb-empty">The leaderboard can't load right now. <button type="button" className="lb-retry" onClick={retry}>Try again</button></p> : !rows.length ? <p className="lb-empty">No names checked yet. Be the first.</p> : (
         <ol className="lb-list">
           {rows.map(r => {
             const on = open === r.name, you = me === r.name;
@@ -246,8 +263,8 @@ function Leaderboard({ me, lb }) {
 /* ---------- terms ---------- */
 function Terms() {
   const T = [
-    ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. Top 25 eligible names get one."],
-    ["48h", "Claim window", "Opens 23 October, 6:30 PM IST. Closes 25 October, 6:30 PM IST."],
+    ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet and per email."],
+    ["27 to 29 Oct", "Claim window", "Opens 27 October. Closes 29 October, 11:59 PM IST. Claim with the email you used to register on Luma."],
     ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
   ];
   return (
@@ -279,38 +296,39 @@ export default function App({ socials }) {
   const [msg, setMsg] = useState({ t: "", err: false }), [checking, setChecking] = useState(false), [claiming, setClaiming] = useState(false), [muted, setMuted] = useState(false);
   const [vid, setVid] = useState({ status: "idle", left: 0 }), deb = useRef();
   const [wallets, setWallets] = useState([]), [pair, setPair] = useState(false);
-  const lb = useLeaderboard(res?.name + (res?.claimed ? ":c" : ""));
+  const [lb, retryLb] = useLeaderboard(res ? res.name + (res.claimed ? ":c" : "") : "");
+  const [email, setEmail] = useState(""), [claimErr, setClaimErr] = useState("");
   const ADDR = /^0x[a-fA-F0-9]{40}$/, cleanW = () => wallets.map(w => w.trim()).filter(Boolean);
   const busy = phase === "reading" || phase === "engraving" || checking;
   const norm = v => v.trim().toLowerCase(), okName = n => HL().validHl(n) || HL().validEth(n);
 
   const onType = e => {
     if (busy) return; const v = e.target.value, n = norm(v); setName(v); setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 });
-    setMsg(!n ? { t: "", err: false } : okName(n) ? { t: "This is how it will be etched.", err: false } : { t: "Names end in .hl or .eth", err: true });
-    clearTimeout(deb.current); deb.current = setTimeout(() => HL().setName(n), 250);
+    setClaimErr(""); HL().clearName();
+    setMsg(!n ? { t: "", err: false } : okName(n) ? { t: "", err: false } : { t: "Names end in .hl or .eth", err: true });
   };
   const submit = async e => {
     e.preventDefault(); if (busy) return; const n = norm(name);
     if (!okName(n)) { setMsg({ t: "Enter a .hl or .eth name.", err: true }); return; }
     if (cleanW().some(w => !ADDR.test(w))) { setMsg({ t: "Paired wallets must be 0x addresses.", err: true }); return; }
-    HL().unlock(); setChecking(true); setMsg({ t: "Checking " + n + "…", err: false }); setRes(null); setVid({ status: "idle", left: 0 }); HL().setName(n);
+    HL().unlock(); setChecking(true); setMsg({ t: "Checking " + n + "…", err: false }); setRes(null); setClaimErr(""); setVid({ status: "idle", left: 0 });
     try {
       const [ok, j] = await post("/api/check", { name: n, wallets: cleanW() });
       if (!ok) { setMsg({ t: j.error || "Something went wrong.", err: true }); setChecking(false); return; }
       apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("reading");
       await sleep(reduce ? 200 : 1200);
       setRes(j);
-      if (j.eligible) { setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); }
+      if (j.eligible) { HL().setName(j.name); setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); }
       setPhase("done"); show(".console", "start");
       if (j.eligible) makeVideo(j);
     } catch (err) { console.error("CHK", err); setMsg({ t: "Network error. Try again.", err: true }); setChecking(false); setPhase("idle"); }
   };
-  const again = () => { if (phase === "engraving" || phase === "reading") return; setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 }); setMsg({ t: "", err: false }); };
+  const again = () => { if (phase === "engraving" || phase === "reading") return; HL().clearName(); setClaimErr(""); setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 }); setMsg({ t: "", err: false }); };
   const replay = async () => { if (phase !== "done") return; setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); setPhase("done"); show(".console", "start"); };
   const claim = async () => {
-    setClaiming(true);
-    try { const [ok, j] = await post("/api/claim", { name: norm(name), wallets: cleanW() }); if (j && j.now) apply(j); if (ok) setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left })); else setMsg({ t: j.error || "Couldn't claim. Try again.", err: true }); }
-    catch { setMsg({ t: "Network error. Try again.", err: true }); }
+    setClaiming(true); setClaimErr("");
+    try { const [ok, j] = await post("/api/claim", { name: norm(res?.name || name), wallets: cleanW(), email: email.trim() }); if (j && j.now) apply(j); if (ok) setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left })); else setClaimErr(j.error || "Couldn't claim. Try again."); }
+    catch { setClaimErr("Network error. Try again."); }
     setClaiming(false);
   };
   const makeVideo = async j => {
@@ -360,12 +378,12 @@ export default function App({ socials }) {
                 <motion.div {...rise(5, reduce)}><ClaimGuide info={info} st={st} lb={lb} me={res?.name} /></motion.div>
               </div>
               <div className="face back" inert={!res}>
-                {res && <ScoreCard j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} onBack={again} />}
+                {res && <ScoreCard j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} onBack={again} email={email} setEmail={setEmail} err={claimErr} />}
               </div>
             </div>
           </aside>
         </div>
-        <Leaderboard me={res?.name} lb={lb} />
+        <Leaderboard me={res?.name} lb={lb} retry={retryLb} />
         <Terms />
       </main>
       <Footer socials={socials} />

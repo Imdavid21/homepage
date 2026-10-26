@@ -17,7 +17,7 @@
     back: () => "hex",
   };
   // rows per pass for each job, in texture pixels: two dot rows of the shape, a few scan lines of the name, one text row of the dump
-  const PITCH = { shape: 18, name: 5, no: 7, hex: 44 };
+  const PITCH = { shape: 18, name: 5, no: 7, get hex() { return backPitch(); } };
   const LIMIT = { shape: [10, 40], name: [6, 16], no: [4, 8], hex: [10, 24] };
   function planJob(id, face, px, idxs, k2t, mw) {
     // px: pixel list for this job [k...]. Returns passes, each with its own x span, and the time of every pixel.
@@ -32,7 +32,7 @@
   }
   // without the 3D engine (or with reduced motion) the sound still needs a rhythm to follow
   const fakePasses = (id, face, n, x0, x1, y0, y1) => { const [t0, t1] = TL[id], pd = (t1 - t0) / n; return Array.from({ length: n }, (_, i) => ({ face, job: id, t0: t0 + i * pd, t1: t0 + i * pd + pd * .84, x0, x1, y0: y0 + i * (y1 - y0) / n, y1: y0 + (i + 1) * (y1 - y0) / n, dir: i % 2 ? -1 : 1 })); };
-  const FALLBACK_PLAN = [...fakePasses("shape", "front", 32, 400, 1190, 200, 790), ...fakePasses("name", "front", 9, 100, 460, 856, 906), ...fakePasses("no", "front", 7, 1320, 1475, 872, 920), ...fakePasses("hex", "back", 18, 100, 1485, 106, 898)];
+  const FALLBACK_PLAN = [...fakePasses("shape", "front", 32, 400, 1190, 200, 790), ...fakePasses("name", "front", 9, 100, 460, 856, 906), ...fakePasses("no", "front", 7, 1320, 1475, 872, 920), ...fakePasses("hex", "back", backRows(), 100, 1485, 106, 898)];
   function headAt(plan, face, p) {
     // where the beam is at progress p on this face, or null while it is blanked (between passes, before, after)
     for (const s of plan) if (s.face === face && p >= s.t0 && p <= s.t1) { const u = (p - s.t0) / (s.t1 - s.t0), a = s.dir > 0 ? s.x0 : s.x1, b = s.dir > 0 ? s.x1 : s.x0; return [a + (b - a) * u, (s.y0 + s.y1) / 2, s]; }
@@ -358,7 +358,8 @@
   }
   window.HL = {
     validHl, validEth, reduce, caption: capFor,
-    setName(n) { currentName = validHl(n) || validEth(n) ? n : "yourname.hl"; paintAll(); },
+    setName(n) { named = validHl(n) || validEth(n); currentName = named ? n : "yourname.hl"; paintAll(); },
+    clearName() { if (!named) return; named = false; currentName = "yourname.hl"; paintAll(); },
     showSide, unlock: ac, setMuted(m) { muted = m; },
     engrave: engraveLive, record: recordVideo,
     track: { set: trackSet, hide(v) { trk.hide = !!v; if (!v) trk.t0 = performance.now(); }, focus(id) { trk.focus = id; } },
