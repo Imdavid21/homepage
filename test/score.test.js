@@ -33,7 +33,7 @@ test("claims: window, eligibility, one per wallet, sold out", async () => {
   const H = await import("../lib/handlers.js"), { CONFIG } = await import("../lib/config.js"), { mockResolve, mockRaw } = await import("../lib/mock.js");
   const eligibleNames = []; for (let i = 0; eligibleNames.length < 3 && i < 5000; i++) { const n = "t" + i + ".hl"; if (computeScore(mockRaw(mockResolve(n).address)).score >= CONFIG.eligibleAt) eligibleNames.push(n); }
   assert.equal(eligibleNames.length, 3, "need eligible mock names");
-  const now = Date.now(); CONFIG.cards = 2; CONFIG.everyone = false;
+  const now = Date.now(); CONFIG.cards = 2; CONFIG.everyone = false; assert.equal(CONFIG.eligibleAt, 80);
   CONFIG.opensAt = now + 1e6; CONFIG.closesAt = now + 2e6; assert.equal((await H.claim({ name: eligibleNames[0], email: "a@x.io", ip: "a" }))[0], 409);
   CONFIG.opensAt = now - 1e6; CONFIG.closesAt = now + 1e6;
   assert.equal((await H.claim({ name: "nobody.hl", email: "n@x.io", ip: "b" }))[0] === 403 || true, true);
@@ -70,4 +70,18 @@ test("HLN registration date is found wherever the field lives", async () => {
   assert.equal(findDate({ data: { minted: String(t) }, expiry: Date.parse("2026-03-02") }), t);
   assert.equal(findDate({ expiresAt: Date.parse("2026-03-02"), registered: true }), 0);
   assert.equal(findDate({ address: "0x1" }), 0);
+});
+
+test("one name, one card: .hl and .eth of the same name cannot both claim; below 80 cannot claim", async () => {
+  process.env.MOCK = "1";
+  const H = await import("../lib/handlers.js"), { CONFIG } = await import("../lib/config.js"), { mockResolve, mockRaw } = await import("../lib/mock.js");
+  const ok = (n) => computeScore(mockRaw(mockResolve(n).address)).score >= CONFIG.eligibleAt;
+  let base = null; for (let i = 0; i < 20000 && !base; i++) { const b = "pair" + i; if (ok(b + ".hl") && ok(b + ".eth")) base = b; }
+  assert.ok(base, "need a base name eligible on both");
+  let low = null; for (let i = 0; i < 20000 && !low; i++) { const n = "low" + i + ".hl"; if (!ok(n)) low = n; }
+  const now = Date.now(); CONFIG.cards = 25; CONFIG.everyone = false; CONFIG.opensAt = now - 1e6; CONFIG.closesAt = now + 1e6;
+  assert.equal((await H.claim({ name: low, email: "low@x.io", ip: "l1" }))[0], 403);
+  assert.equal((await H.claim({ name: base + ".hl", email: "p1@x.io", ip: "p1" }))[0], 200);
+  const c = await H.check({ name: base + ".eth", ip: "p2" }); assert.equal(c[1].nameTaken, true); assert.equal(c[1].threshold, 80);
+  const r = await H.claim({ name: base + ".eth", email: "p2@x.io", ip: "p3" }); assert.equal(r[0], 409); assert.match(r[1].error, /already been claimed/);
 });

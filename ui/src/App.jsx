@@ -115,7 +115,8 @@ const MAILRE = /^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/;
 function verdictFor(j, st, phase) {
   if (phase === "engraving") return "Eligible. Etching your card";
   if (j.claimed) return "Your card is claimed. See you at House of HYPE.";
-  if (!j.eligible) return "Not eligible this time. A score of 90 or more qualifies.";
+  if (j.nameTaken) return "A card for \"" + j.name.replace(/\.(hl|eth)$/, "") + "\" has already been claimed.";
+  if (!j.eligible) return "Not eligible this time. A score of " + (j.threshold || 80) + " or more is needed to claim.";
   if (st === "closed") return "You're eligible, but claims are closed.";
   if (j.left <= 0) return "You're eligible, but all 25 cards are claimed.";
   if (st === "upcoming") return "You're eligible. Claims open on " + fmtDay(j.opensAt) + ".";
@@ -123,14 +124,14 @@ function verdictFor(j, st, phase) {
 }
 
 function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack, email, setEmail, err }) {
-  const done = phase === "done", canClaim = done && j.eligible && !j.claimed && st === "open" && j.left > 0, mailOk = MAILRE.test(email.trim());
+  const ok = j.eligible && !j.nameTaken, done = phase === "done", canClaim = done && ok && !j.claimed && st === "open" && j.left > 0, mailOk = MAILRE.test(email.trim());
   const addr = j.address ? j.address.slice(0, 6) + "…" + j.address.slice(-4) : "";
   return (
     <div className="score" aria-live="polite">
       <div className="score-top">
-        <Ring score={Math.max(0, Math.min(100, j.score || 0))} ok={j.eligible} />
+        <Ring score={Math.max(0, Math.min(100, j.score || 0))} ok={ok} />
         <div className="score-id">
-          <h2 className={"verdict" + (j.eligible ? " ok" : "")}>{verdictFor(j, st, phase)}</h2>
+          <h2 className={"verdict" + (ok ? " ok" : "")}>{verdictFor(j, st, phase)}</h2>
           <p className="who"><span>{j.name}</span>{addr && <span className="mono">{addr}</span>}{j.wallets > 1 && <span className="mono">+{j.wallets - 1} paired</span>}</p>
         </div>
       </div>
@@ -154,7 +155,7 @@ function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack, ema
           <p className={"mail-h" + (err ? " err" : "")}>{err || "Use the same email you registered with on Luma. We match it to the guest list when you collect your card."}</p>
         </form>
       )}
-      {done && j.eligible && (
+      {done && ok && (
         <div className="acts">
           {vid.status === "ready" ? <Button href={vid.url} download={vid.file}>Export video</Button> : <Button variant="ghost" disabled>{vid.status === "error" ? "Video not supported here" : "Preparing video…"}</Button>}
           <Button variant="ghost" onClick={onReplay} disabled={vid.status === "rec"}>Replay engraving</Button>
@@ -210,7 +211,7 @@ function ClaimGuide({ info, st, lb, me }) {
     <details className="guide" open={open} onToggle={e => setOpen(e.currentTarget.open)}>
       <summary><h2>How to claim</h2><i className="chev" aria-hidden="true" /></summary>
       <ol className="steps">
-        <li><b>1</b><span>Check your .hl or .eth name.</span></li>
+        <li><b>1</b><span>Check your .hl or .eth name. You need a score of {info?.threshold || 80} or more to claim.</span></li>
         <li><b>2</b><span>{step2}</span></li>
         <li><b>3</b><span>Collect it at House of HYPE, Mumbai, on 3 Nov. Bring the wallet behind your name.</span></li>
       </ol>
@@ -264,8 +265,8 @@ function Leaderboard({ me, lb, retry }) {
 /* ---------- terms ---------- */
 function Terms() {
   const T = [
-    ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet and per email."],
-    ["27 to 29 Oct", "Claim window", "Opens 27 October. Closes 29 October, 11:59 PM IST. Claim with the email you used to register on Luma."],
+    ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name, whether it is the .hl or the .eth."],
+    ["27 to 29 Oct", "Claim window", "Opens 27 October. Closes 29 October, 11:59 PM IST. A score of 80 or more is needed. Claim with the email you used to register on Luma."],
     ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
   ];
   return (
@@ -319,9 +320,9 @@ export default function App({ socials }) {
       apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("reading");
       await sleep(reduce ? 200 : 1200);
       setRes(j);
-      if (j.eligible) { HL().setName(j.name); setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); }
+      if (j.eligible && !j.nameTaken) { HL().setName(j.name); setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); }
       setPhase("done"); show(".console", "start");
-      if (j.eligible) makeVideo(j);
+      if (j.eligible && !j.nameTaken) makeVideo(j);
     } catch (err) { console.error("CHK", err); setMsg({ t: "Network error. Try again.", err: true }); setChecking(false); setPhase("idle"); }
   };
   const again = () => { if (phase === "engraving" || phase === "reading") return; HL().clearName(); setClaimErr(""); setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 }); setMsg({ t: "", err: false }); };
