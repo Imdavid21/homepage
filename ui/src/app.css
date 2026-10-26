@@ -386,7 +386,12 @@ h1{letter-spacing:-.02em}
 
 /* ---------- how to claim, with the top of the board, in the first screen ---------- */
 .guide{margin-top:6px;padding-top:16px;border-top:1px solid var(--line);text-align:left}
-.guide h2{margin:0 0 10px;font:400 20px/1.1 var(--serif);color:var(--bone)}
+.guide summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;margin:0 0 10px}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary:focus-visible{outline:1px solid var(--accent);outline-offset:4px}
+.guide h2{margin:0;font:400 20px/1.1 var(--serif);color:var(--bone)}
+.guide .chev{width:8px;height:8px;border-right:1.5px solid var(--mute);border-bottom:1.5px solid var(--mute);transform:rotate(-135deg) translate(-2px,-2px);transition:transform .25s}
+.guide:not([open]) summary{margin-bottom:0}.guide:not([open]) .chev{transform:rotate(45deg)}
 .steps{list-style:none;margin:0;padding:0;display:grid;gap:9px}
 .steps li{display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:baseline;font-size:12.5px;line-height:1.45;color:var(--mute)}
 .steps b{font:500 11px/1 var(--mono);color:#060606;background:var(--bone);padding:3px 0;text-align:center;align-self:start;margin-top:2px}

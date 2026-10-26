@@ -199,17 +199,18 @@ function useLeaderboard(refresh) {
 const fmtDay = ms => new Date(ms).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }) + " IST";
 function ClaimGuide({ info, st, lb, me }) {
   const cards = info?.cards || 25, claimed = info ? cards - info.left : 0;
-  const step2 = !info ? <>Claim your card with the email you used to register on Luma. {cards} cards, one per wallet.</>
-    : st === "upcoming" ? <>Claim your card from {fmtDay(info.opensAt)} with the email you used to register on Luma. {cards} cards, one per wallet.</>
-    : st === "open" ? <>Claim your card before {fmtDay(info.closesAt)} with the email you used to register on Luma. {cards} cards, one per wallet, {info.left} left.</>
+  const [open, setOpen] = useState(true);
+  const step2 = !info ? <>Claim your card with the email you used to register on Luma.</>
+    : st === "upcoming" ? <>Claim your card from {fmtDay(info.opensAt)} with the email you used to register on Luma.</>
+    : st === "open" ? <>Claim your card before {fmtDay(info.closesAt)} with the email you used to register on Luma.</>
     : <>The claim window closed on {fmtDay(info.closesAt)}.</>;
   const rows = lb?.rows || [], top = rows.slice(0, 5), mine = me && rows.find(r => r.name === me), extra = mine && mine.rank > 5 ? [mine] : [];
   const toBoard = () => document.querySelector(".lb")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   return (
-    <section className="guide" aria-label="How to claim">
-      <h2>How to claim</h2>
+    <details className="guide" open={open} onToggle={e => setOpen(e.currentTarget.open)}>
+      <summary><h2>How to claim</h2><i className="chev" aria-hidden="true" /></summary>
       <ol className="steps">
-        <li><b>1</b><span>Check your .hl or .eth name. The laser etches it onto the card the moment you are eligible.</span></li>
+        <li><b>1</b><span>Check your .hl or .eth name.</span></li>
         <li><b>2</b><span>{step2}</span></li>
         <li><b>3</b><span>Collect it at House of HYPE, Mumbai, on 3 Nov. Bring the wallet behind your name.</span></li>
       </ol>
@@ -227,7 +228,7 @@ function ClaimGuide({ info, st, lb, me }) {
         )}
         {rows.length > 5 && <button type="button" className="mini-all" onClick={toBoard}>See all {rows.length}</button>}
       </div>
-    </section>
+    </details>
   );
 }
 
