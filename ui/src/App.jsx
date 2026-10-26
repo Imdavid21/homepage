@@ -32,14 +32,14 @@ const byY = (a, b) => a.y - b.y || a.x - b.x;
 function Callout({ g, i, focus, setFocus }) {
   const left = g.side === "l", title = g.id === "card";
   const head = title
-    ? <h3>{g.label}</h3>
+    ? <h4>{g.label}</h4>
     : left ? <><h4>{g.label}</h4><span className="sep">|</span><b>{g.n}</b></> : <><b>{g.n}</b><span className="sep">|</span><h4>{g.label}</h4></>;
   return (
     <motion.li data-co={g.id} className={"co " + g.side + (title ? " title" : "") + (focus === g.id ? " on" : "")} style={{ "--dy": (OFF[g.side][i % OFF[g.side].length]) + "px" }}
       initial={{ opacity: 0, x: left ? -18 : 18 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: .55, delay: .08 * i + .1, ease }}
       onMouseEnter={() => setFocus(g.id, true)} onMouseLeave={() => setFocus(null, false)} onClick={() => setFocus(g.id, true)}>
       <div className="co-h">{head}</div>
-      <p className="co-m">{title ? g.kicker : g.meta}</p>
+      {(title ? g.kicker : g.meta) && <p className="co-m">{title ? g.kicker : g.meta}</p>}
       <p className="co-d">{g.desc}</p>
     </motion.li>
   );
@@ -172,9 +172,50 @@ const Detail = ({ r }) => (
     </ul>
   </div>
 );
-function Leaderboard({ me, refresh }) {
-  const [lb, setLb] = useState(null), [open, setOpen] = useState(null);
+function useLeaderboard(refresh) {
+  const [lb, setLb] = useState(null);
   useEffect(() => { let live = true; fetch("/api/leaderboard").then(r => r.json()).then(j => live && setLb(j)).catch(() => live && setLb({ rows: [], cards: 25 })); return () => { live = false; }; }, [refresh]);
+  return lb;
+}
+
+/* ---------- how claiming works, with the top of the board, in the first screen ---------- */
+const fmtDay = ms => new Date(ms).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }) + " IST";
+function ClaimGuide({ info, st, lb, me }) {
+  const cards = info?.cards || 25, claimed = info ? cards - info.left : 0;
+  const step2 = !info ? <>Claim your card while the window is open. {cards} cards, one per wallet.</>
+    : st === "upcoming" ? <>Claim your card when the window opens on {fmtDay(info.opensAt)}. 25 cards, one per wallet.</>
+    : st === "open" ? <>Claim your card before {fmtDay(info.closesAt)}. {cards} cards, one per wallet, {info.left} left.</>
+    : <>The claim window closed on {info ? fmtDay(info.closesAt) : "25 Oct"}.</>;
+  const rows = lb?.rows || [], top = rows.slice(0, 5), mine = me && rows.find(r => r.name === me), extra = mine && mine.rank > 5 ? [mine] : [];
+  const toBoard = () => document.querySelector(".lb")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  return (
+    <section className="guide" aria-label="How to claim">
+      <h2>How to claim</h2>
+      <ol className="steps">
+        <li><b>1</b><span>Check your .hl or .eth name. Your onchain score puts it on the leaderboard.</span></li>
+        <li><b>2</b><span>{step2}</span></li>
+        <li><b>3</b><span>Collect it at House of HYPE, Mumbai, on 3 Nov. Bring the wallet behind your name.</span></li>
+      </ol>
+      <div className="mini">
+        <div className="mini-h"><h3>Leaderboard</h3>{claimed > 0 && <span>{claimed} of {cards} claimed</span>}</div>
+        {!lb ? <p className="mini-e">Loading…</p> : !rows.length ? <p className="mini-e">No names yet. Be the first.</p> : (
+          <ol className="mini-l">
+            {[...top, ...extra].map(r => (
+              <li key={r.name} className={(me === r.name ? "you" : "") + (r.claimed ? " got" : "")}>
+                <span className="r">{String(r.rank).padStart(2, "0")}</span><span className="n">{r.name}</span>
+                {r.claimed && <span className="c">Claimed</span>}<span className="s">{r.score}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+        {rows.length > 5 && <button type="button" className="mini-all" onClick={toBoard}>See all {rows.length}</button>}
+      </div>
+    </section>
+  );
+}
+
+function Leaderboard({ me, lb }) {
+  const [open, setOpen] = useState(null);
   const rows = lb?.rows || [], cards = lb?.cards || 25;
   return (
     <section className="lb" aria-label="Leaderboard">
@@ -238,6 +279,7 @@ export default function App({ socials }) {
   const [msg, setMsg] = useState({ t: "", err: false }), [checking, setChecking] = useState(false), [claiming, setClaiming] = useState(false), [muted, setMuted] = useState(false);
   const [vid, setVid] = useState({ status: "idle", left: 0 }), deb = useRef();
   const [wallets, setWallets] = useState([]), [pair, setPair] = useState(false);
+  const lb = useLeaderboard(res?.name + (res?.claimed ? ":c" : ""));
   const ADDR = /^0x[a-fA-F0-9]{40}$/, cleanW = () => wallets.map(w => w.trim()).filter(Boolean);
   const busy = phase === "reading" || phase === "engraving" || checking;
   const norm = v => v.trim().toLowerCase(), okName = n => HL().validHl(n) || HL().validEth(n);
@@ -315,6 +357,7 @@ export default function App({ socials }) {
                   <span className={"status" + (msg.err ? " err" : "")} aria-live="polite">{msg.t}</span>
                   <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
                 </motion.form>
+                <motion.div {...rise(5, reduce)}><ClaimGuide info={info} st={st} lb={lb} me={res?.name} /></motion.div>
               </div>
               <div className="face back" inert={!res}>
                 {res && <ScoreCard j={res} phase={phase} st={st} onClaim={claim} claiming={claiming} onReplay={replay} vid={vid} onBack={again} />}
@@ -322,7 +365,7 @@ export default function App({ socials }) {
             </div>
           </aside>
         </div>
-        <Leaderboard me={res?.name} refresh={res?.name} />
+        <Leaderboard me={res?.name} lb={lb} />
         <Terms />
       </main>
       <Footer socials={socials} />

@@ -367,3 +367,41 @@ html,body{overflow-x:hidden}
   .deck .co-h{gap:6px}.deck .co-h b{font-size:10px;padding:3px 4px}
   .deck .stage{aspect-ratio:4/3}
 }
+
+/* ---------- display face: Gilda Display. One weight, no italic, so emphasis is colour and never a synthesised slant ---------- */
+:root{--serif:"Gilda Display",Georgia,"Times New Roman",serif}
+body{font-synthesis:none}
+h1 i,.co h4,.co h3,.verdict,.mq-row{font-style:normal}
+h1{letter-spacing:-.02em}
+.console h1{white-space:normal;text-wrap:balance;font-size:clamp(26px,2.2vw,32px);letter-spacing:-.02em;line-height:1.08}
+@media(max-width:1240px){.console h1{font-size:clamp(26px,7vw,34px)}}
+.co h4{font-size:17px;line-height:1.15;letter-spacing:-.005em}
+.co.title h4{font-size:17px}
+.verdict{letter-spacing:-.01em}.console .verdict{font-size:20px}
+
+/* ---------- the countdown and the card count sit at the size of the words around them ---------- */
+.strip .pair,.console .strip .pair{font:500 13px/1 var(--mono);letter-spacing:0}
+.strip .cu em{font-size:12px}
+@media(max-width:560px){.strip .pair{font-size:13px}}
+
+/* ---------- how to claim, with the top of the board, in the first screen ---------- */
+.guide{margin-top:6px;padding-top:16px;border-top:1px solid var(--line);text-align:left}
+.guide h2{margin:0 0 10px;font:400 20px/1.1 var(--serif);color:var(--bone)}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+.steps li{display:grid;grid-template-columns:20px 1fr;gap:10px;align-items:baseline;font-size:12.5px;line-height:1.45;color:var(--mute)}
+.steps b{font:500 11px/1 var(--mono);color:#060606;background:var(--bone);padding:3px 0;text-align:center;align-self:start;margin-top:2px}
+.mini{margin-top:16px;border:1px solid var(--line);border-radius:2px;padding:10px 12px 8px}
+.mini-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}
+.mini-h h3{margin:0;font:400 16px/1 var(--serif);color:var(--bone)}.mini-h span{font:500 11.5px var(--mono);color:var(--accent)}
+.mini-l{list-style:none;margin:0;padding:0}
+.mini-l li{display:grid;grid-template-columns:24px minmax(0,1fr) auto auto;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid var(--line);font-size:13px}
+.mini-l li:first-child{border-top:0}
+.mini-l .r{font:400 11px var(--mono);color:var(--dim)}.mini-l .n{color:var(--bone);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini-l .s{font:500 13px var(--mono);color:var(--bone);text-align:right;min-width:2ch}
+.mini-l .c{font:500 10.5px var(--mono);color:var(--accent)}
+.mini-l li.you .n{color:var(--accent)}
+.mini-e{margin:4px 0;font-size:12.5px;color:var(--mute)}
+.mini-all{all:unset;cursor:pointer;display:inline-block;margin-top:6px;font-size:12.5px;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
+.mini-all:hover{color:var(--fg)}
+.mini-all:focus-visible{outline:1px solid var(--accent);outline-offset:3px}
+@media(max-width:1240px){.guide .mini{display:none}}

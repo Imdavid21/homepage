@@ -4,14 +4,13 @@
    "id": "card",
    "n": "00",
    "label": "Front",
-   "desc": "One object and two lines. The Hyperliquid shape in aquamarine dots, your name bottom left, your number bottom right.",
+   "desc": "The Hyperliquid mark, your name, and your edition number.",
    "x": 0,
    "y": 0,
    "w": 1585,
    "h": 1000,
    "side": "l",
-   "meta": "",
-   "kicker": "Side one | The face"
+   "meta": ""
   },
   {
    "id": "name",
@@ -55,14 +54,13 @@
    "id": "card",
    "n": "00",
    "label": "Back",
-   "desc": "The card's own bytes as a hex dump: offsets, sixteen bytes a row and a readable column. Your namehash is inside, so no two of the 25 dumps match.",
+   "desc": "Your card's own bytes: the HYPE genesis record, your namehash and the two marks.",
    "x": 0,
    "y": 0,
    "w": 1585,
    "h": 1000,
    "side": "l",
-   "meta": "",
-   "kicker": "Side two | The file"
+   "meta": ""
   },
   {
    "id": "brands",
