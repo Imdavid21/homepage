@@ -111,11 +111,11 @@ function mapLuma(rows) {
     const li = clip(get(r, 'linkedin'), 200);
     out.push({
       id, name,
-      x: handle(get(r, 'x'), 'x\\.com|twitter\\.com'),
-      tg: handle(get(r, 'tg'), 't\\.me|telegram\\.me'),
+      // published: name, X handle, photo, company and role
+      x: handle(get(r, 'x'), '(mobile\\.)?x\\.com|(mobile\\.)?twitter\\.com'),
       company: clip(get(r, 'company'), 80),
       title: clip(get(r, 'title'), 80),
-      linkedin: li && /^https?:\/\/([a-z]+\.)?linkedin\.com\//i.test(li) ? li : null,
+      tg: null, linkedin: null,
       updated_at: new Date().toISOString(),
     });
   }
@@ -130,6 +130,14 @@ export default {
       const cfg = await config();
       if (request.method === 'GET') {
         const code = (url.searchParams.get('code') || '').trim().toLowerCase();
+        // admin: fill in missing profile photos (?admin=KEY&photos=1)
+        if (cfg.admin_key && url.searchParams.get('admin') === cfg.admin_key && url.searchParams.get('photos')) {
+          const missing = await sb('hoh_guests?select=id,x,tg&avatar=is.null&x=not.is.null&limit=400');
+          await withPhotos(missing);
+          let found = 0;
+          for (const g of missing) if (g.avatar) { found++; await sb(`hoh_guests?id=eq.${encodeURIComponent(g.id)}`, { method: 'PATCH', body: JSON.stringify({ avatar: g.avatar }), headers: { prefer: 'return=minimal' } }); }
+          return json({ ok: true, checked: missing.length, found });
+        }
         if (!code || code !== String(cfg.attendee_code || '').toLowerCase()) return json({ error: 'code' }, 401);
         const guests = await sb('hoh_guests?select=id,name,x,tg,company,title,linkedin,avatar&order=name.asc&limit=2000');
         return json({ guests });
