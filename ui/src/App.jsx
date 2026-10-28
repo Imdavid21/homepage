@@ -246,20 +246,13 @@ function Leaderboard({ me, lb, retry }) {
 }
 
 /* ---------- terms ---------- */
-const R = [["Right to decline", "Claiming a card does not guarantee you receive one. We may decline or cancel any claim at our discretion, and our decisions are final."], ["Claims and event approval", "Card claims and event approvals are decided separately. Neither one guarantees the other. Cards are handed out at the event, so an approved Luma registration is needed to claim and collect one."], ["Collection", "Cards are collected in person at House of HYPE, Mumbai, on 3 Nov 2026. We cannot guarantee delivery of cards that are not collected at the event."], ["One card per person", "Each person may receive one card. This applies across wallets, names and email addresses, and we may treat related claims as one."], ["Limited supply", "There are 25 cards in total. Claims close when the cards run out or the claim window ends, whichever comes first."],
-  ["Release of cards", "A card may be released to another eligible person if the claiming email does not have an approved Luma registration by 1 Nov."]];
+const R = [["Cards and supply", "25 numbered NFC metal cards made by Hyperliquid India and ENS. Supply is limited, and claims close when the cards run out or the claim window ends, whichever comes first."], ["Claiming", "Claims open 28 October, 8:00 PM IST and close 29 October, 8:00 PM IST. You need a score of 80 or more, counted on Hyperliquid or Ethereum, whichever is higher, and the email Luma approved for the event. One card per person, across wallets, names and email addresses. We may treat related claims as one."], ["Claims and event approval", "Card claims and event approvals are decided separately. Neither one guarantees the other. Cards are handed out at the event, so an approved Luma registration is needed to claim and collect one."], ["Collection", "Collect in person at House of HYPE, Mumbai, on 3 Nov 2026 with your approved Luma registration and the wallet behind your name. We cannot guarantee delivery of cards that are not collected at the event."], ["Right to decline", "Claiming a card does not guarantee you receive one. We may decline or cancel any claim at our discretion, and our decisions are final."], ["Release of cards", "A card may be released to another eligible person if the claiming email does not have an approved Luma registration by 1 Nov."]];
 function Terms() {
   const [open, setOpen] = useState(false);
-  const T = [
-    ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name."],
-    ["28 to 29 Oct", "Claim window", "Opens 28 October, 8:00 PM IST. Closes 29 October, 8:00 PM IST. A score of 80 or more is needed, counted on Hyperliquid or Ethereum, whichever is higher. Claim with the email Luma approved for the event."],
-    ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
-  ];
-  const all = [...T.map(([, t, d]) => [t, d]), ...R];
   return (
     <section className={"tnc" + (open ? " open" : "")} aria-label="Terms and conditions">
-      <button type="button" className="tnc-t" aria-expanded={open} onClick={() => setOpen(!open)}><h2>Terms and conditions</h2><span aria-hidden="true">{open ? "−" : "+"}</span></button>
-      {open && <div className="tnc-n">{all.map(([t, d], i) => <div className="tnc-c" key={t}><b>{String(i + 1).padStart(2, "0")}</b><h3>{t}</h3><p>{d}</p></div>)}</div>}
+      <button type="button" className="tnc-t" aria-expanded={open} onClick={() => setOpen(!open)}><h2>Terms and conditions</h2><span aria-hidden="true">{open ? "\u2212" : "+"}</span></button>
+      {open && <div className="tnc-n">{R.map(([t, d], i) => <div className="tnc-c" key={t}><b>{String(i + 1).padStart(2, "0")}</b><h3>{t}</h3><p>{d}</p></div>)}</div>}
     </section>
   );
 }
