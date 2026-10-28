@@ -23,3 +23,9 @@ Blob holds three small JSON documents (`lb.json`, `claims.json`, one private ema
 The site lives at hyperliquidindia.com/ens-card: vercel.json rewrites /ens-card, /ens-card/terms and /ens-card/api/* to the files and functions at the root, and sends / and /terms there.
 
 The back of the card is a field of words: Hyperliquid terms and assets on the Hyperliquid India side of the logo, ENS terms on the ens side, with the fixed numbers set quieter among them (`backWords` in public/index.html). `window.__BACK = "dump"` shows the genesis record dump instead; `window.__FRONT = "hypurr"` shows the Hypurr front.
+
+## Other pages on this project
+
+- `/` redirects to `/ens-card` until 30 Oct 2026; after that the root should point to `/home`.
+- `/home`: Hyperliquid India community site. `public/home` is a build of `Imdavid21/hyperliquid-india` (`npx vite build --base=/home/`); its APIs are `api/stats.js`, `posts.js`, `events.js`, `articles.js`, `telegram.js` and `_lib.js`. Rebuild and copy to update.
+- `/wick-runner`: Wick Runner (STRAT x Hyperliquid India). Leaderboard is `api/wick-scores.js` on Vercel Blob key `wick-runner/scores.json`.
