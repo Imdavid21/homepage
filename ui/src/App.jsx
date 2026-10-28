@@ -303,6 +303,7 @@ export default function App({ socials }) {
       apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("reading");
       await sleep(reduce ? 200 : 1200);
       setRes(j);
+      if (j.no) HL().setNo(j.no);
       if (j.eligible && !j.nameTaken) { HL().setName(j.name); setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); }
       setPhase("done"); show(".console", "start");
       if (j.eligible && !j.nameTaken) makeVideo(j);
@@ -312,7 +313,7 @@ export default function App({ socials }) {
   const replay = async () => { if (phase !== "done") return; setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); setPhase("done"); show(".console", "start"); };
   const claim = async () => {
     setClaiming(true); setClaimErr("");
-    try { const [ok, j] = await post("/ens-card/api/claim", { name: norm(res?.name || name), wallets: cleanW(), email: email.trim() }); if (j && j.now) apply(j); if (ok) setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left })); else setClaimErr(j.error || "Couldn't claim. Try again."); }
+    try { const [ok, j] = await post("/ens-card/api/claim", { name: norm(res?.name || name), wallets: cleanW(), email: email.trim() }); if (j && j.now) apply(j); if (ok) { if (j.no) { HL().setNo(j.no); if (res && j.no !== res.no) makeVideo({ ...res, claimed: true, no: j.no }); } setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left, no: j.no || r.no })); } else setClaimErr(j.error || "Couldn't claim. Try again."); }
     catch { setClaimErr("Network error. Try again."); }
     setClaiming(false);
   };

@@ -262,6 +262,7 @@
   }
   window.HL = {
     validHl, validEth, reduce, caption: capFor,
+    setNo(n) { const v = String(Math.max(1, Math.min(EDITION, parseInt(n, 10) || 1))).padStart(2, "0"); if (v !== CARD_NO) { CARD_NO = v; paintAll(); } },
     setName(n) { currentName = validEth(n) ? n : "yourname.eth"; paintAll(); },
     showSide, unlock: ac, setMuted(m) { muted = m; },
     engrave: engraveLive, record: recordVideo,
