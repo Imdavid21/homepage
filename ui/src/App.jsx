@@ -246,7 +246,7 @@ function Leaderboard({ me, lb, retry }) {
 }
 
 /* ---------- terms ---------- */
-const R = [["Right to decline", "Claiming a card does not guarantee you receive one. We may decline or cancel any claim at our discretion, and our decisions are final."], ["Claims and event approval", "Card claims and event approvals are decided separately. Neither one guarantees the other."], ["Collection", "Cards are collected in person at House of HYPE, Mumbai, on 3 Nov 2026. We cannot guarantee delivery of cards that are not collected at the event."], ["One card per person", "Each person may receive one card. This applies across wallets, names and email addresses, and we may treat related claims as one."], ["Limited supply", "There are 25 cards in total. Claims close when the cards run out or the claim window ends, whichever comes first."], ["Scoring", "Scores are calculated by us from public onchain data. We may update the scoring rules before cards are issued."]];
+const R = [["Right to decline", "Claiming a card does not guarantee you receive one. We may decline or cancel any claim at our discretion, and our decisions are final."], ["Claims and event approval", "Card claims and event approvals are decided separately. Neither one guarantees the other."], ["Collection", "Cards are collected in person at House of HYPE, Mumbai, on 3 Nov 2026. We cannot guarantee delivery of cards that are not collected at the event."], ["One card per person", "Each person may receive one card. This applies across wallets, names and email addresses, and we may treat related claims as one."], ["Limited supply", "There are 25 cards in total. Claims close when the cards run out or the claim window ends, whichever comes first."]];
 function Terms() {
   const [open, setOpen] = useState(false);
   const T = [
@@ -258,7 +258,7 @@ function Terms() {
   return (
     <section className={"tnc" + (open ? " open" : "")} aria-label="Terms and conditions">
       <button type="button" className="tnc-t" aria-expanded={open} onClick={() => setOpen(!open)}><h2>Terms and conditions</h2><span aria-hidden="true">{open ? "−" : "+"}</span></button>
-      {open && <dl className="tnc-d">{all.map(([t, d]) => <div key={t}><dt>{t}</dt><dd>{d}</dd></div>)}</dl>}
+      {open && <div className="tnc-n">{all.map(([t, d], i) => <div className="tnc-c" key={t}><b>{String(i + 1).padStart(2, "0")}</b><h3>{t}</h3><p>{d}</p></div>)}</div>}
     </section>
   );
 }
