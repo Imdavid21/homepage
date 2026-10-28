@@ -16,7 +16,7 @@
    "id": "name",
    "n": "01",
    "label": "Name",
-   "desc": "Your .hl or .eth name. It stays off the card until you are eligible, then the laser writes it live, line by line, in passes that run left and right.",
+   "desc": "Your .eth name. It stays off the card until you are eligible, then the laser writes it live, line by line, in passes that run left and right.",
    "x": 92,
    "y": 846,
    "w": 420,
@@ -54,7 +54,7 @@
    "id": "card",
    "n": "00",
    "label": "Back",
-   "desc": "Hyperliquid in words and numbers, with the logo x logo at the centre.",
+   "desc": "Hyperliquid terms on the left, ENS terms on the right, with the logo x logo at the centre.",
    "x": 0,
    "y": 0,
    "w": 1585,
@@ -75,28 +75,28 @@
    "meta": "Etched | Two marks"
   },
   {
-   "id": "words",
+   "id": "hl",
    "n": "02",
-   "label": "Words",
-   "desc": "Each side of the logo carries its own words: Hyperliquid terms and assets under Hyperliquid India, ENS terms under ens. The split falls at the x, about sixty to forty.",
+   "label": "Hyperliquid words",
+   "desc": "Hyperliquid terms and assets, from HyperCore and HyperEVM to perps, vaults and HIP-4. A few numbers sit among them: 1,000,000,000 max supply, 29.11.2024 and 31% to users.",
    "x": 92,
-   "y": 70,
-   "w": 1400,
-   "h": 360,
+   "y": 72,
+   "w": 700,
+   "h": 870,
    "side": "l",
    "meta": "Etched | Mint"
   },
   {
-   "id": "numbers",
+   "id": "ens",
    "n": "03",
-   "label": "The numbers",
-   "desc": "Set quieter among the words: TGE 29.11.2024, 1,000,000,000 max supply, 310,000,000 airdrop to 94,023 genesis wallets, the allocation split, 200,000 orders per second at 0.2 s median latency.",
-   "x": 92,
-   "y": 540,
-   "w": 1400,
-   "h": 400,
-   "side": "l",
-   "meta": "Etched | Dimmed aquamarine"
+   "label": "ENS words",
+   "desc": "ENS terms on the other half, from .eth and primary names to subnames, text records, ENSv2 and onchain DNS names.",
+   "x": 793,
+   "y": 72,
+   "w": 700,
+   "h": 870,
+   "side": "r",
+   "meta": "Etched | Mint"
   }
  ]
 }
