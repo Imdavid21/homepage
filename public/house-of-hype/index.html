@@ -89,6 +89,7 @@ button,input{font:inherit;color:inherit}
 .find-head .lead{margin:14px 0 0;color:var(--ink2);font-size:15px;animation:rise .9s .9s var(--out) both}
 .find-head .lead b{font-family:var(--serif);font-weight:400;font-size:1.5em;color:var(--accent);font-variant-numeric:tabular-nums}
 .find-head p{margin:10px 0 0;color:var(--muted);max-width:40ch}
+.find-head .welcome{display:none}
 .search{position:relative;margin-top:22px;max-width:420px}
 .search input{width:100%;height:50px;padding:0 18px 0 46px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);outline:0;font-size:16px;transition:border-color .2s,box-shadow .3s}
 .search input:focus{border-color:var(--accent);box-shadow:0 0 0 5px rgba(143,214,203,.1)}
@@ -125,14 +126,23 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
 
 /* ---------- phones: one screen, card first, drum below, search under the thumb ---------- */
 @media (max-width:860px){
-  .find{display:flex;flex-direction:column;height:100dvh;min-height:480px;overflow:hidden}
+  html.app,html.app body{overflow:hidden;height:100%;overscroll-behavior:none}
+  .find{position:fixed;left:0;right:0;top:0;display:flex;flex-direction:column;height:var(--vvh,100dvh);overflow:hidden;z-index:5;background:var(--bg);will-change:transform}
+  footer{display:none}
+  .find-head .welcome{display:block;order:2;margin:4px 16px 0;font-size:13px;color:var(--muted)}
+  .find-head .welcome b{font-weight:400;color:var(--ink2)}
+  html.kb .find-head h1,html.kb .find-head .lead,html.kb .find-head .welcome{display:none}
+  html.kb .find-r{flex:1 1 auto;min-height:0;padding-top:12px}
+  html.kb .wcard{height:100%}
+  html.kb .wcard .soc{display:none}
+  html.kb .wheel{flex:0 0 132px;min-height:0}
   .find-l,.find-head{display:contents}
   .find-head h1{order:1;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px 0;font-size:clamp(40px,11.5vw,54px)}
   .find-head .lead{order:2;margin:6px 16px 0;font-size:13px}
   .find-head .lead b{font-size:1.35em}
-  .find-head > p:not(.lead){display:none}
+  .find-head > p:not(.lead):not(.welcome){display:none}
   .find-r{order:3;flex:0 0 auto;padding:14px 16px 0;display:block}
-  .wcard{width:100%;aspect-ratio:auto;height:min(46dvh,118vw);border-radius:24px;touch-action:pan-y}
+  .wcard{width:100%;aspect-ratio:auto;height:min(44dvh,118vw);border-radius:24px;touch-action:pan-y}
   .wcard .info{padding:70px 18px 16px}
   .wcard h3{font-size:clamp(28px,8.5vw,36px)}
   .wcard .role{font-size:13px;margin-top:6px}
@@ -175,6 +185,7 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
       <div class="find-head">
         <h1 class="split" data-split="House of HYPE" style="--d:200ms"></h1>
         <p class="lead"><b id="count">0</b> coming  |  3 Nov  |  All Saints, Khar (W)</p>
+        <p class="welcome"><b>Welcome to the House.</b> Find your people.</p>
         <p>Scroll, drag or use the arrow keys to find anyone. Type to jump to a name, a company or a handle.</p>
         <label class="search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -273,7 +284,27 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
   const saved = urlCode || ls.get('hoh-code');
   if (saved) { $('code').value = saved; tryCode(saved, true); } else setTimeout(() => $('code').focus({ preventScroll: true }), 900);
 
+  // phones: pin the finder to the visual viewport so the keyboard never scrolls the page
+  const PH = matchMedia('(max-width:860px)');
+  let maxH = 0;
+  function fitViewport() {
+    const v = window.visualViewport, H = document.documentElement, f = document.querySelector('.find');
+    H.classList.toggle('app', PH.matches);
+    if (!PH.matches || !f) { f && (f.style.transform = ''); return; }
+    const h = v ? v.height : innerHeight;
+    H.style.setProperty('--vvh', h + 'px');
+    f.style.transform = v ? `translateY(${v.offsetTop}px)` : '';
+    if (document.activeElement !== $('q')) maxH = Math.max(maxH, h);
+    H.classList.toggle('kb', document.activeElement === $('q') && h < maxH * .8);
+    if (scrollY) scrollTo(0, 0);
+  }
+  if (window.visualViewport) { visualViewport.addEventListener('resize', fitViewport); visualViewport.addEventListener('scroll', fitViewport); }
+  addEventListener('resize', fitViewport);
+  PH.addEventListener && PH.addEventListener('change', fitViewport);
+  $('q').addEventListener('focus', () => setTimeout(fitViewport, 50));
+  $('q').addEventListener('blur', () => setTimeout(fitViewport, 50));
   function enter() {
+    fitViewport();
     $('app').hidden = false;
     requestAnimationFrame(() => $('gate').classList.add('out'));
     setTimeout(() => { $('gate').hidden = true; }, 1200);
