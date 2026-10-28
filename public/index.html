@@ -726,10 +726,17 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
         if (used + need <= x1 - x0 && !row.some(q => q[0][0] === t[0])) { row.push([t, tw]); used += need; src.splice(i, 1); misses = 0; } else { i++; misses++; } }
       const ink0 = row.reduce((q, r) => q + r[1], 0), g = row.length > 1 ? (x1 - x0 - ink0) / (row.length - 1) : 0; let qx = row.length > 1 ? x0 : (x0 + x1 - ink0) / 2;
       row.forEach(([t, tw]) => { put(t, qx, y0, k); qx += tw + g; }); };
+    // one continuous row: Hyperliquid terms fill the first half, ENS terms the rest, spread evenly so no divider shows between them
+    const mixRow = (x0, x1) => { const row = []; let used = 0;
+      const take = (src, k, limit) => { let i = 0, misses = 0; while (misses < 14 && i < src.length) { const t = src[i], tw = t[0].length * adv, need = row.length ? tw + 2 * adv : tw;
+        if (used + need <= limit && !row.some(q => q[0][0] === t[0])) { row.push([t, tw, k]); used += need; src.splice(i, 1); misses = 0; } else { i++; misses++; } } };
+      take(A, "hl", (x1 - x0) / 2); take(B, "ens", x1 - x0);
+      const ink0 = row.reduce((q, r) => q + r[1], 0), g = row.length > 1 ? (x1 - x0 - ink0) / (row.length - 1) : 0; let qx = x0;
+      row.forEach(([t, tw, k]) => { put(t, qx, y0, k); qx += tw + g; }); };
     // Hyperliquid terms on the left half, ENS terms on the right half, each in its own random order; the lockup keeps a wide clear zone
     const L = M, R = RGT, pad = 2.4 * adv, hole = [lx - pad, lx + w0 + pad], mid = TEX_W / 2, gapM = 1.2 * adv;
     for (let r = 0; r < rows; r++) { const y = top + r * pitch, near = y > box[1] - 10 && y < box[1] + box[3] + 10; y0 = y;
-      fill(A, "hl", L, near ? hole[0] : mid - gapM); fill(B, "ens", near ? hole[1] : mid + gapM, R); }
+      if (near) { fill(A, "hl", L, hole[0]); fill(B, "ens", hole[1], R); } else mixRow(L, R); }
     x.globalAlpha = 1;
     // the centre: the logo x logo alone
     marks(x, mode, c => { const w0 = lockup(document.createElement("canvas").getContext("2d"), "#000", 0, 0, 52); lockup(x, c, Math.round((TEX_W - w0) / 2), 461, 52); });
