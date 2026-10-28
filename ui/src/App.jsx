@@ -147,12 +147,12 @@ function ScoreCard({ j, phase, st, onClaim, claiming, onReplay, vid, onBack, ema
       </ul>
       {canClaim && (
         <form className="mail" onSubmit={e => { e.preventDefault(); if (mailOk && !claiming) onClaim(); }} noValidate>
-          <label htmlFor="mail">Email you used on Luma</label>
+          <label htmlFor="mail">Email approved on Luma</label>
           <div className="mail-row">
             <input id="mail" type="email" inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false} maxLength={254} placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} />
             <Button type="submit" variant="accent" disabled={claiming || !mailOk}>{claiming ? "Claiming…" : "Claim your card"}</Button>
           </div>
-          <p className={"mail-h" + (err ? " err" : "")}>{err || "Use the same email you registered with on Luma. We match it to the guest list when you collect your card."}</p>
+          <p className={"mail-h" + (err ? " err" : "")}>{err || "Use the email Luma approved for the event. Claims are open to approved guests only, and approvals are added in batches."}</p>
         </form>
       )}
       {done && ok && (
@@ -200,9 +200,9 @@ function useLeaderboard(refresh) {
 const fmtDay = ms => new Date(ms).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }) + " IST";
 function ClaimGuide({ info, st }) {
   const [open, setOpen] = useState(true);
-  const step2 = !info ? <>Claim your card with the email you used to register on Luma.</>
-    : st === "upcoming" ? <>Claim your card from {fmtDay(info.opensAt)} with the email you used to register on Luma.</>
-    : st === "open" ? <>Claim your card before {fmtDay(info.closesAt)} with the email you used to register on Luma.</>
+  const step2 = !info ? <>Claim your card with the email Luma approved for the event.</>
+    : st === "upcoming" ? <>Claim your card from {fmtDay(info.opensAt)} with the email Luma approved for the event.</>
+    : st === "open" ? <>Claim your card before {fmtDay(info.closesAt)} with the email Luma approved for the event.</>
     : <>The claim window closed on {fmtDay(info.closesAt)}.</>;
   return (
     <details className="guide" open={open} onToggle={e => setOpen(e.currentTarget.open)}>
@@ -210,7 +210,7 @@ function ClaimGuide({ info, st }) {
       <ol className="steps">
         <li><b>1</b><span>Check your .eth name. You need a score of {info?.threshold || 80} or more to claim.</span></li>
         <li><b>2</b><span>{step2}</span></li>
-        <li><b>3</b><span>Collect it at House of HYPE, Mumbai, on 3 Nov. Bring the wallet behind your name.</span></li>
+        <li><b>3</b><span>Collect it at House of HYPE, Mumbai, on 3 Nov, with your approved Luma registration and the wallet behind your name.</span></li>
       </ol>
     </details>
   );
@@ -246,12 +246,12 @@ function Leaderboard({ me, lb, retry }) {
 }
 
 /* ---------- terms ---------- */
-const R = [["Right to decline", "Claiming a card does not guarantee you receive one. We may decline or cancel any claim at our discretion, and our decisions are final."], ["Claims and event approval", "Card claims and event approvals are decided separately. Neither one guarantees the other."], ["Collection", "Cards are collected in person at House of HYPE, Mumbai, on 3 Nov 2026. We cannot guarantee delivery of cards that are not collected at the event."], ["One card per person", "Each person may receive one card. This applies across wallets, names and email addresses, and we may treat related claims as one."], ["Limited supply", "There are 25 cards in total. Claims close when the cards run out or the claim window ends, whichever comes first."]];
+const R = [["Right to decline", "Claiming a card does not guarantee you receive one. We may decline or cancel any claim at our discretion, and our decisions are final."], ["Claims and event approval", "Card claims and event approvals are decided separately. Neither one guarantees the other. Cards are handed out at the event, so an approved Luma registration is needed to claim and collect one."], ["Collection", "Cards are collected in person at House of HYPE, Mumbai, on 3 Nov 2026. We cannot guarantee delivery of cards that are not collected at the event."], ["One card per person", "Each person may receive one card. This applies across wallets, names and email addresses, and we may treat related claims as one."], ["Limited supply", "There are 25 cards in total. Claims close when the cards run out or the claim window ends, whichever comes first."]];
 function Terms() {
   const [open, setOpen] = useState(false);
   const T = [
     ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name."],
-    ["28 to 29 Oct", "Claim window", "Opens 28 October, 8:00 PM IST. Closes 29 October, 8:00 PM IST. A score of 80 or more is needed, counted on Hyperliquid or Ethereum, whichever is higher. Claim with the email you used to register on Luma."],
+    ["28 to 29 Oct", "Claim window", "Opens 28 October, 8:00 PM IST. Closes 29 October, 8:00 PM IST. A score of 80 or more is needed, counted on Hyperliquid or Ethereum, whichever is higher. Claim with the email Luma approved for the event."],
     ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
   ];
   const all = [...T.map(([, t, d]) => [t, d]), ...R];
