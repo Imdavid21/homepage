@@ -718,7 +718,7 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
     const A = stream(HL_WORDS, HL_NUMBERS, 5, 200), B = stream(ENS_WORDS, ENS_NUMBERS, 12, 200);
     window.__BACKCOUNT = { hl: 0, ens: 0 };
     x.font = MONO(500, fs); x.textBaseline = "middle"; x.textAlign = "left";
-    const put = (t, px, y, k) => { const [w, num] = t; x.fillStyle = ink(mode, num ? GRN : MINT); x.globalAlpha = num ? .5 : 1; x.fillText(w, px, y); window.__BACKCOUNT[k]++; };
+    const put = (t, px, y, k) => { const [w, num] = t; x.fillStyle = ink(mode, MINT); x.globalAlpha = 1; x.fillText(w, px, y); window.__BACKCOUNT[k]++; };
     // take tokens in order while they fit, look a few ahead for one that still fits, then spread the gaps evenly
     let y0 = 0;
     const fill = (src, k, x0, x1) => { const row = []; let used = 0, i = 0, misses = 0;
