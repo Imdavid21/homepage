@@ -123,12 +123,30 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
 .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);padding:16px}
 .empty b{display:block;font-family:var(--serif);font-weight:400;font-size:40px;color:var(--ink)}
 
+/* ---------- phones: one screen, card first, drum below, search under the thumb ---------- */
 @media (max-width:860px){
-  .find{grid-template-columns:1fr;min-height:auto}
-  .find-l{min-height:72svh}
-  .wheel{min-height:340px}
-  .find-r{padding-top:0}
-  .wcard{aspect-ratio:1/1.05}
+  .find{display:flex;flex-direction:column;height:100dvh;min-height:480px;overflow:hidden}
+  .find-l,.find-head{display:contents}
+  .find-head h1{order:1;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px 0;font-size:clamp(40px,11.5vw,54px)}
+  .find-head .lead{order:2;margin:6px 16px 0;font-size:13px}
+  .find-head .lead b{font-size:1.35em}
+  .find-head > p:not(.lead){display:none}
+  .find-r{order:3;flex:0 0 auto;padding:14px 16px 0;display:block}
+  .wcard{width:100%;aspect-ratio:auto;height:min(46dvh,118vw);border-radius:24px;touch-action:pan-y}
+  .wcard .info{padding:70px 18px 16px}
+  .wcard h3{font-size:clamp(28px,8.5vw,36px)}
+  .wcard .role{font-size:13px;margin-top:6px}
+  .wcard .soc{margin-top:12px}
+  .wcard .chip{height:34px;padding:0 12px;font-size:12px}
+  .wcard .idx{top:14px;left:16px}
+  .wheel{order:4;flex:1 1 auto;min-height:120px;
+    -webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+  .wi{left:0;right:0;text-align:center;transform-origin:center;font-size:clamp(22px,6.6vw,28px);font-weight:300}
+  .wi small{display:none}
+  .search{order:5;margin:0;max-width:none;padding:6px 16px calc(env(safe-area-inset-bottom,0px) + 12px);background:linear-gradient(transparent,var(--bg) 30%)}
+  .search input{height:48px}
+  .search svg{left:33px;top:calc(50% - env(safe-area-inset-bottom,0px) / 2 - 3px)}
+  footer{padding:40px 16px calc(env(safe-area-inset-bottom,0px) + 40px)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
@@ -311,6 +329,7 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
     if (!guests.length) { card.innerHTML = '<div class="empty"><div><b>Soon</b>The guest list is not up yet.</div></div>'; return; }
     root.innerHTML = guests.map((g, i) => `<div class="wi" role="option" data-i="${i}" aria-selected="false">${esc(g.name)}${g.company ? `<small>${esc(g.company)}</small>` : ''}</div>`).join('');
     const els = [...root.children], n = els.length;
+    const MOB = matchMedia('(max-width:860px)');
     const cfg = { tilt: 6, curve: 1, blur: 2, fade: .22, minOp: .05, smoothing: 200 };
     const rowH = () => (parseFloat(getComputedStyle(els[0]).fontSize) || 48) * 1.4;
     let pos = Math.min(3, n - 1), target = pos, sel = -1, raf = null, last = 0;
@@ -323,11 +342,17 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
         const d = i - pos, dist = Math.abs(d);
         if (dist > 14) { els[i].style.opacity = 0; continue; }
         const a = clamp(d * tr, -Math.PI / 2, Math.PI / 2);
-        const y = R * Math.sin(a), x = -R * (1 - Math.cos(a)) * cfg.curve, rot = a * 180 / Math.PI;
+        const mob = MOB.matches, y = mob ? d * rh * .82 : R * Math.sin(a), x = mob ? 0 : -R * (1 - Math.cos(a)) * cfg.curve, rot = mob ? 0 : a * 180 / Math.PI;
         const el = els[i];
-        el.style.transform = `translate(${x.toFixed(2)}px, calc(${y.toFixed(2)}px - 50%)) rotate(${rot.toFixed(3)}deg)`;
-        el.style.opacity = String(Math.max(cfg.minOp, 1 - dist * cfg.fade));
-        el.style.filter = RM ? 'none' : `blur(${(dist * cfg.blur).toFixed(2)}px)`;
+        if (mob) {
+          el.style.transform = `translate(0, calc(${y.toFixed(2)}px - 50%)) perspective(400px) rotateX(${clamp(-d * 18, -70, 70).toFixed(2)}deg) scale(${Math.max(.7, 1 - dist * .09).toFixed(3)})`;
+          el.style.opacity = String(Math.max(.04, 1 - dist * .32));
+          el.style.filter = RM || dist < .5 ? 'none' : `blur(${Math.min(3, dist * .7).toFixed(2)}px)`;
+        } else {
+          el.style.transform = `translate(${x.toFixed(2)}px, calc(${y.toFixed(2)}px - 50%)) rotate(${rot.toFixed(3)}deg)`;
+          el.style.opacity = String(Math.max(cfg.minOp, 1 - dist * cfg.fade));
+          el.style.filter = RM ? 'none' : `blur(${(dist * cfg.blur).toFixed(2)}px)`;
+        }
         el.style.setProperty('--p', Math.max(0, 1 - Math.min(dist, 1)).toFixed(4));
       }
       raf = settled ? null : requestAnimationFrame(frame);
@@ -379,7 +404,15 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
       nph.insertAdjacentHTML('beforeend', imgTag(g, 'new'));
     }
     function openFromCard() { if (shown) openProfile(shown, card.getBoundingClientRect()); }
-    card.addEventListener('click', e => { if (!e.target.closest('a')) openFromCard(); });
+    let swiped = 0;
+    card.addEventListener('click', e => { if (!e.target.closest('a') && performance.now() - swiped > 350) openFromCard(); });
+    let sw = null;
+    card.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') sw = { x: e.clientX, y: e.clientY }; });
+    card.addEventListener('pointerup', e => {
+      if (!sw) return; const dx = e.clientX - sw.x, dy = e.clientY - sw.y; sw = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) { swiped = performance.now(); setTarget(Math.round(target) + (dx < 0 ? 1 : -1), true); }
+    });
+    card.addEventListener('pointercancel', () => { sw = null; });
     let qt;
     $('q').addEventListener('input', e => {
       clearTimeout(qt);
