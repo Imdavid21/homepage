@@ -90,3 +90,12 @@ test("a modest year-old Ethereum wallet qualifies", () => {
   assert.ok(r.score >= 90, String(r.score));
 });
 test("a brand new empty Ethereum wallet does not", () => assert.ok(computeScore({ firstTs: 0, volume: 0, hype: 0, hipMarkets: 0, trades: 0, ethFirstTs: NOW - 5 * 864e5, ethTxs: 2, ethBal: 0.001, nameTs: null }, NOW).score < 50));
+test("name age comes from the earliest on-chain registration", async () => {
+  const real = globalThis.fetch;
+  globalThis.fetch = async (u) => ({ json: async () => u.includes("0x6090a6") ? { result: [{ timeStamp: "0x59463c32" }] } : u.includes("0xb3d98796") ? { result: [{ timeStamp: "0x5e3c59ac" }] } : { result: null } });
+  try {
+    const { ensCreated } = await import("../lib/resolve.js");
+    assert.equal(new Date(await ensCreated("vitalik.eth")).toISOString().slice(0, 10), "2017-06-18");
+    assert.equal(await ensCreated("sub.name.eth"), null);
+  } finally { globalThis.fetch = real; }
+});
