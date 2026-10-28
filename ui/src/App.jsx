@@ -116,7 +116,7 @@ function verdictFor(j, st, phase) {
   if (phase === "engraving") return "Eligible. Etching your card";
   if (j.claimed) return "Your card is claimed. See you at House of HYPE.";
   if (j.nameTaken) return "A card for \"" + j.name.replace(/\.(hl|eth)$/, "") + "\" has already been claimed.";
-  if (!j.eligible) return "Not eligible this time. A score of " + (j.threshold || 90) + " or more is needed to claim.";
+  if (!j.eligible) return "Not eligible this time. A score of " + (j.threshold || 80) + " or more is needed to claim.";
   if (st === "closed") return "You're eligible, but claims are closed.";
   if (j.left <= 0) return "You're eligible, but all 25 cards are claimed.";
   if (st === "upcoming") return "You're eligible. Claims open on " + fmtDay(j.opensAt) + ".";
@@ -249,7 +249,7 @@ function Leaderboard({ me, lb, retry }) {
 function Terms() {
   const T = [
     ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name."],
-    ["28 to 29 Oct", "Claim window", "Opens 28 October, 8:00 PM IST. Closes 29 October, 8:00 PM IST. A score of 90 or more is needed, counted on Hyperliquid or Ethereum, whichever is higher. Claim with the email you used to register on Luma."],
+    ["28 to 29 Oct", "Claim window", "Opens 28 October, 8:00 PM IST. Closes 29 October, 8:00 PM IST. A score of 80 or more is needed, counted on Hyperliquid or Ethereum, whichever is higher. Claim with the email you used to register on Luma."],
     ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
   ];
   return (

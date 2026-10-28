@@ -1,6 +1,6 @@
 # Hyperliquid score page
 
-Name (.eth) + X handle -> score out of 100 from public Hyperliquid data -> public leaderboard. 90+ is needed to claim; the first 25 to claim get a card, one per wallet, email and name (david.hl and david.eth count as one).
+Name (.eth) + X handle -> score out of 100 from public Hyperliquid data -> public leaderboard. 80+ is needed to claim; the first 25 to claim get a card, one per wallet, email and name (david.hl and david.eth count as one).
 
 ## Deploy (Vercel + Supabase)
 1. Supabase: run supabase/schema.sql in the SQL editor.

@@ -33,7 +33,7 @@ test("claims: window, eligibility, one per wallet, sold out", async () => {
   const H = await import("../lib/handlers.js"), { CONFIG } = await import("../lib/config.js"), { mockResolve, mockRaw } = await import("../lib/mock.js"), { combine } = await import("../lib/hl.js");
   const eligibleNames = []; for (let i = 0; eligibleNames.length < 3 && i < 5000; i++) { const n = "t" + i + ".eth", w = mockResolve(n); if (computeScore({ ...combine([mockRaw(w.address)]), nameTs: w.nameTs, nameKind: w.kind }).score >= CONFIG.eligibleAt) eligibleNames.push(n); }
   assert.equal(eligibleNames.length, 3, "need eligible mock names");
-  const now = Date.now(); CONFIG.cards = 2; CONFIG.everyone = false; assert.equal(CONFIG.eligibleAt, 90);
+  const now = Date.now(); CONFIG.cards = 2; CONFIG.everyone = false; assert.equal(CONFIG.eligibleAt, 80);
   CONFIG.opensAt = now + 1e6; CONFIG.closesAt = now + 2e6; assert.equal((await H.claim({ name: eligibleNames[0], email: "a@x.io", ip: "a" }))[0], 409);
   CONFIG.opensAt = now - 1e6; CONFIG.closesAt = now + 1e6;
   assert.equal((await H.claim({ name: "nobody.eth", email: "n@x.io", ip: "b" }))[0] === 403 || true, true);
@@ -62,7 +62,7 @@ test("a missing name date does not count against a name", () => {
   const a = computeScore({ ...half, nameTs: null }, NOW).score, b = computeScore({ ...half, nameTs: Date.parse("2020-01-01") }, NOW).score;
   assert.ok(Math.abs(a - Math.round((b - 10) * 100 / 90)) <= 1, a + " vs " + b);
 });
-test("one name, one card; below 90 cannot claim", async () => {
+test("one name, one card; below 80 cannot claim", async () => {
   process.env.MOCK = "1";
   const H = await import("../lib/handlers.js"), { CONFIG } = await import("../lib/config.js"), { mockResolve, mockRaw } = await import("../lib/mock.js");
   const { combine } = await import("../lib/hl.js");
@@ -74,7 +74,7 @@ test("one name, one card; below 90 cannot claim", async () => {
   const now = Date.now(); CONFIG.cards = 25; CONFIG.everyone = false; CONFIG.opensAt = now - 1e6; CONFIG.closesAt = now + 1e6;
   assert.equal((await H.claim({ name: low, email: "low@x.io", ip: "l1" }))[0], 403);
   assert.equal((await H.claim({ name: good, email: "p1@x.io", ip: "p1" }))[0], 200);
-  const c = await H.check({ name: good, ip: "p2" }); assert.equal(c[1].claimed, true); assert.equal(c[1].threshold, 90);
+  const c = await H.check({ name: good, ip: "p2" }); assert.equal(c[1].claimed, true); assert.equal(c[1].threshold, 80);
   const r = await H.claim({ name: "x" + good, email: "p1@x.io", ip: "p3" }); assert.ok([403, 409].includes(r[0]));
   assert.equal((await H.check({ name: "someone.hl", ip: "p4" }))[0], 404);
 });
