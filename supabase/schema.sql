@@ -44,3 +44,9 @@ create table if not exists wick_runs (
 );
 alter table wick_runs enable row level security;
 -- wick_submit(p_tg, p_display, p_score): keeps the best score per Telegram username and logs every run
+
+-- House of HYPE guest directory (migration house_of_hype_guests). Server side only.
+create table if not exists hoh_guests (id text primary key, name text not null, x text, tg text, company text, title text, linkedin text, updated_at timestamptz not null default now());
+alter table hoh_guests enable row level security;
+create table if not exists hoh_config (key text primary key, value text not null); -- attendee_code, admin_key
+alter table hoh_config enable row level security;

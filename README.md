@@ -29,3 +29,4 @@ The back of the card is a field of words: Hyperliquid terms and assets on the Hy
 - `/` redirects to `/ens-card` until 30 Oct 2026; after that the root should point to `/home`.
 - `/home`: Hyperliquid India community site. `public/home` is a build of `Imdavid21/hyperliquid-india` (`npx vite build --base=/home/`); its APIs are `api/stats.js`, `posts.js`, `events.js`, `articles.js`, `telegram.js` and `_lib.js`. Rebuild and copy to update.
 - `/wick-runner`: Wick Runner (STRAT x Hyperliquid India). Leaderboard is `api/wick-scores.js` on Vercel Blob key `wick-runner/scores.json`.
+- `/house-of-hype`: guest directory for House of HYPE (3 Nov). Visitors unlock it with the attendee code (or `?code=` in the link). Upload the Luma guest CSV at `/house-of-hype/admin` with the admin key; only approved guests are kept and email/phone are dropped. Data: Supabase `hoh_guests`; codes in `hoh_config` (`attendee_code`, `admin_key`). API: `api/hoh-guests.js`.

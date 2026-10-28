@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>House of HYPE | Guest upload</title>
+<style>
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f2ede3;color:#121212;font:15px/1.5 system-ui,sans-serif;padding:16px}
+form{width:min(440px,100%);display:grid;gap:12px;background:#fbf8f2;border:1px solid rgba(18,18,18,.12);border-radius:20px;padding:24px}
+h1{margin:0;font:400 34px/1 Georgia,serif}
+p{margin:0;color:#6f6a61;font-size:13px}
+input{height:46px;padding:0 14px;border-radius:12px;border:1px solid rgba(18,18,18,.15);background:#fff;font:inherit}
+input[type=file]{padding:10px}
+button{height:48px;border:0;border-radius:999px;background:#121212;color:#fbf8f2;font:inherit;font-weight:500;cursor:pointer}
+button:disabled{opacity:.5}
+pre{margin:0;white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;background:#fff;border-radius:12px;padding:12px;border:1px solid rgba(18,18,18,.1)}
+</style>
+</head>
+<body>
+<form id="f">
+  <h1>Guest upload</h1>
+  <p>Upload the Luma guest export (CSV). It replaces the whole list. Only approved guests are kept, and email and phone are never stored.</p>
+  <input id="key" type="password" placeholder="Admin key" autocomplete="off" required>
+  <input id="file" type="file" accept=".csv,text/csv" required>
+  <button id="go" type="submit">Upload</button>
+  <pre id="out" hidden></pre>
+</form>
+<script>
+const $ = id => document.getElementById(id);
+try { $('key').value = sessionStorage.getItem('hoh-admin') || ''; } catch (e) {}
+$('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const file = $('file').files[0]; if (!file) return;
+  $('go').disabled = true; $('go').textContent = 'Uploading...';
+  try {
+    const r = await fetch('/api/hoh-guests', { method: 'POST', headers: { 'x-admin-key': $('key').value, 'content-type': 'text/csv' }, body: await file.text() });
+    const j = await r.json();
+    if (r.ok) try { sessionStorage.setItem('hoh-admin', $('key').value); } catch (e) {}
+    $('out').hidden = false;
+    $('out').textContent = r.ok
+      ? `Imported ${j.imported} approved guests. Skipped ${j.skipped}.\n\nColumns used:\n` + Object.entries(j.columns).map(([k, v]) => `  ${k}: ${v}`).join('\n')
+      : r.status === 401 ? 'Wrong admin key.' : 'Upload failed: ' + (j.error || r.status) + (j.headers ? '\nHeaders found: ' + j.headers.join(', ') : '');
+  } catch (err) { $('out').hidden = false; $('out').textContent = 'Upload failed: ' + err.message; }
+  $('go').disabled = false; $('go').textContent = 'Upload';
+});
+</script>
+</body>
+</html>
