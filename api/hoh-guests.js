@@ -24,6 +24,38 @@ async function config() {
   return Object.fromEntries(rows.map(r => [r.key, r.value]));
 }
 
+// Profile photos are resolved once at upload, so visitors never hit a rate-limited avatar service:
+// X via the public fxtwitter API, then the Telegram public profile page (og:image).
+async function grab(url, ms = 5000) {
+  const r = await fetch(url, { headers: { 'user-agent': 'Mozilla/5.0 (HouseOfHYPE guest list)' }, signal: AbortSignal.timeout(ms) });
+  if (!r.ok) throw new Error(String(r.status));
+  return r;
+}
+async function photoFor(g) {
+  if (g.x) {
+    try {
+      const j = await (await grab(`https://api.fxtwitter.com/${encodeURIComponent(g.x)}`)).json();
+      const u = j && j.user && j.user.avatar_url;
+      if (u && !/default_profile/.test(u)) return u.replace(/_normal(\.\w+)$/, '_400x400$1');
+    } catch (e) {}
+  }
+  if (g.tg) {
+    try {
+      const html = await (await grab(`https://t.me/${encodeURIComponent(g.tg)}`)).text();
+      const m = html.match(/<meta property="og:image" content="([^"]+)"/);
+      if (m && /^https:\/\/cdn\d*\.(telesco\.pe|cdn-telegram\.org)\//.test(m[1])) return m[1];
+    } catch (e) {}
+  }
+  return null;
+}
+async function withPhotos(list, conc = 10) {
+  let i = 0;
+  await Promise.all(Array.from({ length: conc }, async () => {
+    while (i < list.length) { const g = list[i++]; g.avatar = await photoFor(g); }
+  }));
+  return list;
+}
+
 // RFC 4180 CSV parser (quotes, escaped quotes, CRLF, newlines inside quotes)
 function parseCSV(text) {
   const rows = []; let row = [], f = '', q = false;
@@ -99,7 +131,7 @@ export default {
       if (request.method === 'GET') {
         const code = (url.searchParams.get('code') || '').trim().toLowerCase();
         if (!code || code !== String(cfg.attendee_code || '').toLowerCase()) return json({ error: 'code' }, 401);
-        const guests = await sb('hoh_guests?select=id,name,x,tg,company,title,linkedin&order=name.asc&limit=2000');
+        const guests = await sb('hoh_guests?select=id,name,x,tg,company,title,linkedin,avatar&order=name.asc&limit=2000');
         return json({ guests });
       }
       if (request.method === 'POST') {
@@ -108,11 +140,12 @@ export default {
         if (rows.length < 2) return json({ error: 'empty_csv' }, 400);
         const { guests, skipped, used } = mapLuma(rows);
         if (!used.name && !used.first) return json({ error: 'no_name_column', headers: rows[0] }, 400);
+        await withPhotos(guests);
         await sb('hoh_guests?id=not.is.null', { method: 'DELETE' });
         for (let i = 0; i < guests.length; i += 500) {
           await sb('hoh_guests', { method: 'POST', body: JSON.stringify(guests.slice(i, i + 500)), headers: { prefer: 'return=minimal' } });
         }
-        return json({ ok: true, imported: guests.length, skipped, columns: used });
+        return json({ ok: true, imported: guests.length, skipped, photos: guests.filter(g => g.avatar).length, columns: used });
       }
       return json({ error: 'method' }, 405);
     } catch (e) {

@@ -39,7 +39,7 @@ $('f').addEventListener('submit', async e => {
     if (r.ok) try { sessionStorage.setItem('hoh-admin', $('key').value); } catch (e) {}
     $('out').hidden = false;
     $('out').textContent = r.ok
-      ? `Imported ${j.imported} approved guests. Skipped ${j.skipped}.\n\nColumns used:\n` + Object.entries(j.columns).map(([k, v]) => `  ${k}: ${v}`).join('\n')
+      ? `Imported ${j.imported} approved guests (${j.photos} with profile photos). Skipped ${j.skipped}.\n\nColumns used:\n` + Object.entries(j.columns).map(([k, v]) => `  ${k}: ${v}`).join('\n')
       : r.status === 401 ? 'Wrong admin key.' : 'Upload failed: ' + (j.error || r.status) + (j.headers ? '\nHeaders found: ' + j.headers.join(', ') : '');
   } catch (err) { $('out').hidden = false; $('out').textContent = 'Upload failed: ' + err.message; }
   $('go').disabled = false; $('go').textContent = 'Upload';
