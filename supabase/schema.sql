@@ -28,3 +28,19 @@ create unique index if not exists entries_email_unique on entries (lower(email))
 -- Import a CSV with one column "email" in the dashboard, then run: update approved set email = lower(trim(email));
 create table if not exists approved (email text primary key);
 alter table approved enable row level security; -- server side only
+
+-- Wick Runner leaderboard (applied as migration wick_runner_leaderboard). Server side only.
+create table if not exists wick_players (
+  tg text primary key, display text not null, score int not null default 0, best_at timestamptz,
+  runs int not null default 0, seed boolean not null default false,
+  created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+);
+alter table wick_players enable row level security;
+create index if not exists wick_players_rank on wick_players (score desc, best_at asc);
+create table if not exists wick_runs (
+  id bigint generated always as identity primary key,
+  tg text not null references wick_players(tg) on delete cascade,
+  score int not null, created_at timestamptz not null default now()
+);
+alter table wick_runs enable row level security;
+-- wick_submit(p_tg, p_display, p_score): keeps the best score per Telegram username and logs every run
