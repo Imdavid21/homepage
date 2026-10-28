@@ -15,7 +15,7 @@ test("holding HYPE is rewarded and capped", () => {
   const f = (h) => computeScore({ ...maxed, hype: h }, NOW).parts.find((p) => p.key === "hype").pts;
   assert.equal(f(0), 0); assert.ok(f(10) > 0 && f(10) < 20); assert.equal(f(100), f(1e6));
 });
-test("name age scores the same for .eth and .hl", () => {
+test("name age scores the same for any name kind", () => {
   const p = (o) => computeScore({ ...maxed, ...o }, NOW).parts.find((x) => x.key === "name").pts;
   assert.equal(p({ nameKind: "hl", nameTs: NOW - 200 * 864e5 }), p({ nameKind: "eth", nameTs: NOW - 200 * 864e5 })); assert.equal(p({ nameTs: NOW - 400 * 864e5 }), 10); assert.equal(p({ nameTs: null }), 0);
 });
@@ -30,13 +30,13 @@ test("window state follows the dates", async () => {
 });
 test("claims: window, eligibility, one per wallet, sold out", async () => {
   process.env.MOCK = "1";
-  const H = await import("../lib/handlers.js"), { CONFIG } = await import("../lib/config.js"), { mockResolve, mockRaw } = await import("../lib/mock.js");
-  const eligibleNames = []; for (let i = 0; eligibleNames.length < 3 && i < 5000; i++) { const n = "t" + i + ".hl"; if (computeScore(mockRaw(mockResolve(n).address)).score >= CONFIG.eligibleAt) eligibleNames.push(n); }
+  const H = await import("../lib/handlers.js"), { CONFIG } = await import("../lib/config.js"), { mockResolve, mockRaw } = await import("../lib/mock.js"), { combine } = await import("../lib/hl.js");
+  const eligibleNames = []; for (let i = 0; eligibleNames.length < 3 && i < 5000; i++) { const n = "t" + i + ".eth", w = mockResolve(n); if (computeScore({ ...combine([mockRaw(w.address)]), nameTs: w.nameTs, nameKind: w.kind }).score >= CONFIG.eligibleAt) eligibleNames.push(n); }
   assert.equal(eligibleNames.length, 3, "need eligible mock names");
   const now = Date.now(); CONFIG.cards = 2; CONFIG.everyone = false; assert.equal(CONFIG.eligibleAt, 90);
   CONFIG.opensAt = now + 1e6; CONFIG.closesAt = now + 2e6; assert.equal((await H.claim({ name: eligibleNames[0], email: "a@x.io", ip: "a" }))[0], 409);
   CONFIG.opensAt = now - 1e6; CONFIG.closesAt = now + 1e6;
-  assert.equal((await H.claim({ name: "nobody.hl", email: "n@x.io", ip: "b" }))[0] === 403 || true, true);
+  assert.equal((await H.claim({ name: "nobody.eth", email: "n@x.io", ip: "b" }))[0] === 403 || true, true);
   const r1 = await H.claim({ name: eligibleNames[0], email: "a@x.io", ip: "c" }); assert.equal(r1[0], 200); assert.equal(r1[1].left, 1);
   const again = await H.claim({ name: eligibleNames[0], email: "a@x.io", ip: "d" }); assert.equal(again[1].already, true); assert.equal(again[1].left, 1);
   assert.equal((await H.claim({ name: eligibleNames[1], email: "b@x.io", ip: "e" }))[1].left, 0);
@@ -62,28 +62,19 @@ test("a missing name date does not count against a name", () => {
   const a = computeScore({ ...half, nameTs: null }, NOW).score, b = computeScore({ ...half, nameTs: Date.parse("2020-01-01") }, NOW).score;
   assert.ok(Math.abs(a - Math.round((b - 10) * 100 / 90)) <= 1, a + " vs " + b);
 });
-test("HLN registration date is found wherever the field lives", async () => {
-  const { findDate } = await import("../lib/resolve.js");
-  const t = Date.parse("2025-03-02T10:00:00Z");
-  assert.equal(findDate({ address: "0x1", registeredAt: "2025-03-02T10:00:00Z" }), t);
-  assert.equal(findDate({ name: { created_at: Math.floor(t / 1000) } }), t);
-  assert.equal(findDate({ data: { minted: String(t) }, expiry: Date.parse("2026-03-02") }), t);
-  assert.equal(findDate({ expiresAt: Date.parse("2026-03-02"), registered: true }), 0);
-  assert.equal(findDate({ address: "0x1" }), 0);
-});
-
-test("one name, one card: .hl and .eth of the same name cannot both claim; below 90 cannot claim", async () => {
+test("one name, one card; below 90 cannot claim", async () => {
   process.env.MOCK = "1";
   const H = await import("../lib/handlers.js"), { CONFIG } = await import("../lib/config.js"), { mockResolve, mockRaw } = await import("../lib/mock.js");
   const { combine } = await import("../lib/hl.js");
   // the same score the server computes: combined raw data plus the name's age and kind
   const ok = (n) => { const w = mockResolve(n); return computeScore({ ...combine([mockRaw(w.address)]), nameTs: w.nameTs, nameKind: w.kind }).score >= CONFIG.eligibleAt; };
-  let base = null; for (let i = 0; i < 20000 && !base; i++) { const b = "pair" + i; if (ok(b + ".hl") && ok(b + ".eth")) base = b; }
-  assert.ok(base, "need a base name eligible on both");
-  let low = null; for (let i = 0; i < 20000 && !low; i++) { const n = "low" + i + ".hl"; if (!ok(n)) low = n; }
+  let good = null; for (let i = 0; i < 20000 && !good; i++) { const n = "pair" + i + ".eth"; if (ok(n)) good = n; }
+  assert.ok(good, "need an eligible name");
+  let low = null; for (let i = 0; i < 20000 && !low; i++) { const n = "low" + i + ".eth"; if (!ok(n)) low = n; }
   const now = Date.now(); CONFIG.cards = 25; CONFIG.everyone = false; CONFIG.opensAt = now - 1e6; CONFIG.closesAt = now + 1e6;
   assert.equal((await H.claim({ name: low, email: "low@x.io", ip: "l1" }))[0], 403);
-  assert.equal((await H.claim({ name: base + ".hl", email: "p1@x.io", ip: "p1" }))[0], 200);
-  const c = await H.check({ name: base + ".eth", ip: "p2" }); assert.equal(c[1].nameTaken, true); assert.equal(c[1].threshold, 90);
-  const r = await H.claim({ name: base + ".eth", email: "p2@x.io", ip: "p3" }); assert.equal(r[0], 409); assert.match(r[1].error, /already been claimed/);
+  assert.equal((await H.claim({ name: good, email: "p1@x.io", ip: "p1" }))[0], 200);
+  const c = await H.check({ name: good, ip: "p2" }); assert.equal(c[1].claimed, true); assert.equal(c[1].threshold, 90);
+  const r = await H.claim({ name: "x" + good, email: "p1@x.io", ip: "p3" }); assert.ok([403, 409].includes(r[0]));
+  assert.equal((await H.check({ name: "someone.hl", ip: "p4" }))[0], 404);
 });

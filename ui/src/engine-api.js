@@ -2,7 +2,7 @@
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const bytes = n => new TextEncoder().encode(n).length;
-  const validHl = n => /^[a-z0-9 -\uffff]+\.hl$/u.test(n) && bytes(n) >= 4 && bytes(n) <= 32;
+  const validHl = n => false;
   const validEth = n => /^([a-z0-9 -\uffff]+\.)+eth$/u.test(n);
   // ---------- sound (synthesised, no files) ----------
   const AC = window.AudioContext || window.webkitAudioContext;
@@ -358,8 +358,8 @@
   }
   window.HL = {
     validHl, validEth, reduce, caption: capFor,
-    setName(n) { named = validHl(n) || validEth(n); currentName = named ? n : "yourname.hl"; paintAll(); },
-    clearName() { if (!named) return; named = false; currentName = "yourname.hl"; paintAll(); },
+    setName(n) { named = validEth(n); currentName = named ? n : "yourname.eth"; paintAll(); },
+    clearName() { if (!named) return; named = false; currentName = "yourname.eth"; paintAll(); },
     showSide, unlock: ac, setMuted(m) { muted = m; },
     engrave: engraveLive, record: recordVideo,
     track: { set: trackSet, hide(v) { trk.hide = !!v; if (!v) trk.t0 = performance.now(); }, focus(id) { trk.focus = id; } },

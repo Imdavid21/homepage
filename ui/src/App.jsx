@@ -208,7 +208,7 @@ function ClaimGuide({ info, st }) {
     <details className="guide" open={open} onToggle={e => setOpen(e.currentTarget.open)}>
       <summary><h2>How to claim</h2><i className="chev" aria-hidden="true" /></summary>
       <ol className="steps">
-        <li><b>1</b><span>Check your .hl or .eth name. You need a score of {info?.threshold || 80} or more to claim.</span></li>
+        <li><b>1</b><span>Check your .eth name. You need a score of {info?.threshold || 80} or more to claim.</span></li>
         <li><b>2</b><span>{step2}</span></li>
         <li><b>3</b><span>Collect it at House of HYPE, Mumbai, on 3 Nov. Bring the wallet behind your name.</span></li>
       </ol>
@@ -248,7 +248,7 @@ function Leaderboard({ me, lb, retry }) {
 /* ---------- terms ---------- */
 function Terms() {
   const T = [
-    ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name, whether it is the .hl or the .eth."],
+    ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name."],
     ["28 to 29 Oct", "Claim window", "Opens 28 October, 8:00 PM IST. Closes 29 October, 8:00 PM IST. A score of 90 or more is needed. Claim with the email you used to register on Luma."],
     ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
   ];
@@ -290,11 +290,11 @@ export default function App({ socials }) {
   const onType = e => {
     if (busy) return; const v = e.target.value, n = norm(v); setName(v); setRes(null); setPhase("idle"); setVid({ status: "idle", left: 0 });
     setClaimErr(""); HL().clearName();
-    setMsg(!n ? { t: "", err: false } : okName(n) ? { t: "", err: false } : { t: "Names end in .hl or .eth", err: true });
+    setMsg(!n ? { t: "", err: false } : okName(n) ? { t: "", err: false } : { t: "Names end in .eth", err: true });
   };
   const submit = async e => {
     e.preventDefault(); if (busy) return; const n = norm(name);
-    if (!okName(n)) { setMsg({ t: "Enter a .hl or .eth name.", err: true }); return; }
+    if (!okName(n)) { setMsg({ t: "Enter a .eth name.", err: true }); return; }
     if (cleanW().some(w => !ADDR.test(w))) { setMsg({ t: "Paired wallets must be 0x addresses.", err: true }); return; }
     HL().unlock(); setChecking(true); setMsg({ t: "Checking " + n + "…", err: false }); setRes(null); setClaimErr(""); setVid({ status: "idle", left: 0 });
     try {
@@ -338,9 +338,9 @@ export default function App({ socials }) {
                 <motion.p className="sub" {...rise(2, reduce)}>Get one of only 25 NFC metal cards from Hyperliquid India and ENS for House of HYPE.</motion.p>
                 <motion.div className="full" {...rise(3, reduce)}><Meters info={info} now={now} /></motion.div>
                 <motion.form className="apply" onSubmit={submit} noValidate {...rise(4, reduce)}>
-                  <label className="vh" htmlFor="name">Your .hl or .eth name</label>
+                  <label className="vh" htmlFor="name">Your .eth name</label>
                   <div className="field">
-                    <input id="name" type="text" value={name} onChange={onType} placeholder="yourname.hl or yourname.eth" autoComplete="off" autoCapitalize="off" spellCheck={false} maxLength={64} />
+                    <input id="name" type="text" value={name} onChange={onType} placeholder="yourname.eth" autoComplete="off" autoCapitalize="off" spellCheck={false} maxLength={64} />
                     <Button type="submit" disabled={busy}>{busy ? "Checking…" : "Check eligibility"}</Button>
                   </div>
                   <div className="wal">
@@ -358,7 +358,7 @@ export default function App({ socials }) {
                     )}
                   </div>
                   <span className={"status" + (msg.err ? " err" : "")} aria-live="polite">{msg.t}</span>
-                  <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a> or a <a href="https://app.hlnames.xyz" target="_blank" rel="noopener">.hl name</a>.</p>
+                  <p className="getname">No name yet? Get a <a href="https://app.ens.domains" target="_blank" rel="noopener">.eth name</a>.</p>
                 </motion.form>
                 <motion.div {...rise(5, reduce)}><ClaimGuide info={info} st={st} /></motion.div>
               </div>
