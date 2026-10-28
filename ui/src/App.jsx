@@ -246,6 +246,7 @@ function Leaderboard({ me, lb, retry }) {
 }
 
 /* ---------- terms ---------- */
+const R = [["Right to decline", "Claiming a card does not guarantee you receive one. We may decline or cancel any claim at our discretion, and our decisions are final."], ["Claims and event approval", "Card claims and event approvals are decided separately. Neither one guarantees the other."], ["Collection", "Cards are collected in person at House of HYPE, Mumbai, on 3 Nov 2026. We cannot guarantee delivery of cards that are not collected at the event."], ["One card per person", "Each person may receive one card. This applies across wallets, names and email addresses, and we may treat related claims as one."], ["Limited supply", "There are 25 cards in total. Claims close when the cards run out or the claim window ends, whichever comes first."], ["Scoring", "Scores are calculated by us from public onchain data. We may update the scoring rules before cards are issued."]];
 function Terms() {
   const T = [
     ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name."],
@@ -258,6 +259,7 @@ function Terms() {
       <div className="tnc-g">{T.map(([k, t, d]) => (
         <div className="tnc-c" key={k}><b>{k}</b><h3>{t}</h3><p>{d}</p></div>
       ))}</div>
+      <ol className="tnc-l">{R.map(([t, d]) => <li key={t}><b>{t}</b> {d}</li>)}</ol>
     </section>
   );
 }

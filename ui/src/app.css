@@ -409,3 +409,4 @@ h1{letter-spacing:-.02em}
 .mail-h{margin:0;font-size:12.5px;line-height:1.5;color:var(--mute);overflow-wrap:anywhere}.mail-h.err{color:var(--err)}
 .lb-retry{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .lb-name em.cl{color:#0b0b0c;background:var(--accent);border-color:var(--accent)}
+.tnc-l{list-style:none;counter-reset:t;margin:34px 0 0;padding:0;display:grid;gap:0;max-width:760px}.tnc-l li{counter-increment:t;position:relative;padding:16px 0 16px 44px;border-top:1px solid var(--line);color:var(--mute);font:400 15px/1.55 var(--sans)}.tnc-l li:last-child{border-bottom:1px solid var(--line)}.tnc-l li:before{content:counter(t,decimal-leading-zero);position:absolute;left:0;top:18px;font:400 11px var(--mono);color:var(--accent)}.tnc-l b{color:var(--fg);font-weight:500;margin-right:6px}
