@@ -9,7 +9,7 @@ export function useStatus() {
   const apply = useCallback(j => { if (!j || !j.now) return; offset.current = j.now - Date.now(); setInfo(j); }, []);
   useEffect(() => {
     let live = true;
-    const load = () => fetch("/api/status").then(r => r.json()).then(j => live && apply(j)).catch(() => {});
+    const load = () => fetch("/ens-card/api/status").then(r => r.json()).then(j => live && apply(j)).catch(() => {});
     load(); const id = setInterval(load, 60000); return () => { live = false; clearInterval(id); };
   }, [apply]);
   return { info, apply, offset };

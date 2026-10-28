@@ -1,5 +1,16 @@
 {
   "outputDirectory": "public",
   "cleanUrls": true,
-  "functions": { "api/*.js": { "maxDuration": 60 } }
+  "functions": { "api/*.js": { "maxDuration": 60 } },
+  "redirects": [
+    { "source": "/", "destination": "/ens-card", "permanent": false },
+    { "source": "/terms", "destination": "/ens-card/terms", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/ens-card", "destination": "/index.html" },
+    { "source": "/ens-card/", "destination": "/index.html" },
+    { "source": "/ens-card/terms", "destination": "/terms.html" },
+    { "source": "/ens-card/api/:path*", "destination": "/api/:path*" },
+    { "source": "/ens-card/:file*", "destination": "/:file*" }
+  ]
 }

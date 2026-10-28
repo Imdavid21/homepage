@@ -46,7 +46,7 @@ function Callout({ g, i, focus, setFocus }) {
 }
 
 const Plate = memo(function Plate({ hot }) {
-  const [decode, setDecode] = useState(true), [side, setSide] = useState("front"), [focus, setFocus] = useState(null), still = useRef(false), narrow = useNarrow();
+  const [decode, setDecode] = useState(() => !matchMedia("(max-width:700px)").matches), [side, setSide] = useState("front"), [focus, setFocus] = useState(null), still = useRef(false), narrow = useNarrow();
   useEffect(() => { const f = e => setSide(e.detail); window.addEventListener("hl-side", f); return () => window.removeEventListener("hl-side", f); }, []);
   // on wide screens the map steps aside while the laser runs; stacked, it stays put (dimmed) so nothing below jumps
   const on = decode && (!hot || narrow);
@@ -116,7 +116,7 @@ function verdictFor(j, st, phase) {
   if (phase === "engraving") return "Eligible. Etching your card";
   if (j.claimed) return "Your card is claimed. See you at House of HYPE.";
   if (j.nameTaken) return "A card for \"" + j.name.replace(/\.(hl|eth)$/, "") + "\" has already been claimed.";
-  if (!j.eligible) return "Not eligible this time. A score of " + (j.threshold || 80) + " or more is needed to claim.";
+  if (!j.eligible) return "Not eligible this time. A score of " + (j.threshold || 90) + " or more is needed to claim.";
   if (st === "closed") return "You're eligible, but claims are closed.";
   if (j.left <= 0) return "You're eligible, but all 25 cards are claimed.";
   if (st === "upcoming") return "You're eligible. Claims open on " + fmtDay(j.opensAt) + ".";
@@ -189,7 +189,7 @@ function useLeaderboard(refresh) {
   useEffect(() => { const id = setInterval(() => setTick(t => t + 1), 90000); return () => clearInterval(id); }, []);
   useEffect(() => {
     let live = true; const fresh = !first.current && !!refresh; first.current = false;
-    fetch("/api/leaderboard" + (fresh ? "?fresh=1&t=" + Date.now() : "")).then(async r => { const j = await r.json().catch(() => ({})); if (!r.ok || !j.rows) throw new Error(j.error || "unavailable"); return j; })
+    fetch("/ens-card/api/leaderboard" + (fresh ? "?fresh=1&t=" + Date.now() : "")).then(async r => { const j = await r.json().catch(() => ({})); if (!r.ok || !j.rows) throw new Error(j.error || "unavailable"); return j; })
       .then(j => live && setLb(j)).catch(() => live && setLb(v => v && v.rows ? v : { rows: [], cards: 25, error: true }));
     return () => { live = false; };
   }, [refresh, tick]);
@@ -249,7 +249,7 @@ function Leaderboard({ me, lb, retry }) {
 function Terms() {
   const T = [
     ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name, whether it is the .hl or the .eth."],
-    ["27 to 29 Oct", "Claim window", "Opens 27 October. Closes 29 October, 11:59 PM IST. A score of 80 or more is needed. Claim with the email you used to register on Luma."],
+    ["27 to 29 Oct", "Claim window", "Opens 27 October. Closes 29 October, 11:59 PM IST. A score of 90 or more is needed. Claim with the email you used to register on Luma."],
     ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
   ];
   return (
@@ -298,7 +298,7 @@ export default function App({ socials }) {
     if (cleanW().some(w => !ADDR.test(w))) { setMsg({ t: "Paired wallets must be 0x addresses.", err: true }); return; }
     HL().unlock(); setChecking(true); setMsg({ t: "Checking " + n + "…", err: false }); setRes(null); setClaimErr(""); setVid({ status: "idle", left: 0 });
     try {
-      const [ok, j] = await post("/api/check", { name: n, wallets: cleanW() });
+      const [ok, j] = await post("/ens-card/api/check", { name: n, wallets: cleanW() });
       if (!ok) { setMsg({ t: j.error || "Something went wrong.", err: true }); setChecking(false); return; }
       apply(j); setMsg({ t: "", err: false }); setChecking(false); setPhase("reading");
       await sleep(reduce ? 200 : 1200);
@@ -312,7 +312,7 @@ export default function App({ socials }) {
   const replay = async () => { if (phase !== "done") return; setPhase("engraving"); show("#stage", "center"); await sleep(reduce ? 0 : 450); await HL().engrave(); await sleep(reduce ? 0 : 700); setPhase("done"); show(".console", "start"); };
   const claim = async () => {
     setClaiming(true); setClaimErr("");
-    try { const [ok, j] = await post("/api/claim", { name: norm(res?.name || name), wallets: cleanW(), email: email.trim() }); if (j && j.now) apply(j); if (ok) setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left })); else setClaimErr(j.error || "Couldn't claim. Try again."); }
+    try { const [ok, j] = await post("/ens-card/api/claim", { name: norm(res?.name || name), wallets: cleanW(), email: email.trim() }); if (j && j.now) apply(j); if (ok) setRes(r => ({ ...r, claimed: true, left: j.left ?? r.left })); else setClaimErr(j.error || "Couldn't claim. Try again."); }
     catch { setClaimErr("Network error. Try again."); }
     setClaiming(false);
   };
