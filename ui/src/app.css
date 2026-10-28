@@ -409,3 +409,6 @@ h1{letter-spacing:-.02em}
 .mail-h{margin:0;font-size:12.5px;line-height:1.5;color:var(--mute);overflow-wrap:anywhere}.mail-h.err{color:var(--err)}
 .lb-retry{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .lb-name em.cl{color:#0b0b0c;background:var(--accent);border-color:var(--accent)}
+.tnc-t{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:0;padding:0;color:inherit;cursor:pointer;text-align:left}.tnc-t h2{margin:0}.tnc-t span{font:400 18px var(--mono);color:var(--mute)}.tnc-t:hover span{color:var(--fg)}
+.tnc-d{display:grid;grid-template-columns:repeat(2,1fr);gap:0 48px;margin:20px 0 0;padding:0}.tnc-d>div{padding:14px 0;border-top:1px solid var(--line)}.tnc-d dt{font:500 13.5px var(--sans);color:var(--fg);margin:0 0 4px}.tnc-d dd{margin:0;font:400 13px/1.55 var(--sans);color:var(--mute)}
+@media(max-width:700px){.tnc-d{grid-template-columns:1fr}}
