@@ -259,7 +259,9 @@ function Terms() {
       <div className="tnc-g">{T.map(([k, t, d]) => (
         <div className="tnc-c" key={k}><b>{k}</b><h3>{t}</h3><p>{d}</p></div>
       ))}</div>
-      <ol className="tnc-l">{R.map(([t, d]) => <li key={t}><b>{t}</b> {d}</li>)}</ol>
+      <div className="tnc-g tnc-g2">{R.map(([t, d], i) => (
+        <div className="tnc-c" key={t}><b>{String(i + 1).padStart(2, "0")}</b><h3>{t}</h3><p>{d}</p></div>
+      ))}</div>
     </section>
   );
 }
