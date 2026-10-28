@@ -701,11 +701,11 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
   // ---------- back, words version: Hyperliquid words in place of the bytes, the numbers that matter set quieter among them, the lockup at the centre ----------
   const BACK_STYLE = window.__BACK || "words";
   // Hyperliquid terms only: its own assets (HYPE, PURR), the products live today and the real world markets HIP-3 deployers list. No other chains' coins, no USDH.
-  const HL_WORDS = ["HYPERCORE", "HYPEREVM", "HYPE", "HYPERBFT", "BTC", "ETH", "ORDER BOOK", "PERPS", "PURR", "SPOT", "USDC", "HLP", "VAULTS", "HIP-3", "BUILDER CODES", "ASSISTANCE FUND", "STAKING", "VALIDATORS", "FUNDING", "ORACLE", "LIQUIDATIONS", "CROSS MARGIN", "PORTFOLIO MARGIN", "TWAP", "COREWRITER", "PRECOMPILES", "HYPURR", "SELF CUSTODY", "GOLD", "SILVER", "CRUDE OIL", "S&P 500", "NASDAQ", "COPPER"];
-  const ENS_NUMBERS = ["2017 MAINNET", "100,000,000 $ENS"];
-  const ENS_WORDS = ["ENS", ".ETH", "$ENS", "ENS DAO", "ENS LABS", "ENSv2", "ENS APP", "NAMEHASH", "RESOLVER", "REGISTRY", "SUBNAMES", "PRIMARY NAME", "REVERSE RECORD", "TEXT RECORDS", "CONTENTHASH", "NAME WRAPPER", "ENSIP", "CCIP-READ", "EIP-137", "AVATAR", "DNSSEC", "WEB3 USERNAME"];
+  const HL_WORDS = ["HYPERCORE", "HYPEREVM", "HYPERBFT", "COREWRITER", "ORDER BOOK", "PERPS", "SPOT", "FUNDING", "LIQUIDATIONS", "CROSS MARGIN", "PORTFOLIO MARGIN", "ISOLATED MARGIN", "TWAP", "ORACLE", "LEVERAGE", "MARK PRICE", "OPEN INTEREST", "MAKER", "TAKER", "STOP LOSS", "HIP-3", "HIP-4", "VAULTS", "HLP", "SELF CUSTODY", "HYPE", "PURR", "HYPURR", "USDC", "BTC", "ETH", "HYPERLIQUID INDIA", "HOUSE OF HYPE"];
+  const ENS_NUMBERS = [];
+  const ENS_WORDS = [".ETH", "ENS", "PRIMARY NAME", "AVATAR", "SUBNAMES", "TEXT RECORDS", "WEB3 USERNAME", "WALLET NAME", "ADDRESS RECORD", "MULTICHAIN ADDRESSES", "ENS EXPLORER", "ENSv2", "ONCHAIN DNS NAME"];
   // fixed facts only, so the metal never goes out of date: supply and genesis split, and the chain's stated speed (Hyperliquid docs)
-  const HL_NUMBERS = ["29.11.2024 TGE", "1,000,000,000 MAX SUPPLY", "38.888% EMISSIONS", "23.8% CONTRIBUTORS", "6% FOUNDATION", "0.3% GRANTS", "0.012% HYPERLIQUIDITY", "200,000 ORDERS/S", "0.2s MEDIAN LATENCY"];
+  const HL_NUMBERS = ["1,000,000,000 MAX SUPPLY", "29.11.2024", "31% TO USERS", "310,000,000 AIRDROP"];
   function bitsOf(hexStr) { const out = []; for (const ch of hexStr) { const v = parseInt(ch, 16); if (isNaN(v)) continue; for (let k = 3; k >= 0; k--) out.push((v >> k) & 1); } return out; }
   function backWords(x, mode, d) {
     // Hyperliquid terms left, ENS terms right, 50/50, each side in a seeded random order; every row runs edge to edge, the lockup sits in the centre
