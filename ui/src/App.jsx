@@ -249,7 +249,7 @@ function Leaderboard({ me, lb, retry }) {
 function Terms() {
   const T = [
     ["25", "Numbered cards", "NFC metal cards made by Hyperliquid India and ENS. One card per wallet, per email and per name."],
-    ["28 to 29 Oct", "Claim window", "Opens 28 October, 8:00 PM IST. Closes 29 October, 8:00 PM IST. A score of 90 or more is needed. Claim with the email you used to register on Luma."],
+    ["28 to 29 Oct", "Claim window", "Opens 28 October, 8:00 PM IST. Closes 29 October, 8:00 PM IST. A score of 90 or more is needed, counted on Hyperliquid or Ethereum, whichever is higher. Claim with the email you used to register on Luma."],
     ["03 Nov", "Pickup in Mumbai", "Collect in person at House of HYPE. Show proof of the wallet behind your name."],
   ];
   return (

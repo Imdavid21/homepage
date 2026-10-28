@@ -78,3 +78,15 @@ test("one name, one card; below 90 cannot claim", async () => {
   const r = await H.claim({ name: "x" + good, email: "p1@x.io", ip: "p3" }); assert.ok([403, 409].includes(r[0]));
   assert.equal((await H.check({ name: "someone.hl", ip: "p4" }))[0], 404);
 });
+test("the higher of Hyperliquid and Ethereum counts", () => {
+  const hlOnly = { firstTs: NOW - 400 * 864e5, volume: 5e6, hype: 100, hipMarkets: 10, trades: 1000, nameTs: NOW - 400 * 864e5 };
+  const ethOnly = { firstTs: 0, volume: 0, hype: 0, hipMarkets: 0, trades: 0, ethFirstTs: NOW - 400 * 864e5, ethTxs: 150, ethBal: 0.3, nameTs: NOW - 400 * 864e5 };
+  assert.equal(computeScore(hlOnly, NOW).track, "Hyperliquid");
+  const e = computeScore(ethOnly, NOW); assert.equal(e.track, "Ethereum"); assert.equal(e.score, 100); assert.equal(e.eligible, true);
+  const both = computeScore({ ...hlOnly, ethFirstTs: NOW - 400 * 864e5, ethTxs: 1, ethBal: 0 }, NOW); assert.equal(both.track, "Hyperliquid");
+});
+test("a modest year-old Ethereum wallet qualifies", () => {
+  const r = computeScore({ firstTs: 0, volume: 0, hype: 0, hipMarkets: 0, trades: 0, ethFirstTs: NOW - 365 * 864e5, ethTxs: 60, ethBal: 0.1, nameTs: NOW - 365 * 864e5 }, NOW);
+  assert.ok(r.score >= 90, String(r.score));
+});
+test("a brand new empty Ethereum wallet does not", () => assert.ok(computeScore({ firstTs: 0, volume: 0, hype: 0, hipMarkets: 0, trades: 0, ethFirstTs: NOW - 5 * 864e5, ethTxs: 2, ethBal: 0.001, nameTs: null }, NOW).score < 50));
