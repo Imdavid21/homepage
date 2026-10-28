@@ -124,18 +124,33 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
 .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);padding:16px}
 .empty b{display:block;font-family:var(--serif);font-weight:400;font-size:40px;color:var(--ink)}
 
+/* ---------- search sheet (phones): input at the top, results under it, nothing behind the keyboard ---------- */
+.sx{position:fixed;left:0;right:0;top:0;height:100%;z-index:75;background:var(--bg);display:flex;flex-direction:column;animation:sxin .28s var(--out) both}
+@keyframes sxin{from{opacity:0;transform:translateY(12px)}}
+.sx-bar{display:flex;gap:10px;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;border-bottom:1px solid var(--line)}
+.sx-bar label{position:relative;flex:1}
+.sx-bar input{width:100%;height:46px;padding:0 16px 0 42px;border-radius:999px;border:1px solid var(--accent);background:var(--bg2);outline:0;font-size:16px}
+.sx-bar svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--muted)}
+.sx-bar button{border:0;background:none;color:var(--ink2);font-size:15px;padding:8px 2px;cursor:pointer}
+.sx-list{list-style:none;margin:0;padding:6px 0 40vh;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;overscroll-behavior:contain}
+.sx-list li{display:flex;align-items:center;gap:14px;padding:10px 16px;cursor:pointer}
+.sx-list li:active{background:var(--bg2)}
+.sx-list .av{width:46px;height:46px;border-radius:50%;overflow:hidden;flex:0 0 auto;background:var(--bg2)}
+.sx-list .av img{width:100%;height:100%;object-fit:cover;display:block}
+.sx-list .t{min-width:0}
+.sx-list b{display:block;font-weight:500;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-list span{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-list mark{background:none;color:var(--accent)}
+.sx-empty{padding:28px 16px;color:var(--muted)}
+
 /* ---------- phones: one screen, card first, drum below, search under the thumb ---------- */
 @media (max-width:860px){
   html.app,html.app body{overflow:hidden;height:100%;overscroll-behavior:none}
-  .find{position:fixed;left:0;right:0;top:0;display:flex;flex-direction:column;height:var(--vvh,100dvh);overflow:hidden;z-index:5;background:var(--bg);will-change:transform}
+  .find{position:fixed;left:0;right:0;top:0;display:flex;flex-direction:column;height:100%;height:100dvh;overflow:hidden;z-index:5;background:var(--bg)}
   footer{display:none}
   .find-head .welcome{display:block;order:2;margin:4px 16px 0;font-size:13px;color:var(--muted)}
   .find-head .welcome b{font-weight:400;color:var(--ink2)}
-  html.kb .find-head h1,html.kb .find-head .lead,html.kb .find-head .welcome{display:none}
-  html.kb .find-r{flex:1 1 auto;min-height:0;padding-top:12px}
-  html.kb .wcard{height:100%}
-  html.kb .wcard .soc{display:none}
-  html.kb .wheel{flex:0 0 132px;min-height:0}
+  .search input[readonly]{cursor:pointer}
   .find-l,.find-head{display:contents}
   .find-head h1{order:1;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px 0;font-size:clamp(40px,11.5vw,54px)}
   .find-head .lead{order:2;margin:6px 16px 0;font-size:13px}
@@ -204,6 +219,14 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
   </footer>
 </main>
 
+<div class="sx" id="sx" hidden role="dialog" aria-label="Search guests">
+  <div class="sx-bar">
+    <label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="sxq" type="search" placeholder="Name, company or handle" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-label="Search guests"></label>
+    <button type="button" id="sxx">Cancel</button>
+  </div>
+  <ul class="sx-list" id="sxl"></ul>
+</div>
 <div id="pf" aria-hidden="true"><div class="scrim"></div></div>
 
 <script>
@@ -284,27 +307,16 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
   const saved = urlCode || ls.get('hoh-code');
   if (saved) { $('code').value = saved; tryCode(saved, true); } else setTimeout(() => $('code').focus({ preventScroll: true }), 900);
 
-  // phones: pin the finder to the visual viewport so the keyboard never scrolls the page
+  // phones: the finder is one fixed screen; search opens its own sheet at the top
   const PH = matchMedia('(max-width:860px)');
-  let maxH = 0;
-  function fitViewport() {
-    const v = window.visualViewport, H = document.documentElement, f = document.querySelector('.find');
-    H.classList.toggle('app', PH.matches);
-    if (!PH.matches || !f) { f && (f.style.transform = ''); return; }
-    const h = v ? v.height : innerHeight;
-    H.style.setProperty('--vvh', h + 'px');
-    f.style.transform = v ? `translateY(${v.offsetTop}px)` : '';
-    if (document.activeElement !== $('q')) maxH = Math.max(maxH, h);
-    H.classList.toggle('kb', document.activeElement === $('q') && h < maxH * .8);
-    if (scrollY) scrollTo(0, 0);
+  function phoneMode() {
+    document.documentElement.classList.toggle('app', PH.matches);
+    $('q').readOnly = PH.matches;
+    $('q').placeholder = PH.matches ? 'Search a name, company or handle' : 'Search people, companies, handles';
   }
-  if (window.visualViewport) { visualViewport.addEventListener('resize', fitViewport); visualViewport.addEventListener('scroll', fitViewport); }
-  addEventListener('resize', fitViewport);
-  PH.addEventListener && PH.addEventListener('change', fitViewport);
-  $('q').addEventListener('focus', () => setTimeout(fitViewport, 50));
-  $('q').addEventListener('blur', () => setTimeout(fitViewport, 50));
+  PH.addEventListener && PH.addEventListener('change', phoneMode);
   function enter() {
-    fitViewport();
+    phoneMode();
     $('app').hidden = false;
     requestAnimationFrame(() => $('gate').classList.add('out'));
     setTimeout(() => { $('gate').hidden = true; }, 1200);
@@ -455,6 +467,28 @@ footer .partners{margin-top:16px;font-size:13px;color:var(--muted)}
       }, 90);
     });
     $('q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); openFromCard(); } });
+    // phone search sheet
+    const sx = $('sx'), sxq = $('sxq'), sxl = $('sxl');
+    const hl = (v, t) => { v = esc(v); if (!t) return v; const i = v.toLowerCase().indexOf(esc(t)); return i < 0 ? v : v.slice(0, i) + '<mark>' + v.slice(i, i + esc(t).length) + '</mark>' + v.slice(i + esc(t).length); };
+    function results() {
+      const t = sxq.value.trim().toLowerCase();
+      const rank = g => { if (!t) return 0; const n = g.name.toLowerCase(); if (n.startsWith(t)) return 0; if (n.split(/\s+/).some(w => w.startsWith(t))) return 1; if (g.x && g.x.toLowerCase().startsWith(t)) return 2; if ([g.company, g.title, g.x].some(v => v && v.toLowerCase().includes(t))) return 3; if (n.includes(t)) return 4; return 9; };
+      const list = guests.map((g, i) => [rank(g), i, g]).filter(r => r[0] < 9).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, 80);
+      sxl.innerHTML = list.length ? list.map(([, i, g]) => `<li data-i="${i}"><div class="av">${imgTag(g)}</div><div class="t"><b>${hl(g.name, t)}</b><span>${[g.title, g.company].filter(Boolean).map(v => hl(v, t)).join(' at ') || (g.x ? '@' + hl(g.x, t) : '&nbsp;')}</span></div></li>`).join('')
+        : '<li class="sx-empty">No one by that name yet. Try a first name, a company or an @handle.</li>';
+    }
+    function openSearch() { sx.hidden = false; sxq.value = ''; results(); sxq.focus(); sxl.scrollTop = 0; }
+    function closeSearch() { sxq.blur(); sx.hidden = true; scrollTo(0, 0); }
+    const openIfPhone = e => { if (!PH.matches) return; e.preventDefault(); openSearch(); };
+    $('q').addEventListener('click', openIfPhone);
+    $('q').addEventListener('focus', e => { if (PH.matches && sx.hidden) { $('q').blur(); openSearch(); } });
+    let st;
+    sxq.addEventListener('input', () => { clearTimeout(st); st = setTimeout(results, 60); });
+    sxq.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const f = sxl.querySelector('li[data-i]'); f && f.click(); } });
+    sxl.addEventListener('touchstart', () => sxq.blur(), { passive: true });
+    sxl.addEventListener('click', e => { const li = e.target.closest('li[data-i]'); if (!li) return; closeSearch(); setTarget(+li.dataset.i, true); });
+    $('sxx').addEventListener('click', closeSearch);
+    addEventListener('keydown', e => { if (e.key === 'Escape' && !sx.hidden) closeSearch(); });
     setTarget(pos, true);
     addEventListener('resize', loop);
   }
