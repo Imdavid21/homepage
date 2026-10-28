@@ -1130,10 +1130,30 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
   function wrap(x, text, w) { const out = []; let line = ""; text.split(" ").forEach(wd => { const t = line ? line + " " + wd : wd; if (x.measureText(t).width > w && line) { out.push(line); line = wd; } else line = t; }); if (line) out.push(line); return out; }
   const capFor = j => (j.claimed ? j.name + " scored " + j.score + "/100 on Hyperliquid onchain and claimed a laser etched ENS x Hyperliquid India metal card. " : j.name + " scored " + j.score + "/100 on Hyperliquid onchain and is eligible for a laser etched ENS x Hyperliquid India metal card. ") + "Collecting it at House of HYPE, Mumbai, 3 Nov.";
   let vidTmp = null, blobMask = null, blobCv = null;
+  const revMasks = {};
+  function revMask(k, w, h) {
+    // the 8 x 8 Bayer matrix in 4 px cells repeats every 32 px: build one tile per level and pattern-fill it
+    const key = k + ":" + w + "x" + h; if (revMasks[key]) return revMasks[key];
+    const tile = document.createElement("canvas"); tile.width = tile.height = 32; const tg = tile.getContext("2d"), lv = k / 16; tg.fillStyle = "#fff";
+    for (let jj = 0; jj < 8; jj++) for (let ii = 0; ii < 8; ii++) if (__dither.bayer(ii, jj) < lv) tg.fillRect(ii * 4, jj * 4, 4, 4);
+    const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d"); g.fillStyle = g.createPattern(tile, "repeat"); g.fillRect(0, 0, w, h);
+    return (revMasks[key] = c);
+  }
+  let haloCv = null;
+  function vidHalo() {
+    if (haloCv) return haloCv;
+    const c = haloCv = document.createElement("canvas"); c.width = VW; c.height = VH; const g = c.getContext("2d"), S = 12;
+    const BYR = (() => { let m = [[0, 2], [3, 1]]; for (let n = 2; n < 8; n *= 2) { const q = n * 2, o = Array.from({ length: q }, () => Array(q).fill(0)); for (let y = 0; y < q; y++) for (let xx = 0; xx < q; xx++) o[y][xx] = 4 * m[y % n][xx % n] + [[0, 2], [3, 1]][0 | y / n][0 | xx / n]; m = o; } return m.flat().map(v => (v + .5) / 64); })();
+    g.fillStyle = "rgba(160,170,168,.5)";
+    for (let jj = 0; jj < VH / S; jj++) for (let ii = 0; ii < VW / S; ii++) { const px = ii * S + 6, py = jj * S + 6, dd = Math.hypot((px - VW / 2) / 640, (py - 640) / 520), v = Math.pow(Math.max(0, 1 - dd), 1.5) * .9; if (v > BYR[((jj & 7) << 3) | (ii & 7)]) g.fillRect(px - 2, py - 2, 4, 4); }
+    return c;
+  }
   function drawVideo(x, t, vo, j) {
     const bgp = Math.min(1, t / .8), ease = p => 1 - Math.pow(1 - p, 3);
     x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = "source-over"; x.globalAlpha = 1;
     x.fillStyle = "#060606"; x.fillRect(0, 0, VW, VH);
+    // the page's dotted halo behind the card, drawn once and reused
+    x.globalAlpha = ease(bgp); x.drawImage(vidHalo(), 0, 0); x.globalAlpha = 1;
     // brands
     x.globalAlpha = ease(bgp);
     if (logoImgs.hl && logoImgs.ens) { const h = 34, wl = h * 1145 / 156, ve = logoImgs.ens, we = h * (ve.width / ve.height || 1), gap = 26, tot = wl + gap * 2 + 14 + we, sx = (VW - tot) / 2; x.drawImage(logoImgs.hl, sx, 70, wl, h); x.fillStyle = "#8C8C8C"; x.font = '500 24px "Instrument Sans", sans-serif'; x.textBaseline = "middle"; x.fillText("x", sx + wl + gap, 70 + h / 2 + 1); x.drawImage(ve, sx + wl + gap * 2 + 14, 70, we, h); }
@@ -1147,17 +1167,16 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
     const tTurn = ENG0 + TL.turn * (ENG1 - ENG0), tHome = ENG1 + .5, sm = u => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u); };
     const ang = Math.PI * (sm((t - tTurn) / .65) + sm((t - tHome) / .65)), cs = Math.cos(ang), face = cs >= 0 ? vo.front : vo.back, sx = Math.max(.02, Math.abs(cs));
     x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(tilt);
-    x.save(); x.scale(sc, sc); x.filter = "blur(26px)"; x.fillStyle = "rgba(0,0,0,.75)"; x.beginPath(); x.ellipse(0, chh / 2 + 36, cw * .42 * sx, 28, 0, 0, 7); x.fill(); x.restore();
+    x.save(); x.scale(sc, sc); { const rx = cw * .42 * sx + 26; x.translate(0, chh / 2 + 36); x.scale(1, 54 / rx); const g = x.createRadialGradient(0, 0, 0, 0, 0, rx); g.addColorStop(0, "rgba(0,0,0,.75)"); g.addColorStop(.6, "rgba(0,0,0,.45)"); g.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = g; x.beginPath(); x.arc(0, 0, rx, 0, 7); x.fill(); } x.restore();
     x.scale(sc * sx, sc);
     x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.clip();
     x.filter = "none";
     const lockFlash = p >= LOCK ? Math.max(0, 1 - (t - (ENG0 + LOCK * (ENG1 - ENG0))) / 1.1) : 0;
     if (rev < 1 && window.__dither) {
-      // 1-bit reveal: the card arrives through an ordered dither
-      const tc = vidTmp || (vidTmp = document.createElement("canvas")); tc.width = Math.round(cw); tc.height = Math.round(chh); const tx = tc.getContext("2d"); tx.clearRect(0, 0, tc.width, tc.height); tx.drawImage(face.col, 0, 0, tc.width, tc.height);
-      const im = tx.getImageData(0, 0, tc.width, tc.height), dd = im.data, bs = 4;
-      for (let j = 0; j < tc.height; j++) for (let i = 0; i < tc.width; i++) if (__dither.bayer(i / bs | 0, j / bs | 0) >= rev) dd[(j * tc.width + i) * 4 + 3] = 0;
-      tx.putImageData(im, 0, 0); x.drawImage(tc, -cw / 2, -chh / 2, cw, chh);
+      // 1-bit reveal: the card arrives through an ordered dither (masks are made once, so recording keeps its frame rate)
+      const tc = vidTmp || (vidTmp = document.createElement("canvas")); tc.width = Math.round(cw); tc.height = Math.round(chh); const tx = tc.getContext("2d"); tx.globalCompositeOperation = "source-over"; tx.clearRect(0, 0, tc.width, tc.height); tx.drawImage(face.col, 0, 0, tc.width, tc.height);
+      tx.globalCompositeOperation = "destination-in"; tx.drawImage(revMask(Math.floor(rev * 16), tc.width, tc.height), 0, 0); tx.globalCompositeOperation = "source-over";
+      x.drawImage(tc, -cw / 2, -chh / 2, cw, chh);
     } else x.drawImage(face.col, -cw / 2, -chh / 2, cw, chh);
     if (Math.abs(cs) < .999) { x.fillStyle = `rgba(0,0,0,${.55 * (1 - Math.abs(cs))})`; x.fillRect(-cw / 2, -chh / 2, cw, chh); }
     x.filter = "none";
@@ -1165,12 +1184,12 @@ function lockup(x, c, X, Y, h) { return lockup2(x, c, X, Y, h);
     const sh = ((t * .22) % 1.6 - .3) * cw, sg = x.createLinearGradient(-cw / 2 + sh - 160, -chh / 2, -cw / 2 + sh + 160, chh / 2); sg.addColorStop(0, "rgba(255,255,255,0)"); sg.addColorStop(.5, "rgba(255,255,255,.10)"); sg.addColorStop(1, "rgba(255,255,255,0)"); x.fillStyle = sg; x.fillRect(-cw / 2, -chh / 2, cw, chh);
     x.restore(); x.save(); x.globalAlpha = ca; x.translate(cx, cy); x.rotate(tilt); x.scale(sc * sx, sc); x.strokeStyle = "rgba(255,255,255,.22)"; x.lineWidth = 2; x.beginPath(); x.roundRect(-cw / 2, -chh / 2, cw, chh, R * K * cw / TEX_W); x.stroke();
     x.restore();
-    x.globalAlpha = 1; x.textAlign = "center"; x.fillStyle = "#6f6f6f"; x.font = '400 22px "Instrument Sans", sans-serif'; x.fillText("House of HYPE  ·  Mumbai  ·  3 Nov 2026", VW / 2, 1312);
+    x.globalAlpha = 1; x.textAlign = "center"; x.fillStyle = "#6f6f6f"; x.font = '400 22px "Instrument Sans", sans-serif'; x.fillText("House of HYPE  |  Mumbai  |  3 Nov 2026", VW / 2, 1312);
   }
 
   async function recordVideo(j, onProgress) {
     if (!window.MediaRecorder) throw new Error("unsupported");
-    await loadLogos(); prepEngrave();
+    await loadLogos(); prepEngrave(); vidHalo(); if (window.__dither) for (let k = 0; k < 16; k++) revMask(k, 940, Math.round(940 * TEX_H / TEX_W));
     const cvs = document.createElement("canvas"); cvs.width = VW; cvs.height = VH; const x = cvs.getContext("2d");
     const vo = { front: { col: cv(), rough: cv() }, back: { col: cv(), rough: cv() } };
     const c = ac(); const rd = c ? c.createMediaStreamDestination() : null;
