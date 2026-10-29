@@ -50,3 +50,7 @@ create table if not exists hoh_guests (id text primary key, name text not null, 
 alter table hoh_guests enable row level security;
 create table if not exists hoh_config (key text primary key, value text not null); -- attendee_code, admin_key
 alter table hoh_config enable row level security;
+
+-- wallets of names taken off the site; they can never claim again. Server side only.
+create table if not exists blocked (address text primary key, name text, created_at timestamptz not null default now());
+alter table blocked enable row level security;
