@@ -290,9 +290,10 @@ html.app .who b{max-width:76px}
 html.app .bpill{display:flex}
 html.app .bpill b{color:var(--primary);text-decoration:none;font-family:var(--display);font-weight:700}
 html.app .screen{grid-row:2;grid-column:1;border-radius:14px}
-html.app .after{grid-row:2;grid-column:1;align-self:end;z-index:3;margin:0 12px 12px;padding:12px;gap:10px;border-radius:16px;background:var(--glass);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid var(--edge);grid-template-columns:1fr 1fr}
-html.app .after .again{grid-column:1/-1;height:54px}
-html.app .after .rw{height:46px;font-size:13px}
+html.app .after{grid-row:3;grid-column:1;align-self:start;z-index:3;margin:10px 0 0;padding:10px;gap:8px;border-radius:16px;background:var(--glass);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid var(--edge);grid-template-columns:1fr 1fr}
+html.app .after .again{grid-column:1/-1;height:50px}
+html.app .after .rw{height:42px;font-size:13px}
+html.app .after:not([hidden])~.mini{display:none}
 html.app .mini{display:grid;grid-row:3;grid-column:1;align-self:end;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 2px 0;padding:0;border:0;background:none;text-align:left;cursor:pointer}
 html.app .mini[hidden]{display:none}
 html.app .mini .m{display:flex;flex-direction:column;gap:3px;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--grid);background:var(--glass)}
@@ -301,7 +302,7 @@ html.app .mini .m i{font-style:normal;font-family:var(--display);font-weight:500
 html.app .mini .m.me i{color:var(--primary)}
 html.app .mini .m b{font-family:var(--display);font-weight:500;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
 html.app .mini .m s{text-decoration:none;font-family:var(--mono);font-size:11px;color:var(--muted)}
-html.app .pad{grid-row:4;grid-column:1;margin-top:10px;gap:10px;grid-template-columns:1fr 1.5fr;align-self:end;height:min(42vh,280px);min-height:120px}
+html.app .pad{grid-row:4;grid-column:1;margin-top:10px;gap:10px;grid-template-columns:1fr 1.5fr;align-self:end;height:clamp(120px,34vh,280px)}
 html.app .pad button{height:100%;border-radius:18px;font-size:16px}
 html.app .pad button.jump{background:linear-gradient(180deg,rgba(106,198,247,.18),rgba(106,198,247,.06));border-color:var(--edge)}
 html.app .pad button.jump.on{background:rgba(106,198,247,.3)}
@@ -315,11 +316,13 @@ html.app .entry .go{height:52px;font-size:16px}
 html.app .bscrim{display:block;position:fixed;inset:0;z-index:39;background:rgba(3,6,10,.6);opacity:0;pointer-events:none;transition:opacity .3s}
 html.app .bscrim.on{opacity:1;pointer-events:auto}
 html.app .board{background:#0b1218;position:fixed;left:0;right:0;bottom:0;z-index:40;max-height:82vh;max-height:82dvh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
-  border-radius:20px 20px 0 0;border-bottom:0;padding:14px 0 calc(14px + env(safe-area-inset-bottom,0px));transform:translateY(102%);transition:transform .45s var(--out)}
+  border-radius:20px 20px 0 0;border-bottom:0;padding:0 0 calc(14px + env(safe-area-inset-bottom,0px));transform:translateY(102%);transition:transform .45s var(--out)}
 html.app .board.open{transform:none}
-html.app .board-head{position:sticky;top:0;z-index:1;background:var(--panel);padding:4px 16px 12px;gap:10px;flex-wrap:wrap}
-html.app .board-head::before{content:"";position:absolute;left:50%;top:-6px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--grid)}
-html.app .bclose{display:inline-flex;align-items:center;margin-left:auto;height:34px}
+html.app .board-head{position:sticky;top:0;z-index:1;background:#0b1218;padding:18px 16px 12px;gap:10px;flex-wrap:nowrap}
+html.app .board-head h2{white-space:nowrap}
+html.app .live{white-space:nowrap}
+html.app .board-head::before{content:"";position:absolute;left:50%;top:7px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--grid)}
+html.app .bclose{display:inline-flex;align-items:center;margin-left:auto;height:34px;flex-shrink:0}
 html.app .r{padding:12px 16px}
 html.app .modal{align-items:end;padding:0;display:grid}
 html.app .sheet{width:100%;max-height:90vh;max-height:90dvh;overflow:auto;overscroll-behavior:contain;border-radius:20px 20px 0 0;border-bottom:0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))}
@@ -342,8 +345,10 @@ html.app.land .pad button.jump{align-items:flex-end;padding-left:0;padding-right
 html.app.land .pad button.on{background:radial-gradient(60% 60% at 50% 100%,rgba(106,198,247,.18),transparent 70%);transform:none}
 html.app.land .pad button b{font-size:13px;letter-spacing:.06em;text-shadow:0 1px 8px rgba(0,0,0,.6)}
 html.app.land .pad button small{font-size:10px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
-html.app.land .after{grid-row:1;margin:0 auto max(14px,env(safe-area-inset-bottom,0px));width:min(420px,70vw);z-index:5}
-html.app.land .entry{align-items:center;padding:16px}
+html.app.land .after{grid-row:1;align-self:end;margin:0 auto max(12px,env(safe-area-inset-bottom,0px));width:min(560px,78vw);z-index:5;grid-template-columns:1.4fr 1fr 1fr}
+html.app.land .after .again{grid-column:auto;height:46px}
+html.app.land .after .rw{height:46px}
+html.app.land .entry{align-items:start;padding:max(10px,env(safe-area-inset-top,0px)) 16px 16px}
 html.app.land .entry .row{flex-direction:row}
 </style>
 
@@ -403,7 +408,7 @@ html.app.land .entry .row{flex-direction:row}
     <div class="board-head">
       <h2>LEADERBOARD</h2>
       <span class="live" id="live"><i></i><span id="liveTxt">LOADING</span></span>
-      <button class="close bclose" id="boardClose" type="button">BACK TO GAME</button>
+      <button class="close bclose" id="boardClose" type="button">CLOSE</button>
     </div>
     <p class="countdown" id="countdown"></p>
     <ol id="rows"></ol>
@@ -1620,7 +1625,7 @@ html.app.land .entry .row{flex-direction:row}
     // overlays
     ctx.textAlign = 'center';
     if (state === 'idle' && !entryOpen) {
-      const msg = 'Tap or press Space to go long';
+      const msg = mqCoarse.matches ? 'Tap JUMP to go long' : 'Tap or press Space to go long';
       const sub = 'double jump  |  duck shorts  |  chain coins for x5';
       const title = 'WICK RUNNER';
       fitFont(title, DISPLAY, 700, 34, W - 48); const ft = ctx.font;
@@ -1642,7 +1647,7 @@ html.app.land .entry .row{flex-direction:row}
       const tag = athBroken ? 'NEW ATH' : (idx >= 0 ? 'RANK #' + (idx + 1) + ' OF ' + board.rows.length : '');
       const l2 = 'PnL +' + money(score) + (tag ? '  |  ' + tag : '');
       const l3 = 'coins ' + coinsGot + '  |  close calls ' + closeCalls + '  |  best streak ' + bestStreak + '  |  ' + LEVELS[level];
-      const msg = 'Space to run it back  |  N for a new player';
+      const msg = mqCoarse.matches ? 'Tap JUMP to run it back' : 'Space to run it back  |  N for a new player';
       fitFont('LIQUIDATED', DISPLAY, 700, 30, W - 48); const f1 = ctx.font;
       fitFont(l2, MONO, 600, 14, W - 48); const f2 = ctx.font;
       fitFont(l3, MONO, 400, 11, W - 48); const f3 = ctx.font;
