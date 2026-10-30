@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="theme-color" content="#070b10"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Wick Runner</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -262,6 +262,87 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
 .wrap>*{animation:rise .7s var(--out) both}
 .wrap>*:nth-child(2){animation-delay:.06s}.wrap>*:nth-child(3){animation-delay:.12s}.wrap>*:nth-child(4){animation-delay:.18s}.wrap>*:nth-child(5){animation-delay:.24s}.wrap>*:nth-child(6){animation-delay:.3s}.wrap>*:nth-child(7){animation-delay:.36s}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ===== Phone app mode: fixed full-viewport layout, no page scroll ===== */
+.bpill,.bclose,.mini,.bscrim{display:none}
+.pad button b{display:block;font-weight:700;font-size:16px;letter-spacing:.02em}
+.pad button small{display:block;margin-top:4px;font-size:11px;color:var(--muted)}
+html.app,html.app body{height:100%;overflow:hidden;overscroll-behavior:none}
+html.app body{position:fixed;inset:0;width:100%;padding:0;background-attachment:scroll}
+html.app .wrap{
+  height:100vh;height:calc(var(--vh,1vh)*100);height:100dvh;max-width:none;gap:0;
+  display:grid;grid-template-rows:auto auto 1fr auto;grid-template-columns:100%;
+  padding:env(safe-area-inset-top,0px) max(10px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));
+}
+html.app .wrap>*{animation:none}
+html.app header{grid-row:1;align-items:center;flex-wrap:nowrap;gap:10px;padding:8px 4px 8px}
+html.app header>div:first-child{display:flex;align-items:center;gap:10px;min-width:0}
+html.app .lockup{margin:0;gap:8px;flex-wrap:nowrap}
+html.app .lockup img{height:18px}
+html.app .lockup .x{font-size:11px}
+html.app .hl-logo{height:11px}
+html.app h1{font-size:17px;white-space:nowrap}
+html.app .kicker,html.app .accent,html.app .hint,html.app h1,html.app .lockup .x,html.app .stat:has(>#last){display:none}
+html.app .stats{gap:10px;flex-shrink:0}
+html.app .stat b{font-size:13px}
+html.app .stat span{font-size:9px}
+html.app .who b{max-width:76px}
+html.app .bpill{display:flex}
+html.app .bpill b{color:var(--primary);text-decoration:none;font-family:var(--display);font-weight:700}
+html.app .screen{grid-row:2;grid-column:1;border-radius:14px}
+html.app .after{grid-row:2;grid-column:1;align-self:end;z-index:3;margin:0 12px 12px;padding:12px;gap:10px;border-radius:16px;background:var(--glass);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid var(--edge);grid-template-columns:1fr 1fr}
+html.app .after .again{grid-column:1/-1;height:54px}
+html.app .after .rw{height:46px;font-size:13px}
+html.app .mini{display:grid;grid-row:3;grid-column:1;align-self:end;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 2px 0;padding:0;border:0;background:none;text-align:left;cursor:pointer}
+html.app .mini[hidden]{display:none}
+html.app .mini .m{display:flex;flex-direction:column;gap:3px;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--grid);background:var(--glass)}
+html.app .mini .m.me{border-color:var(--edge);background:rgba(106,198,247,.1)}
+html.app .mini .m i{font-style:normal;font-family:var(--display);font-weight:500;font-size:10px;color:var(--muted)}
+html.app .mini .m.me i{color:var(--primary)}
+html.app .mini .m b{font-family:var(--display);font-weight:500;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+html.app .mini .m s{text-decoration:none;font-family:var(--mono);font-size:11px;color:var(--muted)}
+html.app .pad{grid-row:4;grid-column:1;margin-top:10px;gap:10px;grid-template-columns:1fr 1.5fr;align-self:end;height:min(42vh,280px);min-height:120px}
+html.app .pad button{height:100%;border-radius:18px;font-size:16px}
+html.app .pad button.jump{background:linear-gradient(180deg,rgba(106,198,247,.18),rgba(106,198,247,.06));border-color:var(--edge)}
+html.app .pad button.jump.on{background:rgba(106,198,247,.3)}
+html.app .pad button b{font-size:19px}
+html.app .pad button small{font-size:12px;margin-top:6px}
+html.app .entry{position:fixed;inset:0;z-index:30;align-items:start;padding:max(12vh,calc(env(safe-area-inset-top,0px) + 56px)) 16px 16px;overflow:auto}
+html.app .entry form{width:min(420px,100%)}
+html.app .entry .row{flex-direction:column}
+html.app .entry input{height:52px;font-size:17px}
+html.app .entry .go{height:52px;font-size:16px}
+html.app .bscrim{display:block;position:fixed;inset:0;z-index:39;background:rgba(3,6,10,.6);opacity:0;pointer-events:none;transition:opacity .3s}
+html.app .bscrim.on{opacity:1;pointer-events:auto}
+html.app .board{background:#0b1218;position:fixed;left:0;right:0;bottom:0;z-index:40;max-height:82vh;max-height:82dvh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  border-radius:20px 20px 0 0;border-bottom:0;padding:14px 0 calc(14px + env(safe-area-inset-bottom,0px));transform:translateY(102%);transition:transform .45s var(--out)}
+html.app .board.open{transform:none}
+html.app .board-head{position:sticky;top:0;z-index:1;background:var(--panel);padding:4px 16px 12px;gap:10px;flex-wrap:wrap}
+html.app .board-head::before{content:"";position:absolute;left:50%;top:-6px;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--grid)}
+html.app .bclose{display:inline-flex;align-items:center;margin-left:auto;height:34px}
+html.app .r{padding:12px 16px}
+html.app .modal{align-items:end;padding:0;display:grid}
+html.app .sheet{width:100%;max-height:90vh;max-height:90dvh;overflow:auto;overscroll-behavior:contain;border-radius:20px 20px 0 0;border-bottom:0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))}
+html.app .tiers{gap:6px}
+html.app .tier{padding:8px}
+/* landscape phones: the playfield fills the screen, thumbs on the two halves */
+html.app.land .wrap{grid-template-rows:1fr;padding:0}
+html.app.land header{position:absolute;z-index:4;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));top:env(safe-area-inset-top,0px);padding:6px 0;pointer-events:none}
+html.app.land header button{pointer-events:auto}
+html.app.land header{justify-content:center;gap:22px}
+html.app.land #whoBtn,html.app.land .stat:has(>#best){display:none}
+html.app.land .lockup,html.app.land h1{text-shadow:0 1px 8px rgba(0,0,0,.6)}
+html.app.land .screen{grid-row:1;border-radius:0;border:0;box-shadow:none}
+html.app.land .mini{display:none}
+html.app.land .pad{grid-row:1;grid-column:1;height:auto;min-height:0;margin:0;gap:0;grid-template-columns:1fr 1fr;align-self:stretch;z-index:2}
+html.app.land .pad button{height:auto;border:0;border-radius:0;background:transparent;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:0 0 max(14px,env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));opacity:.85}
+html.app.land .pad button.jump{align-items:flex-end;padding-left:0;padding-right:max(18px,env(safe-area-inset-right,0px));background:transparent}
+html.app.land .pad button.on{background:radial-gradient(60% 60% at 50% 100%,rgba(106,198,247,.18),transparent 70%);transform:none}
+html.app.land .pad button b{font-size:13px;letter-spacing:.06em;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+html.app.land .pad button small{font-size:10px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+html.app.land .after{grid-row:1;margin:0 auto max(14px,env(safe-area-inset-bottom,0px));width:min(420px,70vw);z-index:5}
+html.app.land .entry{align-items:center;padding:16px}
+html.app.land .entry .row{flex-direction:row}
 </style>
 
 <div class="wrap">
@@ -277,6 +358,7 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
       <button class="stat who" id="sndBtn" type="button" title="Toggle sound"><span>SOUND</span><b id="snd">ON</b></button>
       <div class="stat"><span>LAST</span><b id="last">$0</b></div>
       <div class="stat"><span>BEST</span><b id="best">$0</b></div>
+      <button class="stat who bpill" id="boardBtn" type="button" title="Leaderboard"><span>BOARD</span><b id="rankTxt">OPEN</b></button>
     </div>
   </header>
   <div class="accent" aria-hidden="true"></div>
@@ -288,7 +370,7 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
         <label for="ptg">Enter the night's leaderboard</label>
         <p class="entry-sub">Top 10 at 11:59 PM IST on 3 Nov win a STRAT funded account discount. We DM winners on Telegram.</p>
         <div class="row">
-          <input id="ptg" maxlength="33" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your Telegram @username" aria-label="Telegram username">
+          <input id="ptg" maxlength="33" enterkeyhint="go" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Your Telegram @username" aria-label="Telegram username">
           <button class="go" type="submit" id="goBtn">PLAY</button>
         </div>
         <p class="entry-fine">Your Telegram username is your name on the board.</p>
@@ -303,10 +385,12 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     <button class="rw" id="rewardsBtn" type="button">MY STANDING</button>
   </div>
 
+  <button class="mini" id="mini" type="button" aria-label="Open leaderboard"></button>
   <div class="pad">
-    <button id="duckBtn" type="button">Duck</button>
-    <button id="jumpBtn" type="button" class="jump">Jump</button>
+    <button id="duckBtn" type="button"><b>DUCK</b><small>hold under shorts</small></button>
+    <button id="jumpBtn" type="button" class="jump"><b>JUMP</b><small>tap, tap again in the air</small></button>
   </div>
+  <div class="bscrim" id="bscrim" hidden></div>
 
   <p class="hint">
     <span class="key-hint"><kbd>Space</kbd> jump  |  press again in the air to double jump  |  <kbd>↓</kbd> duck</span>
@@ -317,6 +401,7 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     <div class="board-head">
       <h2>LEADERBOARD</h2>
       <span class="live" id="live"><i></i><span id="liveTxt">LOADING</span></span>
+      <button class="close bclose" id="boardClose" type="button">BACK TO GAME</button>
     </div>
     <p class="countdown" id="countdown"></p>
     <ol id="rows"></ol>
@@ -825,6 +910,8 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     pbAtStart = currentBest();
     state = 'run';
     $('after').hidden = true;
+    closeBoard();
+    keepAwake();
   }
 
   function die() {
@@ -837,7 +924,7 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     hitStop = 0.12;
     if (!reduceMotion) { shake = 9; tscale = 0.22; zoom = 1; }
     ring(CAT_X + 33, cat.bottom - 24, C.bear, 60);
-    SFX.die();
+    SFX.die(); buzz([40, 30, 70]);
     burst(CAT_X + 33, cat.bottom - 24, 26, C.bear, 260, 120);
     burst(CAT_X + 33, cat.bottom - 24, 14, C.k, 200, 120);
     const wasIn = myIndex() >= 0 && myIndex() < SLOTS;
@@ -852,6 +939,46 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     if (fresh) setTimeout(() => { if (state === 'dead') openPrizes(); }, 1100);
   }
 
+  // ---------- Phone extras: haptics, keep the screen awake, leaderboard sheet ----------
+  const buzz = p => { try { if (snd && navigator.vibrate && isApp()) navigator.vibrate(p); } catch (_) {} };
+  let wake = null;
+  async function keepAwake() {
+    try { if ('wakeLock' in navigator && !wake && document.visibilityState === 'visible') { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } } catch (_) {}
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && player) keepAwake(); });
+  function openBoard() {
+    if (!isApp()) { $('rows').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    $('bscrim').hidden = false; requestAnimationFrame(() => $('bscrim').classList.add('on'));
+    const b = document.querySelector('.board'); b.classList.add('open');
+    const me = b.querySelector('.r.me'); if (me) setTimeout(() => me.scrollIntoView({ block: 'center', behavior: 'smooth' }), 450);
+  }
+  function closeBoard() {
+    const b = document.querySelector('.board'); if (!b.classList.contains('open')) return;
+    b.classList.remove('open'); $('bscrim').classList.remove('on'); setTimeout(() => { $('bscrim').hidden = true; }, 320);
+  }
+  $('boardBtn').addEventListener('click', () => { SFX.ui(); openBoard(); });
+  $('mini').addEventListener('click', () => { SFX.ui(); openBoard(); });
+  $('boardClose').addEventListener('click', closeBoard);
+  $('bscrim').addEventListener('click', closeBoard);
+  function renderMini() {
+    const me = myIndex(), rows = board.rows;
+    const pill = $('rankTxt');
+    pill.textContent = me >= 0 ? '#' + (me + 1) : rows.length ? rows.length + ' IN' : 'OPEN';
+    const m = $('mini');
+    if (!rows.length) { m.hidden = true; return; }
+    m.hidden = false; m.textContent = '';
+    const picks = [];
+    for (let i = 0; i < Math.min(3, rows.length); i++) picks.push(i);
+    if (me >= 3) picks[2] = me;
+    picks.forEach(i => {
+      const d = document.createElement('span'); d.className = 'm' + (i === me ? ' me' : '');
+      const k = document.createElement('i'); k.textContent = (i === me ? 'YOU  ' : '') + '#' + (i + 1);
+      const n = document.createElement('b'); n.textContent = rows[i].name;
+      const sc = document.createElement('s'); sc.textContent = money(rows[i].score);
+      d.append(k, n, sc); m.appendChild(d);
+    });
+  }
+
   // ---------- Input ----------
   function pressJump() {
     if (entryOpen || !$('prizes').hidden) return;
@@ -860,10 +987,10 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     jumpHeld = true;
     if (cat.onGround && !duckHeld) {
       cat.vy = -JUMP_V; cat.onGround = false; airJumps = 1;
-      SFX.jump(); burst(CAT_X + 30, GROUND, 6, C.muted, 90, 40); squash = -0.8;
+      SFX.jump(); buzz(8); burst(CAT_X + 30, GROUND, 6, C.muted, 90, 40); squash = -0.8;
     } else if (!cat.onGround && airJumps > 0) {
       airJumps = 0; cat.vy = -JUMP_V * 0.82;
-      SFX.dbl(); burst(CAT_X + 30, cat.bottom, 10, C.primary, 140, 0); squash = -1; ring(CAT_X + 33, cat.bottom, C.primary, 34);
+      SFX.dbl(); buzz(14); burst(CAT_X + 30, cat.bottom, 10, C.primary, 140, 0); squash = -1; ring(CAT_X + 33, cat.bottom, C.primary, 34);
     }
   }
   function releaseJump() { jumpHeld = false; if (cat.vy < -CUT_V) cat.vy = -CUT_V; }
@@ -906,7 +1033,7 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
   // ---------- Name entry ----------
   const NAME_BAD = /[^\p{L}\p{N} _.\-]/gu;
   function openEntry() {
-    entryOpen = true;
+    entryOpen = true; closeBoard();
     $('after').hidden = true;
     if (state === 'run') { state = 'idle'; obstacles = []; }
     $('entry').hidden = false;
@@ -937,6 +1064,8 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     cv.focus({ preventScroll: true });
   });
   $('whoBtn').addEventListener('click', openEntry);
+  $('ptg').addEventListener('blur', () => { if (isApp()) setTimeout(() => window.scrollTo(0, 0), 50); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (isApp() && !entryOpen) { applyMode(); resize(); } });
   function newPlayer() {
     player = ''; tgHandle = ''; lsSet('wr-tg', '');
     $('who').textContent = 'Guest'; $('last').textContent = '$0'; $('last').dataset.v = 0;
@@ -1003,6 +1132,7 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     const best = Math.max(rowBest, sessionName === player ? sessionBest : 0);
     tweenMoney($('best'), best);
     renderStanding(best);
+    renderMini();
   }
   function tickCountdown() {
     const el = $('countdown'); const ms = CLOSES_AT - Date.now();
@@ -1052,6 +1182,7 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
     } catch (e) { box.textContent = 't.me/tradeonstrat'; }
   }
   function openPrizes() {
+    closeBoard();
     drawTgQr();
     renderBoard();
     $('prizes').hidden = false;
@@ -1524,11 +1655,34 @@ h1{font-family:var(--display);font-weight:700;letter-spacing:-.02em;color:var(--
   }
 
   // ---------- Sizing ----------
+  // Phone app mode: fixed viewport, portrait keeps the world about 340 units wide, landscape fills the screen
+  const mqCoarse = window.matchMedia('(pointer:coarse)'), mqNarrow = window.matchMedia('(max-width:820px)'), mqShort = window.matchMedia('(max-height:520px)');
+  const isApp = () => mqCoarse.matches && (mqNarrow.matches || mqShort.matches);
+  const isLand = () => isApp() && window.innerWidth > window.innerHeight && mqShort.matches;
+  function applyMode() {
+    const app = isApp(), land = isLand();
+    document.documentElement.classList.toggle('app', app);
+    document.documentElement.classList.toggle('land', land);
+    const vv = window.visualViewport;
+    document.documentElement.style.setProperty('--vh', ((vv && !entryOpen ? vv.height : window.innerHeight) / 100) + 'px');
+    if (!app) { closeBoard(); }
+  }
+  [mqCoarse, mqNarrow, mqShort].forEach(m => m.addEventListener('change', () => { applyMode(); resize(); }));
+  window.addEventListener('resize', applyMode);
+  window.addEventListener('orientationchange', () => setTimeout(() => { applyMode(); resize(); }, 120));
+  applyMode();
   function resize() {
     const w = screenEl.clientWidth;
-    const h = Math.round(Math.min(360, window.innerHeight * 0.6, Math.max(200, w * 0.45)));
+    if (!w) return;
+    let h;
+    if (isLand()) h = screenEl.clientHeight || window.innerHeight;
+    else if (isApp()) {
+      const hdr = document.querySelector('header').offsetHeight || 56;
+      const avail = (window.visualViewport && !entryOpen ? window.visualViewport.height : window.innerHeight) - hdr;
+      h = Math.round(Math.max(190, Math.min(w / 320 * H, avail * 0.5)));
+    } else h = Math.round(Math.min(360, window.innerHeight * 0.6, Math.max(200, w * 0.45)));
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.style.height = h + 'px';
+    cv.style.height = isLand() ? '100%' : h + 'px';
     cv.width = Math.round(w * dpr);
     cv.height = Math.round(h * dpr);
     scale = h / H;
