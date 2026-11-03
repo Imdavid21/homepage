@@ -106,6 +106,7 @@ canvas:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
 .hint kbd{font-family:var(--mono);color:var(--ink);border:1px solid var(--grid);border-radius:4px;padding:0 5px}
 .key-hint{display:none}
 .gp-hint{display:none;color:var(--primary)}
+.gp-hint[data-count]:not([data-count=""])::before{content:attr(data-count) "  |  "}
 .gp-hint:not([hidden]){display:inline}
 html.gp .key-hint,html.gp .touch-hint{display:none}
 html.gp .hint{display:block}
@@ -1051,12 +1052,13 @@ html.app.land .entry .row{flex-direction:row}
   const gpLabel = id => /xbox|xinput|microsoft/i.test(id) ? { j: 'A', d: 'X or LT', s: 'Start', n: 'Xbox' } : /playstation|dualshock|dualsense|sony|054c/i.test(id) ? { j: 'Cross', d: 'Square or L2', s: 'Options', n: 'PlayStation' } : /nintendo|switch|pro controller|joy-con|057e/i.test(id) ? { j: 'B', d: 'Y or ZL', s: '+', n: 'Switch' } : { j: 'A', d: 'X or left trigger', s: 'Start', n: 'Controller' };
   function gpSeen(g) {
     if (GP.on && GP.idx === g.index) return;
+    const was = GP.on;
     GP.on = true; GP.idx = g.index; GP.name = g.id;
-    const L = gpLabel(g.id);
+    const L = gpStd(g) ? gpLabel(g.id) : { j: 'any face button', d: 'a shoulder button or stick down', s: 'the last button', n: 'Controller' };
     document.documentElement.classList.add('gp');
     const h = $('gpHint'); h.hidden = false;
     h.textContent = L.n + ' connected  |  ' + L.j + ' jump, again in the air to double jump  |  hold ' + L.d + ' to duck  |  ' + L.s + ' to play again';
-    say(L.n.toUpperCase() + ' CONNECTED', C.primary);
+    if (!was) say(L.n.toUpperCase() + ' CONNECTED', C.primary);
     cv.setAttribute('aria-label', 'Wick Runner game. ' + L.j + ' to jump, ' + L.d + ' to duck.');
   }
   function gpLost() {
@@ -1067,30 +1069,44 @@ html.app.land .entry .row{flex-direction:row}
   }
   window.addEventListener('gamepadconnected', e => gpSeen(e.gamepad));
   window.addEventListener('gamepaddisconnected', e => { if (e.gamepad.index === GP.idx) gpLost(); });
-  function pollPad() {
-    if (!navigator.getGamepads) return;
-    let pads; try { pads = navigator.getGamepads(); } catch (_) { return; }
-    let g = null;
-    for (const p of pads) { if (!p || !p.connected) continue; if (p.index === GP.idx) { g = p; break; } if (!g) g = p; }
-    if (!g) { if (GP.on) gpLost(); return; }
+  // Every connected pad is read each frame and their inputs merge, so any pad in the room drives the game and players can pass controllers.
+  // Pads without the standard layout (older DirectInput pads, arcade sticks, wheels, some 8BitDo modes) fall back to: any face or extra button jumps,
+  // shoulder buttons and stick down duck, the last two buttons act as Start and Back, and D-pad hats are read from the hat axis.
+  const gpStd = g => g.mapping === 'standard' || (g.buttons.length >= 16 && g.axes.length >= 4);
+  function gpRead(g) {
     const b = i => !!(g.buttons[i] && (g.buttons[i].pressed || g.buttons[i].value > 0.5));
     const ax = i => g.axes[i] || 0;
-    const anyDown = g.buttons.some(x => x && (x.pressed || x.value > 0.5)) || Math.abs(ax(1)) > 0.5 || Math.abs(ax(0)) > 0.5;
-    if (!GP.on || GP.idx !== g.index) { if (!anyDown && !GP.on) return; gpSeen(g); }
-    const jumpNow = b(0) || b(1) || b(5) || b(7) || b(12) || ax(1) < -0.5 || ax(3) < -0.5;
-    const duckNow = b(2) || b(4) || b(6) || b(13) || ax(1) > 0.5 || ax(3) > 0.5;
-    const startNow = b(9), backNow = b(8), boardNow = b(3);
+    const nb = g.buttons.length;
+    const any = g.buttons.some(x => x && (x.pressed || x.value > 0.5)) || Math.abs(ax(1)) > 0.5 || Math.abs(ax(0)) > 0.5 || Math.abs(ax(3)) > 0.5;
+    if (gpStd(g)) return { any, jump: b(0) || b(1) || b(5) || b(7) || b(12) || ax(1) < -0.5 || ax(3) < -0.5, duck: b(2) || b(4) || b(6) || b(13) || ax(1) > 0.5 || ax(3) > 0.5, start: b(9), back: b(8), board: b(3), b1: b(1) };
+    // hat switch as an axis (Chrome, Linux and Windows DirectInput): down is about 0.14, up is -1
+    const hat = g.axes.length > 4 ? ax(g.axes.length - 1) : 2;
+    const hatDown = hat > 0.05 && hat < 0.3, hatUp = hat < -0.9;
+    let jump = false, duck = false;
+    for (let i = 0; i < nb - 2; i++) { if (!b(i)) continue; if (i >= 4 && i <= 7) duck = true; else jump = true; }
+    return { any, jump: jump || hatUp || ax(1) < -0.5 || ax(3) < -0.5, duck: duck || hatDown || ax(1) > 0.5 || ax(3) > 0.5, start: nb > 2 && b(nb - 1), back: nb > 2 && b(nb - 2), board: false, b1: b(1) };
+  }
+  function pollPad() {
+    if (!navigator.getGamepads) return;
+    let pads; try { pads = Array.from(navigator.getGamepads()).filter(p => p && p.connected); } catch (_) { return; }
+    if (!pads.length) { if (GP.on) gpLost(); return; }
+    const m = { any: false, jump: false, duck: false, start: false, back: false, board: false, b1: false };
+    let active = null;
+    for (const g of pads) { const r = gpRead(g); for (const k in m) m[k] = m[k] || r[k]; if (r.any && !active) active = g; }
+    if (!GP.on) { if (!m.any) return; gpSeen(active || pads[0]); }
+    else if (active && active.index !== GP.idx) gpSeen(active);
+    if (pads.length !== GP.count) { GP.count = pads.length; $('gpHint').dataset.count = pads.length > 1 ? pads.length + ' controllers' : ''; }
+    const jumpNow = m.jump, duckNow = m.duck, startNow = m.start, backNow = m.back, boardNow = m.board;
     const modal = !$('prizes').hidden, sheet = document.querySelector('.board').classList.contains('open');
     if (modal || sheet) {
-      if ((jumpNow || startNow || b(1)) && !GP.prev.close) { if (modal) closePrizes(); else closeBoard(); }
-      GP.prev.close = jumpNow || startNow || b(1);
+      if ((jumpNow || startNow || m.b1) && !GP.prev.close) { if (modal) closePrizes(); else closeBoard(); }
+      GP.prev.close = jumpNow || startNow || m.b1;
       if (GP.jump) { GP.jump = false; releaseJump(); }
       if (GP.duck) { GP.duck = false; releaseDuck(); }
       return;
     }
     GP.prev.close = jumpNow || startNow;
     if (entryOpen) {
-      // Start on the entry screen submits a filled name, so a player who typed with the on-screen keyboard can drop it
       if (startNow && !GP.prev.start && cleanTg($('ptg').value)) $('entryForm').requestSubmit();
       GP.prev.start = startNow;
       return;
@@ -1108,9 +1124,11 @@ html.app.land .entry .row{flex-direction:row}
   function rumble(ms, strong, weak) {
     if (!GP.on) return;
     try {
-      const g = navigator.getGamepads()[GP.idx]; if (!g) return;
-      if (g.vibrationActuator && g.vibrationActuator.playEffect) g.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: strong, weakMagnitude: weak });
-      else if (g.hapticActuators && g.hapticActuators[0] && g.hapticActuators[0].pulse) g.hapticActuators[0].pulse(weak, ms);
+      for (const g of navigator.getGamepads()) {
+        if (!g || !g.connected) continue;
+        if (g.vibrationActuator && g.vibrationActuator.playEffect) g.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: strong, weakMagnitude: weak });
+        else if (g.hapticActuators && g.hapticActuators[0] && g.hapticActuators[0].pulse) g.hapticActuators[0].pulse(weak, ms);
+      }
     } catch (_) {}
   }
 
