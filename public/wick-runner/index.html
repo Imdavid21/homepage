@@ -105,6 +105,11 @@ canvas:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
 .hint{margin:0;color:var(--muted);font-size:12px;text-align:center}
 .hint kbd{font-family:var(--mono);color:var(--ink);border:1px solid var(--grid);border-radius:4px;padding:0 5px}
 .key-hint{display:none}
+.gp-hint{display:none;color:var(--primary)}
+.gp-hint:not([hidden]){display:inline}
+html.gp .key-hint,html.gp .touch-hint{display:none}
+html.gp .hint{display:block}
+html.gp.app .hint{display:block;grid-row:5;margin:6px 0 0;font-size:11px}
 @media (hover:hover) and (pointer:fine){
   .pad{display:none}
   .key-hint{display:inline}
@@ -402,6 +407,7 @@ html.app.land .entry .row{flex-direction:row}
   <p class="hint">
     <span class="key-hint"><kbd>Space</kbd> jump  |  press again in the air to double jump  |  <kbd>↓</kbd> duck</span>
     <span class="touch-hint">Tap to jump  |  tap again in the air to double jump  |  hold Duck under shorts</span>
+    <span class="gp-hint" id="gpHint" hidden></span>
   </p>
 
   <section class="board" aria-label="Leaderboard">
@@ -932,7 +938,7 @@ html.app.land .entry .row{flex-direction:row}
     hitStop = 0.12;
     if (!reduceMotion) { shake = 9; tscale = 0.22; zoom = 1; }
     ring(CAT_X + 33, cat.bottom - 24, C.bear, 60);
-    SFX.die(); buzz([40, 30, 70]);
+    SFX.die(); buzz([40, 30, 70]); rumble(260, 1, 0.6);
     burst(CAT_X + 33, cat.bottom - 24, 26, C.bear, 260, 120);
     burst(CAT_X + 33, cat.bottom - 24, 14, C.k, 200, 120);
     const wasIn = myIndex() >= 0 && myIndex() < SLOTS;
@@ -995,10 +1001,10 @@ html.app.land .entry .row{flex-direction:row}
     jumpHeld = true;
     if (cat.onGround && !duckHeld) {
       cat.vy = -JUMP_V; cat.onGround = false; airJumps = 1;
-      SFX.jump(); buzz(8); burst(CAT_X + 30, GROUND, 6, C.muted, 90, 40); squash = -0.8;
+      SFX.jump(); buzz(8); rumble(40, 0.15, 0.4); burst(CAT_X + 30, GROUND, 6, C.muted, 90, 40); squash = -0.8;
     } else if (!cat.onGround && airJumps > 0) {
       airJumps = 0; cat.vy = -JUMP_V * 0.82;
-      SFX.dbl(); buzz(14); burst(CAT_X + 30, cat.bottom, 10, C.primary, 140, 0); squash = -1; ring(CAT_X + 33, cat.bottom, C.primary, 34);
+      SFX.dbl(); buzz(14); rumble(60, 0.3, 0.7); burst(CAT_X + 30, cat.bottom, 10, C.primary, 140, 0); squash = -1; ring(CAT_X + 33, cat.bottom, C.primary, 34);
     }
   }
   function releaseJump() { jumpHeld = false; if (cat.vy < -CUT_V) cat.vy = -CUT_V; }
@@ -1008,7 +1014,7 @@ html.app.land .entry .row{flex-direction:row}
   window.addEventListener('keydown', e => {
     if (!$('prizes').hidden) { if (e.code === 'Escape') closePrizes(); return; }
     if (entryOpen) return;
-    if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) {
+    if (['Space', 'ArrowUp', 'KeyW', 'Enter', 'NumpadEnter'].includes(e.code)) {
       if (e.target.tagName === 'BUTTON' && e.target.id === 'whoBtn') return;
       e.preventDefault();
       if (!e.repeat) pressJump();
@@ -1018,7 +1024,7 @@ html.app.land .entry .row{flex-direction:row}
     }
   });
   window.addEventListener('keyup', e => {
-    if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) releaseJump();
+    if (['Space', 'ArrowUp', 'KeyW', 'Enter', 'NumpadEnter'].includes(e.code)) releaseJump();
     else if (['ArrowDown', 'KeyS'].includes(e.code)) releaseDuck();
   });
   function bindHold(el, down, up) {
@@ -1037,6 +1043,76 @@ html.app.land .entry .row{flex-direction:row}
   bindHold(cv, pressJump, releaseJump);
   bindHold($('jumpBtn'), pressJump, releaseJump);
   bindHold($('duckBtn'), pressDuck, releaseDuck);
+
+  // ---------- Controllers (Gamepad API, standard mapping: Xbox, PlayStation, Switch Pro and Joy-Con grip, generic USB and Bluetooth pads) ----------
+  // Face buttons, right shoulder and trigger, D-pad up, stick up: jump (hold for height, press again in the air).
+  // Left face button, left shoulder and trigger, D-pad down, stick down: duck. Start: play or play again. Back/Select: new player. Y/Triangle/X: leaderboard.
+  const GP = { on: false, jump: false, duck: false, prev: {}, idx: -1, name: '' };
+  const gpLabel = id => /xbox|xinput|microsoft/i.test(id) ? { j: 'A', d: 'X or LT', s: 'Start', n: 'Xbox' } : /playstation|dualshock|dualsense|sony|054c/i.test(id) ? { j: 'Cross', d: 'Square or L2', s: 'Options', n: 'PlayStation' } : /nintendo|switch|pro controller|joy-con|057e/i.test(id) ? { j: 'B', d: 'Y or ZL', s: '+', n: 'Switch' } : { j: 'A', d: 'X or left trigger', s: 'Start', n: 'Controller' };
+  function gpSeen(g) {
+    if (GP.on && GP.idx === g.index) return;
+    GP.on = true; GP.idx = g.index; GP.name = g.id;
+    const L = gpLabel(g.id);
+    document.documentElement.classList.add('gp');
+    const h = $('gpHint'); h.hidden = false;
+    h.textContent = L.n + ' connected  |  ' + L.j + ' jump, again in the air to double jump  |  hold ' + L.d + ' to duck  |  ' + L.s + ' to play again';
+    say(L.n.toUpperCase() + ' CONNECTED', C.primary);
+    cv.setAttribute('aria-label', 'Wick Runner game. ' + L.j + ' to jump, ' + L.d + ' to duck.');
+  }
+  function gpLost() {
+    GP.on = false; GP.idx = -1; GP.prev = {};
+    if (GP.jump) { GP.jump = false; releaseJump(); }
+    if (GP.duck) { GP.duck = false; releaseDuck(); }
+    document.documentElement.classList.remove('gp'); $('gpHint').hidden = true;
+  }
+  window.addEventListener('gamepadconnected', e => gpSeen(e.gamepad));
+  window.addEventListener('gamepaddisconnected', e => { if (e.gamepad.index === GP.idx) gpLost(); });
+  function pollPad() {
+    if (!navigator.getGamepads) return;
+    let pads; try { pads = navigator.getGamepads(); } catch (_) { return; }
+    let g = null;
+    for (const p of pads) { if (!p || !p.connected) continue; if (p.index === GP.idx) { g = p; break; } if (!g) g = p; }
+    if (!g) { if (GP.on) gpLost(); return; }
+    const b = i => !!(g.buttons[i] && (g.buttons[i].pressed || g.buttons[i].value > 0.5));
+    const ax = i => g.axes[i] || 0;
+    const anyDown = g.buttons.some(x => x && (x.pressed || x.value > 0.5)) || Math.abs(ax(1)) > 0.5 || Math.abs(ax(0)) > 0.5;
+    if (!GP.on || GP.idx !== g.index) { if (!anyDown && !GP.on) return; gpSeen(g); }
+    const jumpNow = b(0) || b(1) || b(5) || b(7) || b(12) || ax(1) < -0.5 || ax(3) < -0.5;
+    const duckNow = b(2) || b(4) || b(6) || b(13) || ax(1) > 0.5 || ax(3) > 0.5;
+    const startNow = b(9), backNow = b(8), boardNow = b(3);
+    const modal = !$('prizes').hidden, sheet = document.querySelector('.board').classList.contains('open');
+    if (modal || sheet) {
+      if ((jumpNow || startNow || b(1)) && !GP.prev.close) { if (modal) closePrizes(); else closeBoard(); }
+      GP.prev.close = jumpNow || startNow || b(1);
+      if (GP.jump) { GP.jump = false; releaseJump(); }
+      if (GP.duck) { GP.duck = false; releaseDuck(); }
+      return;
+    }
+    GP.prev.close = jumpNow || startNow;
+    if (entryOpen) {
+      // Start on the entry screen submits a filled name, so a player who typed with the on-screen keyboard can drop it
+      if (startNow && !GP.prev.start && cleanTg($('ptg').value)) $('entryForm').requestSubmit();
+      GP.prev.start = startNow;
+      return;
+    }
+    if (jumpNow && !GP.jump) { GP.jump = true; pressJump(); }
+    else if (!jumpNow && GP.jump) { GP.jump = false; releaseJump(); }
+    if (duckNow && !GP.duck) { GP.duck = true; pressDuck(); }
+    else if (!duckNow && GP.duck) { GP.duck = false; releaseDuck(); }
+    if (startNow && !GP.prev.start) { if (state !== 'run') pressJump(); }
+    if (backNow && !GP.prev.back && state === 'dead') newPlayer();
+    if (boardNow && !GP.prev.board && state !== 'run') { if (!$('after').hidden) openPrizes(); else openBoard(); }
+    GP.prev.start = startNow; GP.prev.back = backNow; GP.prev.board = boardNow;
+  }
+  // rumble where the pad supports it (Chrome and Edge: dual-rumble; Firefox: hapticActuators)
+  function rumble(ms, strong, weak) {
+    if (!GP.on) return;
+    try {
+      const g = navigator.getGamepads()[GP.idx]; if (!g) return;
+      if (g.vibrationActuator && g.vibrationActuator.playEffect) g.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: strong, weakMagnitude: weak });
+      else if (g.hapticActuators && g.hapticActuators[0] && g.hapticActuators[0].pulse) g.hapticActuators[0].pulse(weak, ms);
+    } catch (_) {}
+  }
 
   // ---------- Name entry ----------
   const NAME_BAD = /[^\p{L}\p{N} _.\-]/gu;
@@ -1721,6 +1797,7 @@ html.app.land .entry .row{flex-direction:row}
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
+    pollPad();
     tscale += (1 - tscale) * Math.min(1, dt * 1.6);
     update(dt * tscale);
     draw();
